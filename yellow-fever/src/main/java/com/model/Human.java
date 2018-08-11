@@ -6,6 +6,8 @@ import sim.engine.Steppable;
 public class Human implements Steppable {
 
   private static final long serialVersionUID = 1L;
+  private int age;
+  private int sex;
 
   public void step(SimState state) {
 
