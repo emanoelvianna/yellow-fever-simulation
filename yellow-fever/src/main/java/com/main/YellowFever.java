@@ -1,31 +1,56 @@
 package com.main;
 
+import com.model.Human;
+
 import sim.engine.SimState;
 import sim.field.geo.GeomVectorField;
+import sim.util.geo.GeomPlanarGraph;
+import sim.util.geo.MasonGeometry;
 
 public class YellowFever extends SimState {
 
-  private static final int WIDTH = 300;
-  private static final int HEIGHT = 300;
+  private static final int NUMBERS_OF_AGENTS = 1000;
+  private static final int WIDTH = 700;
+  private static final int HEIGHT = 600;
   private static final long serialVersionUID = 8374233360244345303L;
 
   private GeomVectorField buildingsShape;
   private GeomVectorField streetsShape;
+  private GeomVectorField agents;
+  private GeomPlanarGraph network;
+  private GeomVectorField junctions;
 
   public YellowFever(long seed) {
     super(seed);
     this.buildingsShape = new GeomVectorField(WIDTH, HEIGHT);
     this.streetsShape = new GeomVectorField(WIDTH, HEIGHT);
-  }
-
-  @Override
-  public void start() {
-    Region.create(this);
+    this.agents = new GeomVectorField(WIDTH, HEIGHT);
+    this.network = new GeomPlanarGraph();
+    this.junctions = new GeomVectorField(WIDTH, HEIGHT);
   }
 
   public static void main(String[] args) {
     doLoop(YellowFever.class, args);
     System.exit(0);
+  }
+
+  @Override
+  public void start() {
+    new Region().create(this);
+    super.start();
+    this.agents.clear();
+    System.out.println("[INFO] Adding agents");
+    addAgents();
+    System.out.println("[INFO] Agents added");
+    this.agents.setMBR(this.buildingsShape.getMBR());
+  }
+
+  public void addAgents() {
+    for (int i = 0; i < NUMBERS_OF_AGENTS; i++) {
+      Human human = new Human(this);
+      this.agents.addGeometry(new MasonGeometry(human.getPoint()));
+      schedule.scheduleRepeating(human);
+    }
   }
 
   public static int getWidth() {
@@ -42,6 +67,18 @@ public class YellowFever extends SimState {
 
   public GeomVectorField getStreetsShape() {
     return streetsShape;
+  }
+
+  public GeomPlanarGraph getNetwork() {
+    return network;
+  }
+
+  public GeomVectorField getJunctions() {
+    return junctions;
+  }
+
+  public GeomVectorField getAgents() {
+    return agents;
   }
 
 }

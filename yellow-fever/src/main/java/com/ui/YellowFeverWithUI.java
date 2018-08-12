@@ -18,9 +18,9 @@ import sim.portrayal.geo.GeomVectorFieldPortrayal;
 public class YellowFeverWithUI extends GUIState {
   private Display2D display;
   private JFrame displayFrame;
-
   private GeomVectorFieldPortrayal buildingsPortrayal = new GeomVectorFieldPortrayal();
   private GeomVectorFieldPortrayal streetsPortrayal = new GeomVectorFieldPortrayal();
+  private GeomVectorFieldPortrayal agentPortrayal = new GeomVectorFieldPortrayal();
 
   public YellowFeverWithUI() throws MalformedURLException {
     super(new YellowFever(System.currentTimeMillis()));
@@ -38,6 +38,7 @@ public class YellowFeverWithUI extends GUIState {
 
     display.attach(buildingsPortrayal, "Buildings", true);
     display.attach(streetsPortrayal, "Streets", true);
+    display.attach(agentPortrayal, "Agents", true);
 
     displayFrame = display.createFrame();
     controller.registerFrame(displayFrame);
@@ -54,11 +55,14 @@ public class YellowFeverWithUI extends GUIState {
     super.start();
     YellowFever yellowFever = (YellowFever) state;
 
-    streetsPortrayal.setField(yellowFever.getBuildingsShape());
+    buildingsPortrayal.setField(yellowFever.getBuildingsShape());
+    buildingsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.DARK_GRAY, true));
+
+    streetsPortrayal.setField(yellowFever.getStreetsShape());
     streetsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.CYAN, true));
 
-    buildingsPortrayal.setField(yellowFever.getStreetsShape());
-    buildingsPortrayal.setPortrayalForAll(new GeomPortrayal(Color.GRAY, true));
+    agentPortrayal.setField(yellowFever.getAgents());
+    agentPortrayal.setPortrayalForAll(new GeomPortrayal(Color.RED, 1.0, true));
 
     display.reset();
     display.setBackdrop(Color.WHITE);
