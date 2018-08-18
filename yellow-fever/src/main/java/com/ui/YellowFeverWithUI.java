@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 
 import javax.swing.JFrame;
 
-import com.main.YellowFever;
+import com.core.YellowFever;
 
 import sim.display.Console;
 import sim.display.Controller;

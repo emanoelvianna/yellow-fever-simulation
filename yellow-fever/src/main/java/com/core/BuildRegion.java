@@ -1,4 +1,4 @@
-package com.main;
+package com.core;
 
 import java.net.URL;
 import java.util.Iterator;
@@ -16,9 +16,16 @@ import sim.io.geo.ShapeFileImporter;
 import sim.util.Bag;
 import sim.util.geo.MasonGeometry;
 
-public class Region {
+public class BuildRegion {
+
+  private YellowFever yellowFever;
 
   public void create(YellowFever yellowFever) {
+    this.yellowFever = yellowFever;
+    this.loadingData();
+  }
+
+  private void loadingData() {
     try {
       System.out.println("[INFO] Reading the layer of buildings");
       Bag buildings = new Bag();
@@ -61,5 +68,18 @@ public class Region {
       yellowFever.getJunctions().addGeometry(new MasonGeometry(point));
       counter++;
     }
+  }
+
+  public int defineQuantityMembersInFamily() {
+    // TODO: Rever a quantidade, 30% parece um número grande
+    if (this.yellowFever.random.nextDouble() > 0.3) {
+      return 0;
+    } else {
+      return 1 + this.yellowFever.random.nextInt(14);
+    }
+  }
+
+  private int defineAge() {
+    return 10 + this.yellowFever.random.nextInt(55);
   }
 }

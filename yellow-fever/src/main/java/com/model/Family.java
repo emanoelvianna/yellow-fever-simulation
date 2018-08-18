@@ -12,12 +12,20 @@ public class Family {
     this.location = location;
   }
 
+  public void addMember(Human human) {
+    this.members.add(human);
+  }
+
+  public void removeMember(Human human) {
+    this.members.remove(human);
+  }
+
   public Bag getMembers() {
-    return members;
+    return this.members;
   }
 
   public Residence getLocation() {
-    return location;
+    return this.location;
   }
 
 }

@@ -1,11 +1,8 @@
-package com.main;
-
-import com.model.Human;
+package com.core;
 
 import sim.engine.SimState;
 import sim.field.geo.GeomVectorField;
 import sim.util.geo.GeomPlanarGraph;
-import sim.util.geo.MasonGeometry;
 
 public class YellowFever extends SimState {
 
@@ -36,7 +33,7 @@ public class YellowFever extends SimState {
 
   @Override
   public void start() {
-    new Region().create(this);
+    new BuildRegion().create(this);
     super.start();
     this.agents.clear();
     System.out.println("[INFO] Adding agents");
@@ -46,11 +43,7 @@ public class YellowFever extends SimState {
   }
 
   public void addAgents() {
-    for (int i = 0; i < NUMBERS_OF_AGENTS; i++) {
-      Human human = new Human(this);
-      this.agents.addGeometry(new MasonGeometry(human.getPoint()));
-      schedule.scheduleRepeating(human);
-    }
+    // TODO:
   }
 
   public static int getWidth() {
