@@ -1,6 +1,6 @@
 package com.model;
 
-public class Residence {
+public class Building {
 
   private int xLocation;
   private int yLocation;

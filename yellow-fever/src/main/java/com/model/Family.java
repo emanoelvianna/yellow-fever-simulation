@@ -5,9 +5,10 @@ import sim.util.Bag;
 public class Family {
 
   private Bag members;
-  private Residence location;
+  private Bag otherMembers;
+  private Building location;
 
-  public Family(Bag members, Residence location) {
+  public Family(Bag members, Building location) {
     this.members = members;
     this.location = location;
   }
@@ -24,7 +25,7 @@ public class Family {
     return this.members;
   }
 
-  public Residence getLocation() {
+  public Building getLocation() {
     return this.location;
   }
 
