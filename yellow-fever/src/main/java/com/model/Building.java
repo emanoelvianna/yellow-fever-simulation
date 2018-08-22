@@ -2,15 +2,32 @@ package com.model;
 
 public class Building {
 
+  private int type;
   private int xLocation;
   private int yLocation;
 
-  public int getxLocation() {
-    return xLocation;
+  public int getX() {
+    return this.xLocation;
   }
 
-  public int getyLocation() {
-    return yLocation;
+  public int setX(int x) {
+    return this.xLocation = x;
+  }
+
+  public int getY() {
+    return this.yLocation;
+  }
+
+  public int setY(int y) {
+    return this.yLocation = y;
+  }
+
+  public int getType() {
+    return this.type;
+  }
+
+  public void setType(int type) {
+    this.type = type;
   }
 
 }
