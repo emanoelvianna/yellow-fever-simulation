@@ -26,6 +26,16 @@ public class YellowFever extends SimState {
   private ObjectGrid2D closestNodes;
 
   private Bag regionSites;
+  private Bag rainfallWater;
+  private Bag allFacilities;
+  private Bag schooles;
+  private Bag healthCenters;
+  private Bag mosques;
+  private Bag market;
+  private Bag foodCenter;
+  private Bag other;
+
+  private int[] dailyRain = new int[365];
 
   public YellowFever(long seed) {
     super(seed);
@@ -128,6 +138,78 @@ public class YellowFever extends SimState {
 
   public void setRegionSites(Bag regionSites) {
     this.regionSites = regionSites;
+  }
+
+  public Bag getRainfallWater() {
+    return rainfallWater;
+  }
+
+  public void setRainfallWater(Bag rainfallWater) {
+    this.rainfallWater = rainfallWater;
+  }
+
+  public Bag getAllFacilities() {
+    return allFacilities;
+  }
+
+  public void setAllFacilities(Bag allFacilities) {
+    this.allFacilities = allFacilities;
+  }
+
+  public Bag getSchooles() {
+    return schooles;
+  }
+
+  public void setSchooles(Bag schooles) {
+    this.schooles = schooles;
+  }
+
+  public Bag getHealthCenters() {
+    return healthCenters;
+  }
+
+  public void setHealthCenters(Bag healthCenters) {
+    this.healthCenters = healthCenters;
+  }
+
+  public Bag getMosques() {
+    return mosques;
+  }
+
+  public void setMosques(Bag mosques) {
+    this.mosques = mosques;
+  }
+
+  public Bag getMarket() {
+    return market;
+  }
+
+  public void setMarket(Bag market) {
+    this.market = market;
+  }
+
+  public Bag getFoodCenter() {
+    return foodCenter;
+  }
+
+  public void setFoodCenter(Bag foodCenter) {
+    this.foodCenter = foodCenter;
+  }
+
+  public Bag getOther() {
+    return other;
+  }
+
+  public void setOther(Bag other) {
+    this.other = other;
+  }
+
+  public int[] getDailyRain() {
+    return dailyRain;
+  }
+
+  public void setDailyRain(int[] dailyRain) {
+    this.dailyRain = dailyRain;
   }
 
 }

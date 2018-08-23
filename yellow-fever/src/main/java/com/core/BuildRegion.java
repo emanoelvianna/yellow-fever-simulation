@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.main.FieldUnit;
 import com.model.Building;
 import com.model.Facility;
 
@@ -29,6 +28,7 @@ public class BuildRegion {
   private static final String ROADS_SHAPEFILE = "data-dadaab/dadaab_road_f_node.shp";
   private static final String ROADS_ASCGRID = "data-dadaab/d_costp_a.txt";
   private static final String FACILITY_ASCGRID = "data-dadaab/d_faci_a.txt";
+  private static final String RAINS_FILE = "data-dadaab/dadaabDailyRain.csv";
   private static final int NUMBERS_OF_AGENTS = 1000;
 
   private static int GRID_HEIGTH = 0;
@@ -93,10 +93,47 @@ public class BuildRegion {
         tokens = line.split("\\s+");
         for (int curr_col = 0; curr_col < width; ++curr_col) {
           int facilityType = Integer.parseInt(tokens[curr_col]);
-          defineFacilitiesTypesInRegion(facilityType, curr_col, curr_row);
+          this.defineFacilitiesTypesInRegion(facilityType, curr_col, curr_row);
         }
       }
 
+      /* read road grid */
+      BufferedReader road = new BufferedReader(new FileReader(ROADS_ASCGRID));
+      /* skip the irrelevant metadata */
+      for (int i = 0; i < 6; i++) {
+        road.readLine();
+      }
+
+      for (int curr_row = 0; curr_row < height; ++curr_row) {
+        line = road.readLine();
+        tokens = line.split("\\s+");
+        for (int curr_col = 0; curr_col < width; ++curr_col) {
+          double r = Double.parseDouble(tokens[curr_col]); // no need
+          int roadID = (int) r * 1000;
+          if (roadID >= 0) {
+            this.yellowFever.getRoadGrid().set(curr_col, curr_row, roadID);
+          }
+        }
+      }
+
+      this.loadingDailyRainfall(height);
+
+    } catch (IOException ex) {
+      Logger.getLogger(BuildRegion.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void loadingDailyRainfall(int height) {
+    try {
+      String line;
+      String[] tokens;
+      BufferedReader dailyRainfall = new BufferedReader(new FileReader(RAINS_FILE));
+      for (int curr_row = 0; curr_row < height; ++curr_row) {
+        line = dailyRainfall.readLine();
+        tokens = line.split("\\s+");
+        int rain = Integer.parseInt(tokens[0]);
+        this.yellowFever.getDailyRain()[curr_row] = rain;
+      }
     } catch (IOException ex) {
       Logger.getLogger(BuildRegion.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -127,37 +164,37 @@ public class BuildRegion {
   private void defineFacilitiesTypesInRegion(int facilityType, int curr_col, int curr_row) {
     if (facilityType > 0 && facilityType < 11) {
       Facility facility = new Facility();
-      Building facilityBuilding = (Building) dadaab.allCamps.get(curr_col, curr_row);
+      Building facilityBuilding = (Building) this.yellowFever.getRegion().get(curr_col, curr_row);
       facility.setLocation(facilityBuilding);
       facilityBuilding.setFacility(facility);
-      dadaab.allFacilities.add(facilityBuilding);
+      this.yellowFever.getAllFacilities().add(facilityBuilding);
       // facility.setCapacity(0);
       if (facilityType == 1) {
-        facility.setInfectionLevel(0);
-        facilityBuilding.setVibrioCholerae(0);
-        facility.setFacilityID(2);
-        facilityBuilding.setWater(dadaab.params.global.getBoreholeWaterSupplyPerDay());
-        dadaab.boreHoles.add(facilityBuilding);
+        // facility.setInfectionLevel(0);
+        // facilityBuilding.setVibrioCholerae(0);
+        facility.setType(2);
+        // facilityBuilding.setWater(dadaab.params.global.getBoreholeWaterSupplyPerDay());
+        // dadaab.boreHoles.add(facilityBuilding);
       } else if (facilityType == 2 || facilityType == 3) {
-        facility.setFacilityID(6);
-        dadaab.healthCenters.add(facilityBuilding);
+        facility.setType(6);
+        this.yellowFever.getHealthCenters().add(facilityBuilding);
       } else if (facilityType == 4) {
-        facility.setFacilityID(5);
-        dadaab.foodCenter.add(facilityBuilding);
+        facility.setType(5);
+        this.yellowFever.getFoodCenter().add(facilityBuilding);
       } else if (facilityType > 5 && facilityType <= 8) {
-        facility.setFacilityID(1);
-        dadaab.schooles.add(facilityBuilding);
+        facility.setType(1);
+        this.yellowFever.getSchooles().add(facilityBuilding);
       } else if (facilityType == 9) {
-        facility.setFacilityID(4);
-        dadaab.market.add(facilityBuilding);
+        facility.setType(4);
+        this.yellowFever.getMarket().add(facilityBuilding);
       } else if (facilityType == 10) {
-        facility.setFacilityID(3);
-        dadaab.mosques.add(facilityBuilding);
+        facility.setType(3);
+        this.yellowFever.getMosques().add(facilityBuilding);
       } else {
-        facility.setFacilityID(8);
-        dadaab.other.add(facilityBuilding);
+        facility.setType(8);
+        this.yellowFever.getOther().add(facilityBuilding);
       }
-      dadaab.facilityGrid.setObjectLocation(facility, curr_col, curr_row);
+      this.yellowFever.getFacilityGrid().setObjectLocation(facility, curr_col, curr_row);
     }
   }
 
