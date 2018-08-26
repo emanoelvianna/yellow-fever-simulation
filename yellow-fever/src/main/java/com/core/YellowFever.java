@@ -8,6 +8,7 @@ import sim.field.grid.DoubleGrid2D;
 import sim.field.grid.IntGrid2D;
 import sim.field.grid.ObjectGrid2D;
 import sim.field.grid.SparseGrid2D;
+import sim.field.network.Network;
 import sim.util.Bag;
 
 public class YellowFever extends SimState {
@@ -20,11 +21,13 @@ public class YellowFever extends SimState {
   private Continuous2D allHumans;
   private SparseGrid2D facilityGrid;
   private IntGrid2D roadGrid;
-  private GeomVectorField roadShape;
   private GeomVectorField regioShape;
+  private GeomVectorField roadShape;
   private SparseGrid2D nodes;
   private ObjectGrid2D closestNodes;
+  private Network roadNetwork = new Network();
 
+  private Bag allFamilies;
   private Bag regionSites;
   private Bag rainfallWater;
   private Bag allFacilities;
@@ -100,7 +103,7 @@ public class YellowFever extends SimState {
     this.roadShape = roadShape;
   }
 
-  public GeomVectorField getCampShape() {
+  public GeomVectorField getRegionShape() {
     return regioShape;
   }
 
@@ -210,6 +213,22 @@ public class YellowFever extends SimState {
 
   public void setDailyRain(int[] dailyRain) {
     this.dailyRain = dailyRain;
+  }
+
+  public Network getRoadNetwork() {
+    return roadNetwork;
+  }
+
+  public void setRoadNetwork(Network roadNetwork) {
+    this.roadNetwork = roadNetwork;
+  }
+
+  public Bag getAllFamilies() {
+    return allFamilies;
+  }
+
+  public void setAllFamilies(Bag allFamilies) {
+    this.allFamilies = allFamilies;
   }
 
 }
