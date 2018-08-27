@@ -6,6 +6,7 @@ import sim.engine.Steppable;
 public class Facility implements Steppable {
 
   private static final long serialVersionUID = 1L;
+  private static final int ORDERING = 1; // schedule after rainfall
   private int type;
   private Building location;
 
@@ -27,5 +28,9 @@ public class Facility implements Steppable {
 
   public void setLocation(Building location) {
     this.location = location;
+  }
+
+  public static int getOrdering() {
+    return ORDERING;
   }
 }

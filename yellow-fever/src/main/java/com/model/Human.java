@@ -2,7 +2,6 @@ package com.model;
 
 import com.core.TimeManager;
 import com.core.YellowFever;
-import com.model.enumeration.HealthStatus;
 
 import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;
@@ -17,7 +16,7 @@ public class Human implements Steppable {
   private Stoppable stopper;
   private int age;
   private int sex;
-  private HealthStatus healthStatus;
+  private int healthStatus;
   /* monitors health status of agent - capture the change in each day */
   private int prevHealthStatus;
   private Building home;
@@ -28,6 +27,7 @@ public class Human implements Steppable {
   private double jitterY;
   private TimeManager time;// time contorler-identify the hour, day, week
   private MersenneTwisterFast random;
+  private int currentActivity;
 
   public Human(int age, int sex, Family hh, Building home, Building position, MersenneTwisterFast random,
       Continuous2D allHumans) {
@@ -91,11 +91,11 @@ public class Human implements Steppable {
     this.home = home;
   }
 
-  public HealthStatus getHealthStatus() {
+  public int getHealthStatus() {
     return healthStatus;
   }
 
-  public void setHealthStatus(HealthStatus healthStatus) {
+  public void setHealthStatus(int healthStatus) {
     this.healthStatus = healthStatus;
   }
 
@@ -165,6 +165,14 @@ public class Human implements Steppable {
 
   public void setStopper(Stoppable stopper) {
     this.stopper = stopper;
+  }
+
+  public void setCurrentActivity(int activity) {
+    this.currentActivity = activity;
+  }
+
+  public int getCurrentActivity() {
+    return currentActivity;
   }
 
 }
