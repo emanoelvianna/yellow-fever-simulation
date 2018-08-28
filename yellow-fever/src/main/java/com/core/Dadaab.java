@@ -75,12 +75,12 @@ public class Dadaab extends SimState {
   public XYSeries totalBacteriaLoadSeries = new XYSeries(" Total vibrio Cholerae /million"); // shows number of
                                                                                              // recovered agents
   // private static final long serialVersionUID = -5966446373681187141L;
-  private DefaultCategoryDataset dataset = new DefaultCategoryDataset(); //
-  DefaultCategoryDataset agedataset = new DefaultCategoryDataset();// shows age structure of agents
-  DefaultCategoryDataset familydataset = new DefaultCategoryDataset(); // shows family size
+  public DefaultCategoryDataset dataset = new DefaultCategoryDataset(); //
+  public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();// shows age structure of agents
+  public DefaultCategoryDataset familydataset = new DefaultCategoryDataset(); // shows family size
   // timer graphics
-  DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
-  DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
+  public DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
+  public DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
   public int totalgridWidth = 10;
   public int totalgridHeight = 10;
 
@@ -129,7 +129,6 @@ public class Dadaab extends SimState {
     campExposed = new int[3];
     campInfected = new int[3];
     campRecovered = new int[3];
-
   }
 
   // Boolean getOutputStats = true;
@@ -563,7 +562,7 @@ public class Dadaab extends SimState {
   }
 
   public DefaultCategoryDataset getDataset() {
-    return dataset;
+    return this.dataset;
   }
 
   public void setDataset(DefaultCategoryDataset dataset) {

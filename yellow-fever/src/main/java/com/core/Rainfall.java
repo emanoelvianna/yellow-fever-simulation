@@ -355,7 +355,7 @@ public class Rainfall implements Steppable {
                
                 double w = 0;
                         
-                       w = field.getWater() - (d.getParams().global.getAbsorbtionRatePerMinute() * coversionFactor * 0.001);
+                       w = field.getWater() - (d.getParams().getGlobal().getAbsorbtionRatePerMinute() * coversionFactor * 0.001);
                 if(w  <= 0){
                     field.setWater(0);
                 }    
@@ -397,7 +397,7 @@ public class Rainfall implements Steppable {
                 //        d.rainfallGrid.field[field.getX()][field.getY()] = field.getVibrioCholerae();
 //              
 
-                if (field.getWater() > d.getParams().global.getMaximumWaterRequirement()) {
+                if (field.getWater() > d.getParams().getGlobal().getMaximumWaterRequirement()) {
                     d.rainfallWater.add(field);
                 }
             }

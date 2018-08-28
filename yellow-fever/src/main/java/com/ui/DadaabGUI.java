@@ -298,7 +298,7 @@ public class DadaabGUI extends GUIState {
 
     // Portray activity chart
     JFreeChart chart = ChartFactory.createBarChart("Refugee's Activity", "Activity", "Percentage",
-        ((Dadaab) this.state).getDataset(), PlotOrientation.VERTICAL, false, false, false);
+        ((Dadaab) this.state).dataset, PlotOrientation.VERTICAL, false, false, false);
     chart.setBackgroundPaint(Color.WHITE);
     chart.getTitle().setPaint(Color.BLACK);
 
@@ -522,7 +522,7 @@ public class DadaabGUI extends GUIState {
     super.getInspector();
     TabbedInspector i = new TabbedInspector();
 
-    i.addInspector(new SimpleInspector(((Dadaab) state).params.global, this), "Paramters");
+    i.addInspector(new SimpleInspector(((Dadaab) state).getParams().getGlobal(), this), "Paramters");
     return i;
   }
 

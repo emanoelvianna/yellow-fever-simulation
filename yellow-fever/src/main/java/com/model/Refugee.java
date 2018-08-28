@@ -2,11 +2,10 @@ package com.model;
 
 import java.util.ArrayList;
 
-import com.core.AStar;
-import com.core.CampBuilder;
 import com.core.Dadaab;
+import com.core.Node;
 import com.core.TimeManager;
-import com.core.CampBuilder.Node;
+import com.core.algorithms.AStar;
 
 import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;

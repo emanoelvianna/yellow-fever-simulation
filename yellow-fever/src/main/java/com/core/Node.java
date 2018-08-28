@@ -6,7 +6,7 @@ import com.model.FieldUnit;
 
 import sim.field.network.Edge;
 
-class Node {
+public class Node {
 
   private FieldUnit location;
   private ArrayList<Edge> links;
