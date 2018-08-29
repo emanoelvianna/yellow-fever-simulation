@@ -114,22 +114,10 @@ public class DadaabGUI extends GUIState {
   }
 
   public void setupPortrayals() {
-
     Dadaab dadaab = (Dadaab) state;
-
-//
-//       landPortrayal.setField(dadaab.allCamps);20000
-//       landPortrayal.setMap(new sim.util.gui.SimpleColorMap(new Color[]{new Color(255, 255, 255), new Color(224, 255, 224), new Color(255, 180, 210), new Color(204, 204, 153)}));
-//         double rng = (dadaab.rainfallInMM * dadaab.rainDuration * 90*90 *5);  
     rainfallPortrayal.setField(dadaab.rainfallGrid);
     double rng = (dadaab.getParams().getGlobal().getRainfall_MM_Per_Minute() * 90 * 90 * 3); // 5 cell * area* amount of
-                                                                                             // water
     rainfallPortrayal.setMap(new sim.util.gui.SimpleColorMap(0, rng, Color.WHITE, Color.BLUE));
-//       elevation
-//       rainfallPortrayal.setMap(new sim.util.gui.SimpleColorMap (110,140,Color.green, Color.red));
-//       rainfallPortrayal.setMap(new sim.util.gui.SimpleColorMap (0,100000000,Color.WHITE, Color.RED));
-
-    // refugeePortrayal.setObjectPosition(after, null, null)
     refugeePortrayal.setField(dadaab.allRefugees);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
@@ -207,9 +195,7 @@ public class DadaabGUI extends GUIState {
     };
 
     facilPortrayal.setPortrayalForAll(facPortrayal);
-
     // camp shape port..
-
     campShapeProtrayal.setField(dadaab.campShape);
 
     GeomPortrayal gp = new GeomPortrayal(true) {
@@ -222,31 +208,23 @@ public class DadaabGUI extends GUIState {
         if (object != null) {
           MasonGeometry mg = (MasonGeometry) object;
 
-          // ArrayList cID = (ArrayList) mg.getAttribute("CAMPID");
-
           // AttributeValue key = new AttributeValue();
           Integer cType = mg.getIntegerAttribute("CAMPID");
           // int cType = (Integer) cID.get(afterSize);
           if (cType == 1) {
             paint = d;
-
           } else if (cType == 2) {
             paint = i;
-
           } else if (cType == 3) {
             paint = h;
-
           } else {
-
             paint = o;
           }
-
           super.draw(object, graphics, info);
         } else {
           super.draw(object, graphics, info);
         }
       }
-
     };
 
     campShapeProtrayal.setPortrayalForAll(gp);
@@ -266,7 +244,6 @@ public class DadaabGUI extends GUIState {
     displayRainfall.setBackdrop(Color.white);
     // redraw the display
     displayRainfall.repaint();
-
   }
 
   public void init(Controller c) {
@@ -284,7 +261,6 @@ public class DadaabGUI extends GUIState {
     display.attach(facilPortrayal, "Facility");
 
     // Dadaab db = (Dadaab) state;
-
     displayFrame = display.createFrame();
     c.registerFrame(displayFrame);
     displayFrame.setVisible(true);
@@ -374,16 +350,11 @@ public class DadaabGUI extends GUIState {
     chartSeriesCholera.setDomainAxisLabel("Minutes");
     chartSeriesCholera.setMaximumSize(dm);
     chartSeriesCholera.setMinimumSize(dmn);
-//        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
-//        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
-
     chartSeriesCholera.addSeries(((Dadaab) this.state).totalsusceptibleSeries, null);
     chartSeriesCholera.addSeries(((Dadaab) this.state).totalExposedSeries, null);
     chartSeriesCholera.addSeries(((Dadaab) this.state).totalInfectedSeries, null);
     chartSeriesCholera.addSeries(((Dadaab) this.state).totalRecoveredSeries, null);
-
     chartSeriesCholera.addSeries(((Dadaab) this.state).totalBacteriaLoadSeries, null);
-
     chartSeriesCholera.addSeries(((Dadaab) this.state).rainfallSeries, null);
 
     JFrame frameSeries = chartSeriesCholera.createFrame(this);
@@ -391,9 +362,7 @@ public class DadaabGUI extends GUIState {
     c.registerFrame(frameSeries);
 
     // newly cholera
-
     chartSeriesCholeraNewly = new sim.util.media.chart.TimeSeriesChartGenerator();
-
     chartSeriesCholeraNewly.createFrame();
     chartSeriesCholeraNewly.setSize(dm);
     chartSeriesCholeraNewly.setTitle("Health Status - Newly infected");
@@ -401,9 +370,6 @@ public class DadaabGUI extends GUIState {
     chartSeriesCholeraNewly.setDomainAxisLabel("Minutes");
     chartSeriesCholeraNewly.setMaximumSize(dm);
     chartSeriesCholeraNewly.setMinimumSize(dmn);
-//        chartSeriesCholera.setMinimumChartDrawSize(400, 300); // makes it scale at small sizes
-//        chartSeriesCholera.setPreferredChartSize(400, 300); // lets it be small
-
     chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalsusceptibleSeriesNewly, null);
     chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalExposedSeriesNewly, null);
     chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalInfectedSeriesNewly, null);
@@ -414,14 +380,11 @@ public class DadaabGUI extends GUIState {
     c.registerFrame(frameSeriesNewly);
 
     // population dynamics
-
     chartSeriesPopulation = new sim.util.media.chart.TimeSeriesChartGenerator();
-
     chartSeriesPopulation.resize(100, 50);
     chartSeriesPopulation.setTitle("Refugee Population Dynamics");
     chartSeriesPopulation.setRangeAxisLabel(" Number of Refugees");
     chartSeriesPopulation.setDomainAxisLabel("Minutes");
-
     chartSeriesPopulation.addSeries(((Dadaab) this.state).totalTotalPopSeries, null);
     chartSeriesPopulation.addSeries(((Dadaab) this.state).totalDeathSeries, null);
 
@@ -450,12 +413,6 @@ public class DadaabGUI extends GUIState {
     annotation1.setRadius(0.1);
     plot.addLayer(annotation1);
 
-//        DialValueIndicator dvi = new DialValueIndicator(0);
-//        dvi.setFont(new Font("Dialog", Font.PLAIN, 10));
-//        dvi.setOutlinePaint(Color.black);
-//        plot.addLayer(dvi);
-//        
-
     DialValueIndicator dvi2 = new DialValueIndicator(1);
     dvi2.setFont(new Font("Dialog", Font.PLAIN, 22));
     dvi2.setOutlinePaint(Color.red);
@@ -474,18 +431,6 @@ public class DadaabGUI extends GUIState {
     plot.addScale(0, scale);
     scale.setMajorTickPaint(Color.black);
     scale.setMinorTickPaint(Color.lightGray);
-
-//        StandardDialScale scale2 = new StandardDialScale(1, 7, -150, -240, 1,1);
-//        scale2.setTickRadius(0.50);
-//        scale2.setTickLabelOffset(0.15);
-//        scale2.setTickLabelPaint(Color.RED);
-//        scale2.setTickLabelFont(new Font("Dialog", Font.PLAIN, 12));
-//        plot.addScale(1, scale2);
-//        
-//        DialPointer needle2 = new DialPointer.Pin(1);
-//        plot.addPointer(needle2);
-//        needle2.setRadius(0.40);
-    // plot.mapDatasetToScale(1, 1);
 
     DialPointer needle = new DialPointer.Pointer(0);
     plot.addPointer(needle);
@@ -528,13 +473,11 @@ public class DadaabGUI extends GUIState {
 
   public void quit() {
     super.quit();
-
     if (displayFrame != null) {
       displayFrame.dispose();
     }
     displayFrame = null;
     display = null;
-
     if (displayFrameRainfall != null) {
       displayFrameRainfall.dispose();
     }

@@ -11,8 +11,6 @@ import sim.field.network.Edge;
 
 @SuppressWarnings("restriction")
 public class AStar {
-  // static private HashMap<int[], ArrayList<FieldUnit>> cache = new
-  // HashMap(1000);
 
   /**
    * Assumes that both the start and end location are NODES as opposed to
@@ -24,19 +22,10 @@ public class AStar {
    * @return
    */
   static public ArrayList<FieldUnit> astarPath(Dadaab world, Node start, Node goal) {
-//        int[] cacheKey = new int[] {start.location.xLoc, start.location.yLoc, goal.location.xLoc, goal.location.yLoc};
-//        if (cache.containsKey(cacheKey))
-//            return cache.get(cacheKey);
-//        
-    // initial check
     if (start == null || goal == null) {
       System.out.println("Error: invalid node provided to AStar");
     }
-
-    // containers for the metainformation about the Nodes relative to the
-    // A* search
     HashMap<Node, AStarNodeWrapper> foundNodes = new HashMap<Node, AStarNodeWrapper>();
-
     AStarNodeWrapper startNode = new AStarNodeWrapper(start);
     AStarNodeWrapper goalNode = new AStarNodeWrapper(goal);
     foundNodes.put(start, startNode);

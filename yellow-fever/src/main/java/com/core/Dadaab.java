@@ -4,6 +4,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
 
+import com.core.enumeration.Parameters;
 import com.model.Facility;
 import com.model.Family;
 import com.model.Refugee;
@@ -99,7 +100,7 @@ public class Dadaab extends SimState {
   Rainfall rainfall; // scheduling rainfall
   Facility fac;// schduling borehole refill
 
-  TimeManager tm = new TimeManager();
+  private TimeManager time = new TimeManager();
 
   public DadaabObserver dObserver;
   int[] sumActivities = { 0, 0, 0, 0, 0, 0, 0, 0 }; //
@@ -136,7 +137,8 @@ public class Dadaab extends SimState {
 
     super.start();
     // accessing inpt files
-    CampBuilder.create("data/d_camp_a.txt", "data/d_faci_a.txt", "data/d_costp_a.txt", this, this.random);
+    CampBuilder builder = new CampBuilder();
+    builder.create("data/d_camp_a.txt", "data/d_faci_a.txt", "data/d_costp_a.txt", this, this.random);
 
     schedule.scheduleRepeating(rainfall, rainfall.ORDERING, 1);
     schedule.scheduleRepeating(fac, fac.ORDERING, 1);
@@ -189,13 +191,11 @@ public class Dadaab extends SimState {
         for (int i = 0; i < allFamilies.numObjs; i++) {
           Family f = (Family) allFamilies.objs[i];
           // killrefugee(f);
-
           int siz = 0;
           if (f.getMembers().numObjs > 6) { // aggregate all families of >6 family size
             siz = 6;
           } else {
             siz = f.getMembers().numObjs - 1;
-
           }
           sumfamSiz[siz] += 1;
         }
@@ -203,29 +203,23 @@ public class Dadaab extends SimState {
         // accessing each agent
         for (int i = 0; i < ref.numObjs; i++) {
           Refugee r = (Refugee) ref.objs[i];
-
           sumAct[r.getCurrentActivity()] += 1; // current activity
-
           int age = ageClass(r.getAge()); // age class of agent i
           // int siz = 0;
           sumAge[age] += 1;
 
           if (r.getHome().getCampID() == 1) {
-
             if (r.getHealthStatus() == 1) {
               totSusDag = totSusDag + 1;
             } else if (r.getHealthStatus() == 2) {
               totExpDag = totExpDag + 1;
             } else if (r.getHealthStatus() == 3) {
               totInfDag = totInfDag + 1;
-
             } else if (r.getHealthStatus() == 4) {
               totRecDag = totRecDag + 1;
-
             } else {
               none = 0;
             }
-
           }
 
           if (r.getHome().getCampID() == 2) {
@@ -241,21 +235,17 @@ public class Dadaab extends SimState {
             } else {
               none = 0;
             }
-
           }
 
           if (r.getHome().getCampID() == 3) {
-
             if (r.getHealthStatus() == 1) {
               totSusHag = totSusHag + 1;
             } else if (r.getHealthStatus() == 2) {
               totExpHag = totExpHag + 1;
-
             } else if (r.getHealthStatus() == 3) {
               totInfHag = totInfHag + 1;
             } else if (r.getHealthStatus() == 4) {
               totRecHag = totRecHag + 1;
-              ;
             } else {
               none = 0;
             }
@@ -264,49 +254,30 @@ public class Dadaab extends SimState {
           // total health status
 
           if (r.getHealthStatus() == 1) {
-
             totalSus = totalSus + 1;
-
           } else if (r.getHealthStatus() == 2) {
             totalExp = totalExp + 1;
-
           } else if (r.getHealthStatus() == 3) {
-
             totalInf = totalInf + 1;
-
           } else if (r.getHealthStatus() == 4) {
-
             totalRec = totalRec + 1;
-
           } else {
-
             none = 0;
-
           }
 
           if (r.getHealthStatus() != r.getPrevHealthStatus()) {
             if (r.getHealthStatus() == 1) {
-
               totalSusNewly = totalSusNewly + 1;
-
             } else if (r.getHealthStatus() == 2) {
               totalExpNewly = totalExpNewly + 1;
-
             } else if (r.getHealthStatus() == 3) {
-
               totalInfNewly = totalInfNewly + 1;
-
             } else if (r.getHealthStatus() == 4) {
-
               totalRecNewly = totalRecNewly + 1;
-
             } else {
-
               none = 0;
-
             }
           }
-
         }
 
         setNumberOfSuscipitableNewly(totalSusNewly);
@@ -384,8 +355,8 @@ public class Dadaab extends SimState {
 
         int m = ((int) state.schedule.time()) % 60;
 
-        double t = (tm.currentHour((int) state.schedule.time())) + (m / 60.0);
-        int h = 1 + tm.dayCount((int) state.schedule.time()); //
+        double t = (getTime().currentHour((int) state.schedule.getTime())) + (m / 60.0);
+        int h = 1 + getTime().dayCount((int) state.schedule.getTime()); //
         hourDialer.setValue(t);
         dayDialer.setValue(h);
 
@@ -413,7 +384,6 @@ public class Dadaab extends SimState {
     } else {
       a = 4;
     }
-
     return a;
   }
 
@@ -567,6 +537,10 @@ public class Dadaab extends SimState {
 
   public void setDataset(DefaultCategoryDataset dataset) {
     this.dataset = dataset;
+  }
+
+  public TimeManager getTime() {
+    return time;
   }
 
 }

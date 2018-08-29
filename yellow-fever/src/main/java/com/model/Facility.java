@@ -17,15 +17,6 @@ public class Facility implements Steppable, Valuable {
   public static final int ORDERING = 1; // schedule after rainfall
   private double infectionLevel = 0.0; // // if the facility is infected
 
-  // capacity of the facility
-//    public void setCapacity(int c){
-//        this.capacity =c;
-//    }
-//    
-//    public int getCapacity(){
-//        return capacity;
-//    }
-
   // what type of facility it is
   public void setFacilityID(int id) {
     this.facilityID = id;

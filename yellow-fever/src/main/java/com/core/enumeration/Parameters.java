@@ -1,4 +1,4 @@
-package com.core;
+package com.core.enumeration;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,8 +72,8 @@ public class Parameters {
         returnDoubleParameter(parameterDB, "healthDepreciation", getGlobal().getHealthDepreciation()));
     getGlobal().setprobabilityOfEffectiveNessofmedicine(returnDoubleParameter(parameterDB,
         "probabilityOfEffectiveNessofmedicine", getGlobal().getprobabilityOfEffectiveNessofmedicine()));
-    getGlobal().setWaterContaminationThreshold(
-        returnDoubleParameter(parameterDB, "WaterContaminationThreshold", getGlobal().getWaterContaminationThreshold()));
+    getGlobal().setWaterContaminationThreshold(returnDoubleParameter(parameterDB, "WaterContaminationThreshold",
+        getGlobal().getWaterContaminationThreshold()));
     getGlobal().setvibrioCholeraePerHealthyPerson(returnDoubleParameter(parameterDB, "vibrioCholeraePerHealthyPerson",
         getGlobal().getvibrioCholeraePerHealthyPerson()));
     getGlobal().setvibrioCholeraePerExposedPerson(returnDoubleParameter(parameterDB, "vibrioCholeraePerExposedPerson",
@@ -96,18 +96,20 @@ public class Parameters {
         returnIntParameter(parameterDB, "healthFacilityCapacity", getGlobal().getHeaalthFacilityCapacity()));
     getGlobal().setMaximumCrowedLevel(
         returnDoubleParameter(parameterDB, "CROWED_LEVEL_THRESHOLD", getGlobal().getMaximumCrowedLevel()));
-    getGlobal().setProbabilityGuestContaminationRate(returnDoubleParameter(parameterDB, "probabilityGuestContaminationRate",
-        getGlobal().getProbabilityGuestContaminationRate()));
+    getGlobal().setProbabilityGuestContaminationRate(returnDoubleParameter(parameterDB,
+        "probabilityGuestContaminationRate", getGlobal().getProbabilityGuestContaminationRate()));
     getGlobal().setMaximumHHOccumpancyPerField(
         returnIntParameter(parameterDB, "maximum_occupancy_Threshold", getGlobal().getMaximumHHOccumpancyPerField()));
     getGlobal().setMaximumWaterRequirement(
         returnDoubleParameter(parameterDB, "Maximum_Water_Requirement", getGlobal().getMaximumWaterRequirement()));
     getGlobal().setMinimumWaterRequirement(
         returnDoubleParameter(parameterDB, "Minimum_Water_Requirement", getGlobal().getMinimumWaterRequirement()));
-    getGlobal().setLaterineCoverage(returnDoubleParameter(parameterDB, "laterineCoverage", getGlobal().getLaterineCoverage()));
+    getGlobal()
+        .setLaterineCoverage(returnDoubleParameter(parameterDB, "laterineCoverage", getGlobal().getLaterineCoverage()));
     getGlobal().setRainfallDuration_Minute(
         returnIntParameter(parameterDB, "rainDuration", getGlobal().getRainfallDuration_Minute()));
-    getGlobal().setRainfallFirstDay(returnIntParameter(parameterDB, "firstRainfallDay", getGlobal().getRainfallFirstDay()));
+    getGlobal()
+        .setRainfallFirstDay(returnIntParameter(parameterDB, "firstRainfallDay", getGlobal().getRainfallFirstDay()));
     getGlobal().setRainfallFrequencyInterval_Days(
         returnIntParameter(parameterDB, "rainfallFrequency", getGlobal().getRainfallFrequencyInterval_Days()));
     getGlobal().setRainfall_MM_Per_Minute(
@@ -176,38 +178,6 @@ public class Parameters {
     public int firstRainfallDay = 0; // the first onset of rainfall
     public int rainfallFrequency = 25; // rain will fall in days interval
     public double absorbtionRatePerMinute = 4.33;// mm/minute evaporation - taking median 1750 =
-
-    // annual evapration is much higher than the rainfall amount
-    // annual rainfall 400-700mm/year
-    // evaporation 1500-2000 mm/year
-    // mm/minute rainfall evaporate or lost due to seepage
-    /*
-     * monthly rainfall of Dadaab area. Girissa is the adminstrative destrict where
-     * dadaab is located the data is on monthly bases As the model is extent is
-     * small and no inflow of waer from upstream, it is necessary to increase the
-     * amount of rain to certain extent to accomulate sufficient water so that agent
-     * can fetch from their surrounding
-     *
-     * Rainfall modeling considers rainfall-intensity-frequency-duration (IDF)
-     * intensity = amount of rainfall frequency - gaps between days - rain can be
-     * happening every day or once in a week ... duration- how many minute the rain
-     * stays Paaijmans et. al. 2007 documented rainfall duration and intensity in
-     * their anopheles fgambiae study this study can be used as proxy for etimating
-     * duration rainfall "The total quantity of rainfall varied from 0.2 to 39.8 mm
-     * per night and the maximum rainfall intensity recorded was 9.5 mm in 5
-     * minutes"
-     */
-    // http://www.weather-and-climate.com/average-monthly-precipitation-Rainfall,Garissa,Kenya
-    // {jan-15,10,25,60,17,7,2,10,7,21,78,62-Dec}
-    // worlbank at dadaab average rainfall 1990-2009
-    // http://sdwebx.worldbank.org/climateportal/index.cfm?page=country_historical_climate&ThisRegion=Africa&ThisCCode=KEN
-
-    // {jan-4,3,34,70,61,28,17,7,12,35,85,31-Dec}
-    // can range 40 mm / day rain in kenya
-    // // annual rainfall 400-700mm/year
-    // evaporation 1500-2000 mm/year
-    // mm/minute rainfall evaporate or lost due to seepage
-    // for simplification, and easy search , it is good to hold in bags
 
     public void setInitialRefugeeNumber(int num) {
       this.initialRefugeeNumber = num;

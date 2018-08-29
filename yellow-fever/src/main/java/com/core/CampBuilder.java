@@ -42,9 +42,7 @@ public class CampBuilder {
   // Location locations;
 
   // static MersenneTwisterFast random;
-
-  static public void create(String campfile, String facilityfile, String roadfile, Dadaab dadaab,
-      MersenneTwisterFast random) {
+  public void create(String campfile, String facilityfile, String roadfile, Dadaab dadaab, MersenneTwisterFast random) {
     // CampBuilder.random = random;
     try {
 
@@ -147,18 +145,6 @@ public class CampBuilder {
             // facility.setCapacity(0);
 
             if (facilitytype == 1) {
-
-              // if(curr_col ==54 && curr_row ==113){
-              // facility.setInfectionLevel(dadaab.params.global.getvibrioCholeraePerInfectedPerson()
-              // );
-              // //facilityField.setVibrioCholerae(dadaab.params.global.getMaximumWaterRequirement()
-              // * dadaab.params.global.getvibrioCholeraePerInfectedPerson());
-              // }
-              // else{
-              // facility.setInfectionLevel(0);
-              // facilityField.setVibrioCholerae(0);
-              // }
-
               facility.setInfectionLevel(0);
               facilityField.setVibrioCholerae(0);
               facility.setFacilityID(2);
@@ -241,7 +227,6 @@ public class CampBuilder {
       }
 
       // now read elev file and store in bag
-
       BufferedReader elev = new BufferedReader(new FileReader("data/d_dem_n.txt"));
 
       // skip the irrelevant metadata
@@ -346,7 +331,7 @@ public class CampBuilder {
   }
 
   //// add households
-  private static void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
+  private void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
 
     Refugee newRefugee = new Refugee(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random,
         dadaab.allRefugees);
@@ -368,21 +353,22 @@ public class CampBuilder {
       newRefugee.setSymtomaticType(2); // asymptotic
     }
 
+    newRefugee.setStudyID(isStudent(age, dadaab));
+
+    newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
+  }
+
+  public int isStudent(int age, Dadaab dadaab) {
     int study = 0;
     if (age >= 5 && age < 15) {
       if (dadaab.random.nextDouble() > 0.56) {
         study = 1;
       } else
         study = 0;
-    }
-
-    else {
+    } else {
       study = 0;
     }
-
-    newRefugee.setStudyID(study);
-
-    newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
+    return study;
   }
 
   // random searching of next parcel to populate houses
@@ -404,7 +390,7 @@ public class CampBuilder {
   }
 
   // create refugees - first hh
-  private static void populateRefugee(MersenneTwisterFast random, Dadaab dadaab) {
+  private void populateRefugee(MersenneTwisterFast random, Dadaab dadaab) {
 
     // UNHCR stat
     // age distibution
@@ -430,42 +416,6 @@ public class CampBuilder {
     int count = 0;
     int rem = 0;// remaining
     int curTot = 0;
-
-    //
-    // while (curTot < totalRef) {
-    //
-    // for (int i = 0; i < size.length; i++) {
-    // rem = totalRef - curTot;
-    // if (rem >= i + 1) {
-    // double x = prop[i] * totalRef * teta;
-    // int hh = (int) Math.round(x);
-    // size[i] = hh;
-    // curTot = curTot + ((i + 1) * hh);
-    //
-    // } else {
-    //
-    // int t = 0;
-    // int r = 0;
-    // while (t < rem) {
-    //
-    // for (int j = 0; j < rem; j++) {
-    // r = rem - t;
-    // if (r > j) {
-    // int temp = 0;
-    // temp = size[j];;
-    // size[j] = temp + 1;
-    // t = t + (j + 1);
-    // }
-    // }
-    // }
-    // curTot = curTot + rem;
-    // }
-    //
-    // }
-    //
-    // }
-    //
-    //
 
     for (int i = 0; i < size.length; i++) {
       double x = prop[i] * totalRef * teta;
@@ -592,18 +542,8 @@ public class CampBuilder {
 
   }
 
-  private static void populate(MersenneTwisterFast random, Dadaab dadaab) {
-
+  private void populate(MersenneTwisterFast random, Dadaab dadaab) {
     populateRefugee(random, dadaab);
-
-    // if necessary to assign who is head of the household
-    // for ( int i=0; i<dadaab.allFamilies.numObjs; i++){
-    // for (int j = 0; j <
-    // ((Family)dadaab.allFamilies.objs[i]).getMembers().numObjs; j++){
-    //
-    // }
-    // }
-
   }
 
   /// raod network methods from haiti project
