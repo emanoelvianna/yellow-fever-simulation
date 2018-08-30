@@ -19,72 +19,42 @@ public class Activity {
   final public static int HEALTH_CENTER = 6;
   final public static int SOCIAL_RELATIVES = 7;
   final public static int VISIT_SOCIAL = 8;
-  final public static int VISIT_LATRINE = 9;
 
   // best location is mainly determine by distance
   // near is best
   public FieldUnit bestActivityLocation(Refugee ref, FieldUnit position, int id, Dadaab d) {
 
     // FieldUnit potLoc = null;
-
     if (id == STAY_HOME) {
-
       return ref.getHome();
       // System.out.println("home" + newL.getCampID());
-
     } else if (id == SCHOOL) {
       return betstLoc(ref.getHome(), d.schooles, d);
-    }
-
-    else if (id == BOREHOLE_OR_RIVER) {
+    } else if (id == BOREHOLE_OR_RIVER) {
       // System.out.println("borehole" + nearestWaterSource(ref, position, d));
       return nearestWaterSource(ref.getHome(), d);
-
     } else if (id == MOSQUE) {
       return betstLoc(ref.getHome(), d.mosques, d);
-    }
-
-    else if (id == MARKET) {
+    } else if (id == MARKET) {
       return betstLoc(ref.getHome(), d.market, d);
-    }
-
-    else if (id == FOOD_CENTER) {
+    } else if (id == FOOD_CENTER) {
       return betstLoc(ref.getHome(), d.foodCenter, d);
-    }
-
-    else if (id == HEALTH_CENTER) {
+    } else if (id == HEALTH_CENTER) {
       return betstLoc(ref.getHome(), d.healthCenters, d);
-    }
-
-    else if (id == SOCIAL_RELATIVES) {
+    } else if (id == SOCIAL_RELATIVES) {
       // System.out.println("camp");
-
       int l = ref.getFamily().getRelativesLocation().numObjs;
-
       if (l == 0) {
         return ref.getHome();
       } else
         return ((FieldUnit) (ref.getFamily().getRelativesLocation().objs[d.random.nextInt(l)]));
-
-    }
-
-    else if (id == VISIT_SOCIAL) {
+    } else if (id == VISIT_SOCIAL) {
       // System.out.println("camp");
       return socialize(ref, d);
-
-    } else if (id == VISIT_LATRINE) {
-
-//            ref.setLatrineField(this.openLatrine(ref, d));
-
-      return this.openLatrine(ref, d);
-
-    }
-
-    else {
+    } else {
       return ref.getHome();
     }
     // return newL;
-
   }
 
   private FieldUnit betstLoc(FieldUnit fLoc, Bag fieldBag, Dadaab d) {
@@ -93,18 +63,15 @@ public class Activity {
     double bestScoreSoFar = Double.POSITIVE_INFINITY;
     for (int i = 0; i < fieldBag.numObjs; i++) {
       FieldUnit potLoc = ((FieldUnit) fieldBag.objs[i]);
-
       double fScore = fLoc.distanceTo(potLoc);
       if (fScore > bestScoreSoFar) {
         continue;
       }
-
       if (fScore <= bestScoreSoFar) {
         bestScoreSoFar = fScore;
         newLoc.clear();
       }
       newLoc.add(potLoc);
-
     }
     FieldUnit f = null;
     if (newLoc != null) {
@@ -208,46 +175,6 @@ public class Activity {
     }
 
     return newLoc;
-  }
-
-  // if the camp has laterine use it otherwise
-  // open latine - usually is a bit far from home - should open
-  // children use around
-  // age < 4 use home
-
-  // select best location for open latrine
-  private FieldUnit openLatrine(Refugee ref, Dadaab d) {
-    Bag potential = new Bag();
-
-    potential.clear();
-    FieldUnit loc = null;
-
-    // if agent has laterine, agent use it// // if you are too young
-    if (ref.getFamily().getHasLaterine() == true || ref.getAge() < 5) {
-      loc = ref.getHome();
-    }
-    //
-    else {
-      // potential location is within the distance given in parapeter
-      Bag adjacent = d.allCamps.getNeighborsMaxDistance(ref.getHome().getX(), ref.getHome().getY(),
-          d.getParams().getGlobal().getMaxDistanceLaterine(), false, null, null, null);
-      for (Object l : adjacent) {
-        FieldUnit lt = (FieldUnit) l;
-        if (lt.getFieldID() == 0) {
-          potential.add(lt);
-        }
-
-      }
-      // pick one of the potential location randomly
-      if (potential.isEmpty() == true) {
-        // System.out.println("null");
-        loc = null;
-      } else
-        loc = (FieldUnit) potential.objs[d.random.nextInt(potential.numObjs)];
-
-    }
-
-    return loc;
   }
 
   // find the nearest water points

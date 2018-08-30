@@ -13,7 +13,6 @@ public class FieldUnit implements Valuable, Serializable {
   private int campID; // holds id of the three camps
   private double water; // hold water amount
   private double elevation; // elevation
-  private boolean hasLatrine; // has laterine or not
   private double vibrioCholerae = 0; // contamination level
   private int patientCounter = 0;
   // public static final int ORDERING = 1;
@@ -150,18 +149,6 @@ public class FieldUnit implements Valuable, Serializable {
   public double getElevation() {
 
     return elevation;
-  }
-
-  // is the field has latrine- latrine is not personal but a shared one
-  // ideal to make on the camp ratehr than at family level
-  public void setCampHasLatrine(boolean l) {
-
-    this.hasLatrine = l;
-  }
-
-  public boolean getCampHasLatrine() {
-
-    return hasLatrine;
   }
 
   public boolean equals(FieldUnit b) {

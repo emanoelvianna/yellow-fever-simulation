@@ -1,5 +1,7 @@
 package com.model;
 
+import com.model.enumeration.HealthStatus;
+
 import sim.util.Bag;
 
 public class Family {
@@ -10,10 +12,8 @@ public class Family {
 
   private int rationDate; // food ration date;
   Bag relatives; // hold relative location
-  private double waterTot = 0.0; // total water
   FieldUnit location; // location of the house
   Bag members; // holds the family members
-  private double waterQ = 0.0; // quality represent the contamination level
   private boolean hasLaterine = false;
 
   public Family(FieldUnit loc) {
@@ -21,17 +21,6 @@ public class Family {
     this.setCampLocation(loc);
     members = new Bag();
     relatives = new Bag();
-  }
-
-  // hold the amount of water in house
-  public void setWaterAtHome(double water) {
-
-    this.waterTot = water;
-
-  }
-
-  public double getWaterAtHome() {
-    return waterTot;
   }
 
   public void setHasLaterine(boolean laterine) {
@@ -81,15 +70,6 @@ public class Family {
     return rationDate;
   }
 
-  // contamination level
-  public void setWaterBacteriaLevel(double water) {
-    this.waterQ = water;
-  }
-
-  public double getWaterrBacteriaLevel() {
-    return waterQ;
-  }
-
   // location of the relative
   public void setRelativesLocation(Bag r) {
     this.relatives = r;
@@ -111,7 +91,11 @@ public class Family {
     int count = 0;
     for (Object f : this.getMembers()) {
       Refugee ref = (Refugee) f;
-      if (ref.getHealthStatus() == 3) {
+      if (ref.getHealthStatus() == HealthStatus.MILD_INFECTION) {
+        count = count + 1;
+      } else if (ref.getHealthStatus() == HealthStatus.SEVERE_INFECTION) {
+        count = count + 1;
+      } else if (ref.getHealthStatus() == HealthStatus.TOXIC_INFECTION) {
         count = count + 1;
       }
     }

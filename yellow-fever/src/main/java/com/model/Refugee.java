@@ -1,5 +1,6 @@
 package com.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import com.core.Dadaab;
@@ -7,6 +8,7 @@ import com.core.Node;
 import com.core.TimeManager;
 import com.core.algorithms.AStar;
 import com.model.enumeration.ActivityMapping;
+import com.model.enumeration.HealthStatus;
 
 import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;
@@ -20,29 +22,27 @@ import sim.field.continuous.Continuous2D;
 import sim.util.Double2D;
 import sim.util.Valuable;
 
-public class Refugee implements Steppable, Valuable, java.io.Serializable {
+public class Refugee implements Steppable, Valuable, Serializable {
 
   private int age;
   private int sex;
   private int studyID; // 0 = not enrolled 1 = enrolled,
-  private double waterDemand = 0.0;
   private FieldUnit position; // current position
   private FieldUnit home;// home
   private FieldUnit goal; // location of the goal
-//    private FieldUnit latrine; // location of open latrine
   public int cStep;
   private double jitterX; // Visualization
   private double jitterY;
-  private int healthStatus;// health status - susceptable - 1, exposed - 2, infected-3, recovered - 4
-  private int prevHealthStatus; // monitors health status of agent in the previous step - to capture the change
-                                // in each day
+  private HealthStatus currentHealthStatus;// health status - susceptable - 1, exposed - 2, infected-3, recovered - 4
+  private HealthStatus previousHealthStatus; // monitors health status of agent in the previous step - to capture the
+                                             // change
+  // in each day
   // private int frequencyLaterine; // once in a day for health agent- infected
   // agent may go up to 10 times more
   // Nochola et al - symptomic patient may lose 1 litre/hour floud for 2-3 weeks -
   // but asymptomic - 1l/day
   Family hh;
   private int currentAct;
-  private int latUse; // laterine use // 1-2 per day is health up to 10 if infected
 
   // private int[] activityAccomplished = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   // if accomplsh0 if not 1
@@ -77,10 +77,8 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     this.jitterX = random.nextDouble();
     this.jitterY = random.nextDouble();
     this.setPosition(position);
-    this.setLaterineUse(0);
-    this.setPrevHealthStatus(1);
+    this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
     tm = new TimeManager();
-    latUse = 1;
     d = null;
     cStep = 0;
     infectionPerdiod = 0;
@@ -94,8 +92,7 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
   }
 
   public void healthDepretiation() {
-
-    if (this.getHealthStatus() == 3) {
+    if (this.isInfected()) {
       // childern may die sooner than old people
       this.setBodyResistance(
           this.getBodyResistance() - (d.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
@@ -142,7 +139,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     else {
       this.setGoal(this.getHome());
       this.setCurrentActivity(0);
-
       return;
     }
   }
@@ -233,7 +229,7 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
 
   private double healthActivityWeight() {
     double wHealthC;
-    if (this.getHealthStatus() == 3 && this.getIsrecieveTreatment() == false) {
+    if (this.isInfected() && this.getIsrecieveTreatment() == false) {
       wHealthC = 0.8 + 0.2 * randomN.nextDouble();
 
     } else if (randomN.nextDouble() < 0.05) {
@@ -261,21 +257,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
       wFoodDist = 0.1 + 0.2 * randomN.nextDouble();
     }
     return wFoodDist * randomN.nextDouble();
-  }
-
-  private double collectWaterActivityWeight() {
-    double wBorehole = 0;
-    // not enough water at home
-    if (this.getAge() > 10) {
-      if (this.getFamily().getWaterAtHome() < (d.getParams().getGlobal().getMinimumWaterRequirement()
-          * (this.getFamily().getMembers().numObjs))) {
-        wBorehole = 0.7 * Math.sin(this.getAge()) + 0.2 * randomN.nextDouble();
-      } else {
-        wBorehole = 0.2 + 0.2 * randomN.nextDouble();
-      }
-    }
-
-    return wBorehole * randomN.nextDouble();
   }
 
   private double marketActivityWeight() {
@@ -313,6 +294,7 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
   /* define go to activity in relation current hour */
   public ActivityMapping goActivity(Dadaab dadaab) {
     // TODO: está ativo?
+
     if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       if ((tm.currentDayInWeek(cStep) > 5)) {
         // TODO: realizar atividade de lazer
@@ -342,7 +324,7 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     boolean isDayTime = minuteInDay >= alpha && minuteInDay <= beta;
     if (!isDayTime) {
       double wHealth = 0;
-      if (this.getHealthStatus() == 3) {
+      if (this.isInfected()) {
         wHealth = healthActivityWeight();
       } else {
         wHealth = 0;
@@ -351,19 +333,18 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     } else {
       double[] activityPriortyWeight = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
       activityPriortyWeight[1] = schoolActivityWeight();// 0.08;
-      activityPriortyWeight[2] = collectWaterActivityWeight();// 0.15;
-      activityPriortyWeight[3] = mosqueActivityWeight();// 0.1;
-      activityPriortyWeight[4] = marketActivityWeight();// 0.07;
-      activityPriortyWeight[5] = foodActivityWeight();
-      activityPriortyWeight[6] = healthActivityWeight();// 0.16;;//0.12;
-      activityPriortyWeight[7] = visitRelativeActivityWeight();// 0.09;
-      activityPriortyWeight[8] = socialVisitActivityWeight();// 0.08;
+      activityPriortyWeight[2] = mosqueActivityWeight();// 0.1;
+      activityPriortyWeight[3] = marketActivityWeight();// 0.07;
+      activityPriortyWeight[4] = foodActivityWeight();
+      activityPriortyWeight[5] = healthActivityWeight();// 0.16;;//0.12;
+      activityPriortyWeight[6] = visitRelativeActivityWeight();// 0.09;
+      activityPriortyWeight[7] = socialVisitActivityWeight();// 0.08;
 
       int curAct = 0;
 
       // Find the activity with the heighest weight
       double maximum = activityPriortyWeight[0]; // start with the first value
-      for (int i = 1; i < 9; i++) {
+      for (int i = 1; i < 8; i++) {
         if (activityPriortyWeight[i] > maximum) {
           maximum = activityPriortyWeight[i]; // new maximum
           curAct = i;
@@ -378,6 +359,17 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
       return curAct;
     }
 
+  }
+
+  public boolean isInfected() {
+    if (this.getHealthStatus().equals(HealthStatus.MILD_INFECTION)) {
+      return true;
+    } else if (this.getHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
+      return true;
+    } else if (this.getHealthStatus().equals(HealthStatus.TOXIC_INFECTION)) {
+      return true;
+    }
+    return false;
   }
 
   private double visitRelativeActivityWeight() {
@@ -401,143 +393,20 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     return wVisitSoc * randomN.nextDouble();
   }
 
-  // collect water from borehole or rain
-  public void featchWater(FieldUnit f) {
-
-    double waterReq = 2 * d.getParams().getGlobal().getMaximumWaterRequirement()
-        + (2 * randomN.nextDouble() * d.getParams().getGlobal().getMaximumWaterRequirement()); // how many litres you
-                                                                                               // can collect?
-    double waterFetched = 0.0;
-    double concentration = 0.0; // cholera virus
-    // check the contamination level of the water you fetch
-    if (f.getWater() == 0) {
-      concentration = 0.0;
-    } else {
-      // concentration = f.getVibrioCholerae() / (f.getWater());
-      concentration = f.getVibrioCholerae();
-    }
-    // water from borehole
-    if (f.getWater() <= 0) {
-      waterFetched = 0;
-      f.setWater(0);
-    } else if (waterReq >= f.getWater()) { // if you collect all water, water level will be 0
-      waterFetched = f.getWater();
-      f.setWater(0);
-    } else {
-      waterFetched = waterReq;
-      f.setWater(f.getWater() - waterFetched); // water level will lower by the amount you take
-    }
-    double currentWater = this.getFamily().getWaterAtHome() + waterFetched; // add water to your family bucket
-
-    this.getFamily().setWaterAtHome(currentWater);
-
-    if (currentWater <= 0) {
-      this.getFamily().setWaterBacteriaLevel(0);
-    } //
-    else {
-      this.getFamily().setWaterBacteriaLevel(concentration * waterFetched + this.getFamily().getWaterrBacteriaLevel()); // update
-    }
-  }
-
-  private void utilizeWater() {
-
-    // agent need to take water in daily bases
-    // the amount of water not fixed- between min and max
-
-    if (this.getWaterLevel() >= d.getParams().getGlobal().getMaximumWaterRequirement()) {
-      return;
-    }
-    double dailyUse = 1.2 * (d.getParams().getGlobal().getMaximumWaterRequirement() - this.getWaterLevel())
-        * randomN.nextDouble(); // randomly
-    if (dailyUse < 0) {
-      dailyUse = 0;
-      return;
-    }
-
-    double WaterUsed = 0;
-
-    if (this.getFamily().getWaterAtHome() < dailyUse) {
-      WaterUsed = this.getFamily().getWaterAtHome();
-    } else {
-      WaterUsed = this.getFamily().getWaterAtHome() - dailyUse;
-    }
-    double maxWateruse = this.getWaterLevel() + WaterUsed;
-
-    this.setWaterLevel(maxWateruse);
-    double wateratHome = this.getFamily().getWaterAtHome() - WaterUsed;
-    this.getFamily().setWaterAtHome(wateratHome); // update the water level of the family bucket
-
-    // if the water is polluted, you get cholera at time -
-
-    // bacteria level in the water is in litre/ the contamination level is per ml.
-    // so need to divid the amount nby 1000
-    if ((this.getFamily().getWaterrBacteriaLevel() / 1000) > d.getParams().getGlobal().getWaterContaminationThreshold()
-        && this.getHealthStatus() == 1) {
-
-      this.setHealthStatus(2);
-
-      // childer will show symptom after infection sooner than old people
-      // after infection symptom will show after after 12-17 hours on average
-
-      int duration = 60 * (d.getParams().getGlobal().getcholeraInfectionDurationMAX()
-          - d.getParams().getGlobal().getcholeraInfectionDurationMIN()); // hours to minute
-
-      if (this.getAge() < 5) {
-        duration = 60 * (d.getParams().getGlobal().getcholeraInfectionDurationMAX()
-            - 3 * d.getParams().getGlobal().getcholeraInfectionDurationMIN()); // hours to minute
-      } else if (this.getAge() >= 5 && this.getAge() < 15) {
-        duration = 60 * (d.getParams().getGlobal().getcholeraInfectionDurationMAX()
-            - 2 * d.getParams().getGlobal().getcholeraInfectionDurationMIN()); // hours to minute
-      } else {
-        duration = 60 * (d.getParams().getGlobal().getcholeraInfectionDurationMAX()
-            - d.getParams().getGlobal().getcholeraInfectionDurationMIN()); // hours to minute
-      }
-
-      this.setInfectionPeriod(
-          cStep + (d.getParams().getGlobal().getcholeraInfectionDurationMIN() * 60) + randomN.nextInt(duration));
-
-    }
-
-  }
-
-  /*
-   * agent may do some actiity on some location if it is water source, agent will
-   * collect water if it is school they attend school if it is health center, they
-   * get treatment they also use laterine
-   */
-  public void doActivity(FieldUnit f, int activ) {
-
-    switch (activ) {
+  public void doActivity(FieldUnit f, int activity) {
+    switch (activity) {
     default:
     case Activity.STAY_HOME:
       break;
-    case Activity.BOREHOLE_OR_RIVER:
-      featchWater(f);
-      // incase no water at the location, go to other water location
-      break;
-
     case Activity.HEALTH_CENTER:
       recieveTreatment(f, d);
       break;
-
     case Activity.SOCIAL_RELATIVES:
-
       if (randomN.nextDouble() < d.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-        additionalWater(f);
       }
       break;
     case Activity.VISIT_SOCIAL:
       if (randomN.nextDouble() < d.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-        additionalWater(f);
-      }
-      break;
-
-    case Activity.VISIT_LATRINE:
-      useLatrine(f);
-      this.setLaterineUse(this.getLaterineUse() - 1);
-
-      if (this.getLaterineUse() <= 0) {
-        this.setLaterineUse(0);
       }
       break;
     }
@@ -559,22 +428,17 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
         period = minStay;
       } else
         period = maxStay + 120;
-
       break;
     case 2:
       // time borehole max 20 minute
-
       period = minStay + 20;
-
       break;
     case 3:
       // time staying at mosq max 80 minute
-
       if (curMin + maxStay > (16 * 60)) {
         period = minStay;
       } else
         period = minStay + randomN.nextInt(maxStay);
-
       break;
     case 4:
       // time at the market max 5 hour
@@ -582,7 +446,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
         period = minStay;
       } else
         period = minStay + randomN.nextInt(maxStay);
-
       break;
     case 5:
       // time at food dist max 5 hour
@@ -590,7 +453,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
         period = minStay;
       } else
         period = minStay + randomN.nextInt(maxStay);
-
       break;
     case 6:
       // depend on time quee
@@ -603,36 +465,23 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
       break;
     case 7:
       // time for social max until 5;00pm
-
       if (curMin + maxStay > (12 * 60)) {
         period = minStay;
       } else
         period = minStay + randomN.nextInt(maxStay);
-
       break;
-
     case 8:
       // time vist camp 2 hour
-
       if (curMin + maxStay > (12 * 60)) {
         period = minStay;
       } else
         period = minStay + randomN.nextInt(maxStay - 60);
-
       break;
-
     case 9:
       // time laterine max until 4;00pm
       period = minStay;
       break;
-//                
-//            default:
-//                  // minimum time to stay at any location
-//                period = minStay;
-//                break;
-//                      
     }
-
     return (period + curMin);
   }
 
@@ -648,82 +497,10 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
 
   }
 
-  public void useLatrine(FieldUnit f) {
-
-    double current = f.getVibrioCholerae();
-    double minQuant = 10; // min amount of feces in day ml/day -- 0.4kg
-    double sdQuant = 100; // - range 0.1 to 1.5 l/day
-    double quantFeces = minQuant + (sdQuant * d.random.nextDouble())
-        * (this.getFamily().getWaterrBacteriaLevel() / d.getParams().getGlobal().getWaterContaminationThreshold());
-    // if you use VIP, the possibility of causing infection to the field is low
-    if (this.getFamily().getHasLaterine() == true || f.getFieldID() != 0) {
-      // count number of inc
-//            this.transimissionCholera(d);// may be get contaminated -due to contaminated laterine
-      f.setVibrioCholerae(0);
-    } else {
-      // if you use open laterine, your feces will contibute for the contamination
-      if (this.getHealthStatus() == 3) {
-        // if you are infected, you pollute significantly
-        f.setVibrioCholerae(current + (d.getParams().getGlobal().getvibrioCholeraePerInfectedPerson() * quantFeces));
-
-      } // if you are health, you still are carrier of the bacteria and will cause some
-        // contamiantion
-      else if (this.getHealthStatus() == 2) {
-        f.setVibrioCholerae(current + (d.getParams().getGlobal().getvibrioCholeraePerExposedPerson() * quantFeces));
-      } else {
-        f.setVibrioCholerae(current + (d.getParams().getGlobal().getvibrioCholeraePerHealthyPerson() * quantFeces));
-      }
-    }
-  }
-
-  // here the idea is to force agent to utilize water each day, they loose some
-  // amout every time
-  // as they are more dehydrated, they intend to use more water
-  public void dehydrate() {
-    double dailyUse = this.getWaterLevel() - 0.01; // every minute they loose 0.01* 24 * 60 = 15 liter/day
-    if (dailyUse <= 0) {
-      this.setWaterLevel(0);
-    } else {
-      this.setWaterLevel(dailyUse);
-    }
-  }
-
-  // incase agent get thrusty on on the road, they may get water from their
-  // current goal location
-  // currently only from relatives or friends house
-  public void additionalWater(FieldUnit f) {
-    // from household infection
-    double cv = 0.0;
-    // if you visit other camp or friends, drking some water from there
-    if (f.getRefugeeHH().isEmpty() == true) {
-      return;
-    } else {
-      int r = randomN.nextInt(f.getRefugeeHH().numObjs);
-
-      if (((Family) f.getRefugeeHH().objs[r]).getWaterAtHome() > 2) {
-
-        cv = ((Family) f.getRefugeeHH().objs[r]).getWaterrBacteriaLevel() / 1000;
-        double water = ((Family) f.getRefugeeHH().objs[r]).getWaterAtHome();
-//                System.out.println("cv: - "+ cv);
-        ((Family) f.getRefugeeHH().objs[r]).setWaterAtHome(water - 2);
-
-        double w = this.getWaterLevel();
-        this.setWaterLevel(w + 2);
-        if (this.getHealthStatus() == 1 && cv > d.getParams().getGlobal().getWaterContaminationThreshold()) {
-          this.setHealthStatus(2);
-          int duration = 60 * (d.getParams().getGlobal().getcholeraInfectionDurationMAX()
-              - d.getParams().getGlobal().getcholeraInfectionDurationMIN()); // hours to minute
-          this.setInfectionPeriod(
-              cStep + (d.getParams().getGlobal().getcholeraInfectionDurationMIN() * 60) + randomN.nextInt(duration));
-        }
-      }
-    }
-  }
-
   public void recieveTreatment(FieldUnit f, Dadaab d) {
     // based on the capacity of the
 
-    if (this.getHealthStatus() == 3 && f.getFacility().isReachedCapacity(f, d) == false) {
+    if (this.isInfected() && f.getFacility().isReachedCapacity(f, d) == false) {
       f.setPatientCounter(f.getPatientCounter() + 1);
       if (randomN.nextDouble() < d.getParams().getGlobal().getprobabilityOfEffectiveNessofmedicine()) {
         int recovery = cStep + (400 + randomN.nextInt(1440));
@@ -743,11 +520,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
       minuteInDay = cStep;
     } else {
       minuteInDay = cStep % 1440;
-    }
-
-    if (this.getWaterLevel() < (d.getParams().getGlobal().getMinimumWaterRequirement())) {
-      utilizeWater();
-
     }
 
     this.setPrevHealthStatus(this.getHealthStatus()); // update prveois
@@ -776,18 +548,7 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
       d.killrefugee(this);
     }
 
-    dehydrate();
-
     move(cStep);
-
-    // before the day started - laterine use
-    if (cStep % 1440 == 2) {// minuteInDay == 1440
-      if (this.getHealthStatus() == 3) {
-        this.setLaterineUse(1 + randomN.nextInt(6));
-      } else {
-        this.setLaterineUse(randomN.nextInt(3));
-      }
-    }
   }
 
   public void setStoppable(Stoppable stopp) {
@@ -796,10 +557,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
 
   public void stop() {
     stopper.stop();
-  }
-
-  public double doubleValue() {
-    return this.getHealthStatus();
   }
 
   private void setPosition(FieldUnit position) {
@@ -865,29 +622,12 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
     return hh;
   }
 
-  public void setLaterineUse(int l) {
-    this.latUse = l;
+  public void setPreviousHealthStatus(HealthStatus status) {
+    this.previousHealthStatus = status;
   }
 
-  public int getLaterineUse() {
-    return latUse;
-  }
-
-  // health status
-  public void setHealthStatus(int status) {
-    this.healthStatus = status;
-  }
-
-  public int getHealthStatus() {
-    return healthStatus;
-  }
-
-  public void setPrevHealthStatus(int status) {
-    this.prevHealthStatus = status;
-  }
-
-  public int getPrevHealthStatus() {
-    return prevHealthStatus;
+  public HealthStatus getPreviousHealthStatus() {
+    return previousHealthStatus;
   }
 
   public void setSymtomaticType(int im) {
@@ -897,15 +637,6 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
 
   public int getSymtomaticType() {
     return symtomaticType;
-  }
-  // water level
-
-  public void setWaterLevel(double w) {
-    this.waterDemand = w;
-  }
-
-  public double getWaterLevel() {
-    return waterDemand;
   }
 
   // current activity
@@ -958,6 +689,19 @@ public class Refugee implements Steppable, Valuable, java.io.Serializable {
 
   public int getStayingTime() {
     return stayingTime;
+  }
+
+  public HealthStatus getHealthStatus() {
+    return currentHealthStatus;
+  }
+
+  public void setHealthStatus(HealthStatus healthStatus) {
+    this.currentHealthStatus = healthStatus;
+  }
+
+  public double doubleValue() {
+    // TODO:
+    return 0;
   }
 
 }

@@ -15,6 +15,7 @@ import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
 import com.model.Refugee;
+import com.model.enumeration.HealthStatus;
 import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.LineString;
@@ -338,10 +339,8 @@ public class CampBuilder {
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
     newRefugee.setBodyResistance(1);
-    newRefugee.setHealthStatus(1);
+    newRefugee.setHealthStatus(HealthStatus.SUSCEPTIBLE);
     newRefugee.setCurrentActivity(0);
-    newRefugee.setWaterLevel(2 * dadaab.getParams().getGlobal().getMinimumWaterRequirement()
-        + dadaab.getParams().getGlobal().getMaximumWaterRequirement() * random.nextDouble());
 
     double ratioInfected = (dadaab.getParams().getGlobal().getPercentageOfAsymptomatic() / (100));
     double ageEffect = 0.5 + 0.5 * (Math.pow(newRefugee.getAge(), 2) / (Math.pow(60, 2.5)));
@@ -487,17 +486,10 @@ public class CampBuilder {
         FieldUnit f = nextAvailCamp(dadaab);
         Family hh = new Family(f);
         dadaab.allFamilies.add(hh);
-        hh.setWaterAtHome(tot * dadaab.getParams().getGlobal().getMaximumWaterRequirement()
-            + (1.5 * dadaab.getParams().getGlobal().getMaximumWaterRequirement() * dadaab.random.nextDouble()));
-
         hh.setRationDate(1 + a % 9);
         if (dadaab.random.nextDouble() > dadaab.getParams().getGlobal().getLaterineCoverage()) {
           hh.setHasLaterine(true);
         }
-
-        // if(dadaab.random.nextDouble() > 0.4){
-        // f.setCampHasLatrine(true);
-        // }
 
         f.addRefugeeHH(hh);
 
