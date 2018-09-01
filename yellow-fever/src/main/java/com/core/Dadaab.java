@@ -8,6 +8,7 @@ import com.core.enumeration.Parameters;
 import com.model.Facility;
 import com.model.Family;
 import com.model.Refugee;
+import com.model.enumeration.HealthStatus;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -209,13 +210,13 @@ public class Dadaab extends SimState {
           sumAge[age] += 1;
 
           if (r.getHome().getCampID() == 1) {
-            if (r.getHealthStatus() == 1) {
+            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusDag = totSusDag + 1;
-            } else if (r.getHealthStatus() == 2) {
+            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpDag = totExpDag + 1;
-            } else if (r.getHealthStatus() == 3) {
+            } else if (r.isInfected()) {
               totInfDag = totInfDag + 1;
-            } else if (r.getHealthStatus() == 4) {
+            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecDag = totRecDag + 1;
             } else {
               none = 0;
@@ -224,13 +225,13 @@ public class Dadaab extends SimState {
 
           if (r.getHome().getCampID() == 2) {
 
-            if (r.getHealthStatus() == 1) {
+            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusInfo = totSusInfo + 1;
-            } else if (r.getHealthStatus() == 2) {
+            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpInfo = totExpInfo + 1;
-            } else if (r.getHealthStatus() == 3) {
+            } else if (r.isInfected()) {
               totInfInfo = totInfInfo + 1;
-            } else if (r.getHealthStatus() == 4) {
+            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecInfo = totRecInfo + 1;
             } else {
               none = 0;
@@ -238,13 +239,13 @@ public class Dadaab extends SimState {
           }
 
           if (r.getHome().getCampID() == 3) {
-            if (r.getHealthStatus() == 1) {
+            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusHag = totSusHag + 1;
-            } else if (r.getHealthStatus() == 2) {
+            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpHag = totExpHag + 1;
-            } else if (r.getHealthStatus() == 3) {
+            } else if (r.isInfected()) {
               totInfHag = totInfHag + 1;
-            } else if (r.getHealthStatus() == 4) {
+            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecHag = totRecHag + 1;
             } else {
               none = 0;
@@ -253,26 +254,26 @@ public class Dadaab extends SimState {
 
           // total health status
 
-          if (r.getHealthStatus() == 1) {
+          if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
             totalSus = totalSus + 1;
-          } else if (r.getHealthStatus() == 2) {
+          } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
-          } else if (r.getHealthStatus() == 3) {
+          } else if (r.isInfected()) {
             totalInf = totalInf + 1;
-          } else if (r.getHealthStatus() == 4) {
+          } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;
           } else {
             none = 0;
           }
 
-          if (r.getHealthStatus() != r.getPrevHealthStatus()) {
-            if (r.getHealthStatus() == 1) {
+          if (r.getHealthStatus() != r.getPreviousHealthStatus()) {
+            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totalSusNewly = totalSusNewly + 1;
-            } else if (r.getHealthStatus() == 2) {
+            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
               totalExpNewly = totalExpNewly + 1;
-            } else if (r.getHealthStatus() == 3) {
+            } else if (r.isInfected()) {
               totalInfNewly = totalInfNewly + 1;
-            } else if (r.getHealthStatus() == 4) {
+            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
               totalRecNewly = totalRecNewly + 1;
             } else {
               none = 0;

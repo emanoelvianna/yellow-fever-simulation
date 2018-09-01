@@ -99,15 +99,17 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
   }
 
+  // TODO: Importante rever estes conceitos relacionados a saúde
   public void infected() {
     // now you are officially infected - will show sympom
-    if (this.getHealthStatus() == 2) {
+    if (this.getHealthStatus().equals(HealthStatus.EXPOSED)) {
       if (cStep == this.getInfectionPeriod()) {
         if (this.getSymtomaticType() == 2) { // asymtomatic paitient
-          this.setHealthStatus(4);// recovered
+          this.setHealthStatus(HealthStatus.RECOVERED);// recovered
           this.setInfectionPeriod(0);
         } else {
-          this.setHealthStatus(3); // immediately infected
+          // TODO: Infecção deve levar em consideração probabilidade
+          this.setHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
           this.setInfectionPeriod(0);
         }
       }
@@ -522,14 +524,15 @@ public class Refugee implements Steppable, Valuable, Serializable {
       minuteInDay = cStep % 1440;
     }
 
-    this.setPrevHealthStatus(this.getHealthStatus()); // update prveois
-    if (this.getHealthStatus() == 2) {
+    // TODO: Importante rever estes conceitos relacionados a saúde
+    this.setPreviousHealthStatus(this.getHealthStatus());
+    if (this.getHealthStatus().equals(HealthStatus.EXPOSED)) {
       infected();
-
     }
-    if (this.getHealthStatus() == 3) {
+
+    if (this.isInfected()) {
       if (this.getRecoveryPeriod() == cStep && this.getIsrecieveTreatment() == true) {
-        this.setHealthStatus(4);
+        this.setHealthStatus(HealthStatus.RECOVERED);
         this.setRecoveryPeriod(0);
         this.setBodyResistance(1.0);
         this.setIsrecieveTreatment(false);
@@ -537,8 +540,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
 
     if (randomN.nextDouble() < d.getParams().getGlobal().getProbRecoveryToSuscebtable()
-        && this.getHealthStatus() == 4) {
-      this.setHealthStatus(1);
+        && this.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+      this.setHealthStatus(HealthStatus.RECOVERED);
     }
 
     healthDepretiation();
