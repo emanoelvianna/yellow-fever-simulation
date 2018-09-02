@@ -50,6 +50,8 @@ import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
 import sim.util.Valuable;
 import sim.util.geo.MasonGeometry;
+import sim.util.media.chart.ScatterPlotGenerator;
+import sim.util.media.chart.TimeSeriesChartGenerator;
 
 public class DadaabGUI extends GUIState {
 
@@ -69,12 +71,10 @@ public class DadaabGUI extends GUIState {
   GeomVectorFieldPortrayal campShapeProtrayal = new GeomVectorFieldPortrayal();
   // FastValueGridPortrayal2D roadPortrayal = new FastValueGridPortrayal2D();
 
-  sim.util.media.chart.TimeSeriesChartGenerator chartSeriesCholera;
-  sim.util.media.chart.TimeSeriesChartGenerator chartSeriesCholeraNewly;
-
-  sim.util.media.chart.TimeSeriesChartGenerator chartSeriesPopulation;
-
-  sim.util.media.chart.ScatterPlotGenerator chartSeriesPopulation2;
+  TimeSeriesChartGenerator chartSeriesCholera;
+  TimeSeriesChartGenerator chartSeriesCholeraNewly;
+  TimeSeriesChartGenerator chartSeriesPopulation;
+  ScatterPlotGenerator chartSeriesPopulation2;
 
   public static void main(String[] args) {
 
@@ -84,9 +84,7 @@ public class DadaabGUI extends GUIState {
   }
 
   public DadaabGUI(String[] args) {
-
     super(new Dadaab(System.currentTimeMillis(), args));
-
   }
 
   public DadaabGUI(SimState state) {
@@ -121,26 +119,19 @@ public class DadaabGUI extends GUIState {
     refugeePortrayal.setField(dadaab.allRefugees);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
-      final Color healthy = new Color(0, 128, 0);
-      final Color exposed = new Color(0, 0, 255); // 0-0-255 255-255-0 184-134-11
-      final Color infected = new Color(255, 0, 0);
-      final Color recovered = new Color(102, 0, 102);
-
       // to draw each refugee type with differnet color
       public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
         if (object != null) {
           double cType = ((Valuable) object).doubleValue();
-
           if (cType == 1) {
-            paint = healthy;
+            paint = Color.BLACK;
           } else if (cType == 2) {
-            paint = exposed;
+            paint = Color.YELLOW;
           } else if (cType == 3) {
-            paint = infected;
+            paint = Color.RED;
           } else {
-            paint = recovered;
+            paint = Color.BLUE;
           }
-
           super.draw(object, graphics, info);
         } else {
           super.draw(object, graphics, info);
@@ -164,29 +155,22 @@ public class DadaabGUI extends GUIState {
       // to draw each refugee type with differnet color
       public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
         if (object != null) {
-
           double cType = ((Valuable) object).doubleValue();
           if (cType == 1) {
             paint = school;
-
           } else if (cType == 2) {
             paint = borehole;
           } else if (cType == 3) {
             paint = mosq;
-
           } else if (cType == 4) {
             paint = market;
-
           } else if (cType == 5) {
             paint = foodC;
-
           } else if (cType == 6) {
             paint = healthC;
-
           } else {
             paint = other;
           }
-
           super.draw(object, graphics, info);
         } else {
           super.draw(object, graphics, info);
@@ -460,7 +444,6 @@ public class DadaabGUI extends GUIState {
     legendframe.getContentPane().add(legend);
     legendframe.pack();
     c.registerFrame(legendframe);
-
   }
 
   public Inspector getInspector() {
@@ -483,7 +466,6 @@ public class DadaabGUI extends GUIState {
     }
     displayFrameRainfall = null;
     displayRainfall = null;
-
   }
 
 }

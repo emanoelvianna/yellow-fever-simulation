@@ -204,19 +204,43 @@ public class Dadaab extends SimState {
         // accessing each agent
         for (int i = 0; i < ref.numObjs; i++) {
           Refugee r = (Refugee) ref.objs[i];
-          sumAct[r.getCurrentActivity()] += 1; // current activity
+          // TODO: Refatorar
+          switch (r.getCurrentActivity()) {
+          case STAY_HOME:
+            sumAct[0] += 1;
+            break;
+          case SCHOOL:
+            sumAct[1] += 1;
+            break;
+          case MOSQUE:
+            sumAct[2] += 1;
+            break;
+          case MARKET:
+            sumAct[3] += 1;
+            break;
+          case FOOD_CENTER:
+            sumAct[4] += 1;
+            break;
+          case SOCIAL_RELATIVES:
+            sumAct[5] += 1;
+            break;
+          case VISIT_SOCIAL:
+            sumAct[6] += 1;
+            break;
+          }
+
           int age = ageClass(r.getAge()); // age class of agent i
           // int siz = 0;
           sumAge[age] += 1;
 
           if (r.getHome().getCampID() == 1) {
-            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusDag = totSusDag + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpDag = totExpDag + 1;
             } else if (r.isInfected()) {
               totInfDag = totInfDag + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecDag = totRecDag + 1;
             } else {
               none = 0;
@@ -225,13 +249,13 @@ public class Dadaab extends SimState {
 
           if (r.getHome().getCampID() == 2) {
 
-            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusInfo = totSusInfo + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpInfo = totExpInfo + 1;
             } else if (r.isInfected()) {
               totInfInfo = totInfInfo + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecInfo = totRecInfo + 1;
             } else {
               none = 0;
@@ -239,13 +263,13 @@ public class Dadaab extends SimState {
           }
 
           if (r.getHome().getCampID() == 3) {
-            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusHag = totSusHag + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpHag = totExpHag + 1;
             } else if (r.isInfected()) {
               totInfHag = totInfHag + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecHag = totRecHag + 1;
             } else {
               none = 0;
@@ -254,26 +278,26 @@ public class Dadaab extends SimState {
 
           // total health status
 
-          if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
             totalSus = totalSus + 1;
-          } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
+          } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
           } else if (r.isInfected()) {
             totalInf = totalInf + 1;
-          } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+          } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;
           } else {
             none = 0;
           }
 
-          if (r.getHealthStatus() != r.getPreviousHealthStatus()) {
-            if (r.getHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (r.getCurrentHealthStatus() != r.getPreviousHealthStatus()) {
+            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totalSusNewly = totalSusNewly + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totalExpNewly = totalExpNewly + 1;
             } else if (r.isInfected()) {
               totalInfNewly = totalInfNewly + 1;
-            } else if (r.getHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totalRecNewly = totalRecNewly + 1;
             } else {
               none = 0;
@@ -373,7 +397,6 @@ public class Dadaab extends SimState {
   // age class or ageset
   private int ageClass(int age) {
     int a = 0;
-
     if (age < 5) {
       a = 0;
     } else if (age >= 5 && age < 12) {
@@ -400,102 +423,6 @@ public class Dadaab extends SimState {
       allFamilies.remove(f.getFamily());
     }
     allRefugees.remove(f);
-  }
-
-  public void setNumberOfSuscipitable(int expo) {
-    this.totalSusciptible = expo;
-
-  }
-
-  public int getNumberOfSuscipitable() {
-
-    return totalSusciptible;
-  }
-
-  public void setNumberOfExposed(int expo) {
-    this.totalExposed = expo;
-
-  }
-
-  public int getNumberOfExposed() {
-
-    return totalExposed;
-  }
-
-  public void setNumberOfInfected(int inf) {
-    this.totalInfected = inf;
-
-  }
-
-  public int getNumberOfInfected() {
-
-    return totalInfected;
-  }
-
-  public void setNumberOfRecovered(int rec) {
-    this.totalRecovered = rec;
-
-  }
-
-  public int getNumberOfRecovered() {
-
-    return totalRecovered;
-  }
-
-  public void setNumberOfSuscipitableNewly(int expo) {
-    this.totalSusciptibleNewly = expo;
-
-  }
-
-  public int getNumberOfSuscipitableNewly() {
-
-    return totalSusciptibleNewly;
-  }
-
-  public void setNumberOfExposedNewly(int expo) {
-    this.totalExposedNewly = expo;
-
-  }
-
-  public int getNumberOfExposedNewly() {
-
-    return totalExposedNewly;
-  }
-
-  public void setNumberOfInfectedNewly(int inf) {
-    this.totalInfectedNewly = inf;
-
-  }
-
-  public int getNumberOfInfectedNewly() {
-    return totalInfectedNewly;
-  }
-
-  public void setNumberOfRecoveredNewly(int rec) {
-    this.totalRecoveredNewly = rec;
-
-  }
-
-  public int getNumberOfRecoveredNewly() {
-    return totalRecoveredNewly;
-  }
-
-  public void setTotalActivity(int[] rec) {
-    this.totalActivity = rec;
-
-  }
-
-  public int[] getTotalActivity() {
-
-    return totalActivity;
-  }
-
-  public void setTotalBacterialLoad(double r) {
-    this.totalBacterialLoad = r;
-  }
-
-  public double getTotalBacterialLoad() {
-    return totalBacterialLoad;
   }
 
   int PrevPop = 0;
@@ -525,7 +452,86 @@ public class Dadaab extends SimState {
     if (dObserver != null) {
       this.dObserver.finish();
     }
+  }
 
+  public void setNumberOfSuscipitable(int expo) {
+    this.totalSusciptible = expo;
+  }
+
+  public int getNumberOfSuscipitable() {
+    return totalSusciptible;
+  }
+
+  public void setNumberOfExposed(int expo) {
+    this.totalExposed = expo;
+  }
+
+  public int getNumberOfExposed() {
+    return totalExposed;
+  }
+
+  public void setNumberOfInfected(int inf) {
+    this.totalInfected = inf;
+  }
+
+  public int getNumberOfInfected() {
+    return totalInfected;
+  }
+
+  public void setNumberOfRecovered(int rec) {
+    this.totalRecovered = rec;
+  }
+
+  public int getNumberOfRecovered() {
+    return totalRecovered;
+  }
+
+  public void setNumberOfSuscipitableNewly(int expo) {
+    this.totalSusciptibleNewly = expo;
+  }
+
+  public int getNumberOfSuscipitableNewly() {
+    return totalSusciptibleNewly;
+  }
+
+  public void setNumberOfExposedNewly(int expo) {
+    this.totalExposedNewly = expo;
+  }
+
+  public int getNumberOfExposedNewly() {
+    return totalExposedNewly;
+  }
+
+  public void setNumberOfInfectedNewly(int inf) {
+    this.totalInfectedNewly = inf;
+  }
+
+  public int getNumberOfInfectedNewly() {
+    return totalInfectedNewly;
+  }
+
+  public void setNumberOfRecoveredNewly(int rec) {
+    this.totalRecoveredNewly = rec;
+  }
+
+  public int getNumberOfRecoveredNewly() {
+    return totalRecoveredNewly;
+  }
+
+  public void setTotalActivity(int[] rec) {
+    this.totalActivity = rec;
+  }
+
+  public int[] getTotalActivity() {
+    return totalActivity;
+  }
+
+  public void setTotalBacterialLoad(double r) {
+    this.totalBacterialLoad = r;
+  }
+
+  public double getTotalBacterialLoad() {
+    return totalBacterialLoad;
   }
 
   public Parameters getParams() {

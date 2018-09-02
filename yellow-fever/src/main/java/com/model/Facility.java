@@ -47,12 +47,10 @@ public class Facility implements Steppable, Valuable {
   // infection level of the borehole
   public void setInfectionLevel(double l) {
     this.infectionLevel = l; // in liter
-
   }
 
   public double getInfectionLevel() {
     return infectionLevel;
-
   }
 
   public boolean isReachedCapacity(FieldUnit f, Dadaab d) {
@@ -94,7 +92,6 @@ public class Facility implements Steppable, Valuable {
   }
 
   public void step(SimState state) {
-
     Dadaab d = (Dadaab) state;
     refillBorehole(d); // refill the borehole
     // everyday start from 0
@@ -106,9 +103,7 @@ public class Facility implements Steppable, Valuable {
   // for visualization - based on facility id
 
   public double doubleValue() {
-
     return this.getFacilityID();
-
   }
 
 }

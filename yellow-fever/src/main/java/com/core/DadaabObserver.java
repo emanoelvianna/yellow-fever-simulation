@@ -105,6 +105,7 @@ public class DadaabObserver implements Steppable {
 
     // "At Home","School","Water", "Mosque","Market", "Food C.", "Health C.","Visit
     // R.", "Social","Hygiene"
+    // TODO: Refatorar, existem atividades inexistentes
     String numTotAgent = Integer.toString(d.allRefugees.getAllObjects().numObjs);
     String numAtHome = Integer.toString(d.getTotalActivity()[0]);
     String numSchool = Integer.toString(d.getTotalActivity()[1]);
@@ -259,11 +260,11 @@ public class DadaabObserver implements Steppable {
     for (Object o : d.allRefugees.allObjects) {
       Refugee r = (Refugee) o;
       double tot = grid.field[r.getPosition().getX()][r.getPosition().getY()];
-      if (r.getHealthStatus() == HealthStatus.MILD_INFECTION) {
+      if (r.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
         grid.field[r.getPosition().getX()][r.getPosition().getY()] = tot + 1;
-      } else if (r.getHealthStatus() == HealthStatus.SEVERE_INFECTION) {
+      } else if (r.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
         grid.field[r.getPosition().getX()][r.getPosition().getY()] = tot + 1;
-      } else if (r.getHealthStatus() == HealthStatus.TOXIC_INFECTION) {
+      } else if (r.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
         grid.field[r.getPosition().getX()][r.getPosition().getY()] = tot + 1;
       } else {
         grid.field[r.getPosition().getX()][r.getPosition().getY()] = tot;

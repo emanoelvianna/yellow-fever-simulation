@@ -17,7 +17,6 @@ public class Family {
   private boolean hasLaterine = false;
 
   public Family(FieldUnit loc) {
-
     this.setCampLocation(loc);
     members = new Bag();
     relatives = new Bag();
@@ -42,22 +41,18 @@ public class Family {
 
   // holds memebers of the family
   public void setMembers(Bag refugees) {
-
     this.members = refugees;
   }
 
   public Bag getMembers() {
-
     return members;
   }
 
   public void addMembers(Refugee r) {
-
     this.members.add(r);
   }
 
   public void removeMembers(Refugee r) {
-
     this.members.remove(r);
   }
 
@@ -91,11 +86,11 @@ public class Family {
     int count = 0;
     for (Object f : this.getMembers()) {
       Refugee ref = (Refugee) f;
-      if (ref.getHealthStatus() == HealthStatus.MILD_INFECTION) {
+      if (ref.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
         count = count + 1;
-      } else if (ref.getHealthStatus() == HealthStatus.SEVERE_INFECTION) {
+      } else if (ref.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
         count = count + 1;
-      } else if (ref.getHealthStatus() == HealthStatus.TOXIC_INFECTION) {
+      } else if (ref.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
         count = count + 1;
       }
     }

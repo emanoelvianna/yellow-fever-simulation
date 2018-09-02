@@ -1,65 +1,64 @@
 package com.model;
 
-import com.core.Dadaab;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+import com.core.Dadaab;
+import com.core.TimeManager;
+import com.model.enumeration.ActivityMapping;
+
+import ec.util.MersenneTwisterFast;
 import sim.util.Bag;
 
 public class Activity {
 
-  /*
-   * activity of each agent including staying at home there are 10 types of
-   * activities each activity is related with location. agent go to each activity
-   */
-  final public static int STAY_HOME = 0;
-  final public static int SCHOOL = 1;
-  final public static int BOREHOLE_OR_RIVER = 2; //
-  final public static int MOSQUE = 3;
-  final public static int MARKET = 4;
-  final public static int FOOD_CENTER = 5;
-  final public static int HEALTH_CENTER = 6;
-  final public static int SOCIAL_RELATIVES = 7;
-  final public static int VISIT_SOCIAL = 8;
+  private double priorty = 0.0;
+  private Refugee refugee;
+  private TimeManager time;
+  private int currentStep;
+  private int minuteInDay;
+  private MersenneTwisterFast random;
+
+  public Activity(Refugee refugee, TimeManager time, int currentStep, MersenneTwisterFast random, int minuteInDay) {
+    this.refugee = refugee;
+    this.time = time;
+    this.currentStep = currentStep;
+    this.random = random;
+    this.minuteInDay = minuteInDay;
+  }
 
   // best location is mainly determine by distance
   // near is best
-  public FieldUnit bestActivityLocation(Refugee ref, FieldUnit position, int id, Dadaab d) {
-
-    // FieldUnit potLoc = null;
-    if (id == STAY_HOME) {
+  public FieldUnit bestActivityLocation(Refugee ref, FieldUnit position, ActivityMapping activityMapping, Dadaab d) {
+    switch (activityMapping) {
+    case STAY_HOME:
       return ref.getHome();
-      // System.out.println("home" + newL.getCampID());
-    } else if (id == SCHOOL) {
+    case SCHOOL:
       return betstLoc(ref.getHome(), d.schooles, d);
-    } else if (id == BOREHOLE_OR_RIVER) {
-      // System.out.println("borehole" + nearestWaterSource(ref, position, d));
-      return nearestWaterSource(ref.getHome(), d);
-    } else if (id == MOSQUE) {
+    case MOSQUE:
       return betstLoc(ref.getHome(), d.mosques, d);
-    } else if (id == MARKET) {
+    case MARKET:
       return betstLoc(ref.getHome(), d.market, d);
-    } else if (id == FOOD_CENTER) {
+    case FOOD_CENTER:
       return betstLoc(ref.getHome(), d.foodCenter, d);
-    } else if (id == HEALTH_CENTER) {
+    case HEALTH_CENTER:
       return betstLoc(ref.getHome(), d.healthCenters, d);
-    } else if (id == SOCIAL_RELATIVES) {
-      // System.out.println("camp");
+    case SOCIAL_RELATIVES:
       int l = ref.getFamily().getRelativesLocation().numObjs;
       if (l == 0) {
         return ref.getHome();
       } else
         return ((FieldUnit) (ref.getFamily().getRelativesLocation().objs[d.random.nextInt(l)]));
-    } else if (id == VISIT_SOCIAL) {
-      // System.out.println("camp");
+    case VISIT_SOCIAL:
       return socialize(ref, d);
-    } else {
+    default:
       return ref.getHome();
     }
-    // return newL;
   }
 
   private FieldUnit betstLoc(FieldUnit fLoc, Bag fieldBag, Dadaab d) {
     Bag newLoc = new Bag();
-
     double bestScoreSoFar = Double.POSITIVE_INFINITY;
     for (int i = 0; i < fieldBag.numObjs; i++) {
       FieldUnit potLoc = ((FieldUnit) fieldBag.objs[i]);
@@ -88,7 +87,6 @@ public class Activity {
 
   // Haiti project
   public FieldUnit getNextTile(Dadaab dadaab, FieldUnit subgoal, FieldUnit position) {
-
     // move in which direction?
     int moveX = 0, moveY = 0;
     int dx = subgoal.getX() - position.getX();
@@ -228,5 +226,194 @@ public class Activity {
     }
     return fieldP;
 
+  }
+
+  class ActivityPriority implements Comparable<ActivityPriority> {
+    double priority = 0.0;
+    ActivityMapping activityMapping;
+
+    // TODO: Isto deve ser testado
+    public int compareTo(ActivityPriority activity) {
+      if (priority > activity.priority)
+        return 1;
+      else if (priority < activity.priority)
+        return -1;
+      return 0;
+    }
+  }
+
+  // check the crowded level on the road or at your goal location
+  // this method is taken from Haiti project
+  /*
+   * activity selection currently is made by simple assumption that consider age,
+   * sex, need and time in most cases based on these each activity is given some
+   * weight and the best of all will e selected
+   */
+  public ActivityMapping calculateActivityWeight() {
+    // is active
+    if (this.refugee.isInfected()) {
+      ActivityPriority health = new ActivityPriority();
+      health = healthActivityWeight();
+      // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
+      return (health.priority < 0.3) ? ActivityMapping.STAY_HOME : ActivityMapping.HEALTH_CENTER;
+    } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+      if (time.currentDayInWeek(currentStep) < 5) {
+        if (this.refugee.isStudent()) {
+          return ActivityMapping.SCHOOL;
+        } else {
+          return ActivityMapping.JOB;
+        }
+      } else {
+        List<ActivityPriority> activities = new ArrayList<ActivityPriority>(7);
+        activities.add(mosqueActivityWeight());// 0.1;
+        activities.add(marketActivityWeight());// 0.07;
+        activities.add(foodActivityWeight());
+        activities.add(visitRelativeActivityWeight());// 0.09;
+        activities.add(socialVisitActivityWeight());// 0.08;
+
+        Collections.sort(activities);
+
+        return activities.get(4).activityMapping;
+      }
+    } else {
+      return ActivityMapping.STAY_HOME;
+    }
+  }
+
+  // TODO: Deve considerar o horario para ficar em casa
+  private ActivityPriority stayHome() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.STAY_HOME;
+    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+      // TODO:
+    }
+    activity.priority = 0.0;
+    return activity;
+  }
+
+  private ActivityPriority schoolActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.SCHOOL;
+    // school only open from monday to friday ( day 1 to 5 of the week)
+    boolean isSchoolDay = (this.time.currentDayInWeek(currentStep) < 5);
+    if (this.refugee.isStudent() && isSchoolDay) {
+      activity.priority = 0.8 + 0.2 * this.random.nextDouble();
+    } else {
+      activity.priority = 0;
+    }
+    return activity;
+  }
+
+  // TODO: O agente deve ir ao médico sempre quando não estiver ativo
+  // TODO: A porcentagem deve ser desconsiderada
+  private ActivityPriority healthActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.HEALTH_CENTER;
+    if (this.refugee.isInfected() && this.refugee.getIsrecieveTreatment() == false) {
+      activity.priority = 0.8 + 0.2 * this.random.nextDouble();
+    } else if (this.random.nextDouble() < 0.05) {
+      activity.priority = 0.5 + 0.5 * this.random.nextDouble();
+    } else {
+      activity.priority = this.random.nextDouble() * (0.1 + 0.2 * this.random.nextDouble());
+    }
+    return activity;
+  }
+
+  private ActivityPriority foodActivityWeight() {
+    // food distibution will take third
+    // because ration is given on scheduled time, agent give priority for food at
+    // tat day
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.FOOD_CENTER;
+    int foodDate = 1 + (time.dayCount(currentStep) % 9);
+    int dummyFood = (foodDate == this.refugee.getFamily().getRationDate()) ? 1 : 0; // if the day is not a ration day,
+                                                                                    // agent
+    // will not go to food center
+    if (dummyFood == 1 && this.refugee.getAge() > 15) {
+      activity.priority = 0.6 + 0.3 * this.random.nextDouble();
+
+    } else {
+      activity.priority = 0.1 + 0.2 * this.random.nextDouble();
+    }
+    activity.priority = activity.priority * this.random.nextDouble();
+    return activity;
+  }
+
+  private ActivityPriority marketActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.MARKET;
+    //
+    if (this.refugee.getAge() > 15 && this.minuteInDay < (16 * 60)) {
+      activity.priority = 0.7 * Math.sin(this.refugee.getAge()) + 0.2 * this.random.nextDouble();
+    } else {
+      activity.priority = 0;
+    }
+    activity.priority = activity.priority * this.random.nextDouble();
+    return activity;
+  }
+
+  private ActivityPriority mosqueActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.MOSQUE;
+    // worship time
+    if (this.refugee.getAge() > 10) {
+
+      if (this.minuteInDay > (60 * 5) && this.minuteInDay < (60 * 6)
+          || this.minuteInDay > (60 * 12) && this.minuteInDay < (60 * 14)
+          || this.minuteInDay > (60 * 15) && this.minuteInDay < (60 * 17)) {
+
+        if (this.refugee.getHome().getCampID() == 1 && this.minuteInDay > 60 * 14) {
+          activity.priority = 0.4 * (this.refugee.getAge() / 150.0) + 0.2 * this.random.nextDouble();
+        } else
+          activity.priority = 0.5 * (this.refugee.getAge() / 150.0) + 0.4 * this.random.nextDouble();
+      }
+    } else {
+      activity.priority = 0.0;
+    }
+    // visiting other camp should be in the monring only - if it afternoon - agent
+    // will get late to return??
+    activity.priority = activity.priority * this.random.nextDouble();
+    return activity;
+  }
+
+  private ActivityPriority visitRelativeActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.SOCIAL_RELATIVES;
+    //
+    if (this.refugee.getAge() > 10 && this.minuteInDay < (16 * 60)) {
+      activity.priority = 0.3 * Math.sin(this.refugee.getAge()) + 0.4 * this.random.nextDouble();
+    } else {
+      activity.priority = 0;
+    }
+    activity.priority = activity.priority * this.random.nextDouble();
+    return activity;
+  }
+
+  private ActivityPriority socialVisitActivityWeight() {
+    ActivityPriority activity = new ActivityPriority();
+    activity.activityMapping = ActivityMapping.VISIT_SOCIAL;
+    if (this.refugee.getAge() > 18 && this.minuteInDay < (16 * 60)) {
+      activity.priority = 0.3 * (this.refugee.getAge() / 100.0) + 0.4 * this.random.nextDouble();
+    } else {
+      activity.priority = 0;
+    }
+    activity.priority = activity.priority * this.random.nextDouble();
+    return activity;
+  }
+
+  public double getPriorty() {
+    return priorty;
+  }
+
+  public void setPriorty(double priorty) {
+    this.priorty = priorty;
+  }
+
+  public Refugee getRefugee() {
+    return refugee;
+  }
+
+  public void setRefugee(Refugee refugee) {
+    this.refugee = refugee;
   }
 }

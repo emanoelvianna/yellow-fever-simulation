@@ -15,6 +15,7 @@ import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
 import com.model.Refugee;
+import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
 import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Envelope;
@@ -339,8 +340,8 @@ public class CampBuilder {
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
     newRefugee.setBodyResistance(1);
-    newRefugee.setHealthStatus(HealthStatus.SUSCEPTIBLE);
-    newRefugee.setCurrentActivity(0);
+    newRefugee.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
+    newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
 
     double ratioInfected = (dadaab.getParams().getGlobal().getPercentageOfAsymptomatic() / (100));
     double ageEffect = 0.5 + 0.5 * (Math.pow(newRefugee.getAge(), 2) / (Math.pow(60, 2.5)));
@@ -352,22 +353,19 @@ public class CampBuilder {
       newRefugee.setSymtomaticType(2); // asymptotic
     }
 
-    newRefugee.setStudyID(isStudent(age, dadaab));
+    newRefugee.setStudent(isStudent(age, dadaab));
 
     newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
   }
 
-  public int isStudent(int age, Dadaab dadaab) {
-    int study = 0;
-    if (age >= 5 && age < 15) {
-      if (dadaab.random.nextDouble() > 0.56) {
-        study = 1;
-      } else
-        study = 0;
+  // TODO: Rever a faixa de idade de estudante
+  // TODO: Considerar uma faixa como estudante universitário
+  public boolean isStudent(int age, Dadaab dadaab) {
+    if (age >= 5 && age < 16) {
+      return true;
     } else {
-      study = 0;
+      return false;
     }
-    return study;
   }
 
   // random searching of next parcel to populate houses

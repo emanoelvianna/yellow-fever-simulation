@@ -47,62 +47,50 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public void setRefugeeHH(Bag refugees) {
-
     this.refugeeHH = refugees;
   }
 
   public Bag getRefugeeHH() {
-
     return refugeeHH;
   }
 
   public void addRefugeeHH(Family r) {
-
     this.refugeeHH.add(r);
   }
 
   public void removeRefugeeHH(Family r) {
-
     this.refugeeHH.remove(r);
   }
 
   public void setRefugee(Bag refugeeMoving) {
-
     this.refugee = refugeeMoving;
   }
 
   public Bag getRefugee() {
-
     return refugee;
   }
 
   public void addRefugee(Refugee r) {
-
     this.refugee.add(r);
   }
 
   public void removeRefugee(Refugee r) {
-
     this.refugee.remove(r);
   }
 
   public void setFieldID(int id) {
-
     this.fieldID = id;
   }
 
   public int getFieldID() {
-
     return fieldID;
   }
 
   public void setCampID(int id) {
-
     this.campID = id;
   }
 
   public int getCampID() {
-
     return campID;
   }
 
@@ -124,12 +112,10 @@ public class FieldUnit implements Valuable, Serializable {
 
   // water - either from borehole or rainfall
   public void setWater(double flow) {
-
     this.water = flow;
   }
 
   public double getWater() {
-
     return water;
   }
 
@@ -142,12 +128,10 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public void setElevation(double elev) {
-
     this.elevation = elev;
   }
 
   public double getElevation() {
-
     return elevation;
   }
 
@@ -198,8 +182,6 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public double doubleValue() {
-
     return getCampID();
-
   }
 }
