@@ -34,22 +34,18 @@ public class Activity {
     switch (activityMapping) {
     case STAY_HOME:
       return ref.getHome();
+    case WORK:
+      // TODO: Agente deve ser removido do mapa
+      // TODO: Considerando na maioria dos casos seu trabalho não proximo de casa
+
     case SCHOOL:
       return betstLoc(ref.getHome(), d.schooles, d);
-    case MOSQUE:
+    case RELIGION_ACTIVITY:
       return betstLoc(ref.getHome(), d.mosques, d);
     case MARKET:
       return betstLoc(ref.getHome(), d.market, d);
-    case FOOD_CENTER:
-      return betstLoc(ref.getHome(), d.foodCenter, d);
     case HEALTH_CENTER:
       return betstLoc(ref.getHome(), d.healthCenters, d);
-    case SOCIAL_RELATIVES:
-      int l = ref.getFamily().getRelativesLocation().numObjs;
-      if (l == 0) {
-        return ref.getHome();
-      } else
-        return ((FieldUnit) (ref.getFamily().getRelativesLocation().objs[d.random.nextInt(l)]));
     case VISIT_SOCIAL:
       return socialize(ref, d);
     default:
@@ -80,7 +76,6 @@ public class Activity {
       }
       // System.out.println("other" + newLoc.numObjs);
       f = (FieldUnit) newLoc.objs[winningIndex];
-
     }
     return f;
   }
@@ -255,20 +250,19 @@ public class Activity {
       ActivityPriority health = new ActivityPriority();
       health = healthActivityWeight();
       // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
+      // TODO: Sim, levando em consideração que nem todos buscam ajuda imediata
       return (health.priority < 0.3) ? ActivityMapping.STAY_HOME : ActivityMapping.HEALTH_CENTER;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       if (time.currentDayInWeek(currentStep) < 5) {
         if (this.refugee.isStudent()) {
           return ActivityMapping.SCHOOL;
         } else {
-          return ActivityMapping.JOB;
+          return ActivityMapping.WORK;
         }
       } else {
         List<ActivityPriority> activities = new ArrayList<ActivityPriority>(7);
         activities.add(mosqueActivityWeight());// 0.1;
         activities.add(marketActivityWeight());// 0.07;
-        activities.add(foodActivityWeight());
-        activities.add(visitRelativeActivityWeight());// 0.09;
         activities.add(socialVisitActivityWeight());// 0.08;
 
         Collections.sort(activities);
@@ -278,30 +272,6 @@ public class Activity {
     } else {
       return ActivityMapping.STAY_HOME;
     }
-  }
-
-  // TODO: Deve considerar o horario para ficar em casa
-  private ActivityPriority stayHome() {
-    ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.STAY_HOME;
-    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      // TODO:
-    }
-    activity.priority = 0.0;
-    return activity;
-  }
-
-  private ActivityPriority schoolActivityWeight() {
-    ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.SCHOOL;
-    // school only open from monday to friday ( day 1 to 5 of the week)
-    boolean isSchoolDay = (this.time.currentDayInWeek(currentStep) < 5);
-    if (this.refugee.isStudent() && isSchoolDay) {
-      activity.priority = 0.8 + 0.2 * this.random.nextDouble();
-    } else {
-      activity.priority = 0;
-    }
-    return activity;
   }
 
   // TODO: O agente deve ir ao médico sempre quando não estiver ativo
@@ -316,26 +286,6 @@ public class Activity {
     } else {
       activity.priority = this.random.nextDouble() * (0.1 + 0.2 * this.random.nextDouble());
     }
-    return activity;
-  }
-
-  private ActivityPriority foodActivityWeight() {
-    // food distibution will take third
-    // because ration is given on scheduled time, agent give priority for food at
-    // tat day
-    ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.FOOD_CENTER;
-    int foodDate = 1 + (time.dayCount(currentStep) % 9);
-    int dummyFood = (foodDate == this.refugee.getFamily().getRationDate()) ? 1 : 0; // if the day is not a ration day,
-                                                                                    // agent
-    // will not go to food center
-    if (dummyFood == 1 && this.refugee.getAge() > 15) {
-      activity.priority = 0.6 + 0.3 * this.random.nextDouble();
-
-    } else {
-      activity.priority = 0.1 + 0.2 * this.random.nextDouble();
-    }
-    activity.priority = activity.priority * this.random.nextDouble();
     return activity;
   }
 
@@ -354,10 +304,9 @@ public class Activity {
 
   private ActivityPriority mosqueActivityWeight() {
     ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.MOSQUE;
+    activity.activityMapping = ActivityMapping.RELIGION_ACTIVITY;
     // worship time
     if (this.refugee.getAge() > 10) {
-
       if (this.minuteInDay > (60 * 5) && this.minuteInDay < (60 * 6)
           || this.minuteInDay > (60 * 12) && this.minuteInDay < (60 * 14)
           || this.minuteInDay > (60 * 15) && this.minuteInDay < (60 * 17)) {
@@ -376,23 +325,10 @@ public class Activity {
     return activity;
   }
 
-  private ActivityPriority visitRelativeActivityWeight() {
-    ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.SOCIAL_RELATIVES;
-    //
-    if (this.refugee.getAge() > 10 && this.minuteInDay < (16 * 60)) {
-      activity.priority = 0.3 * Math.sin(this.refugee.getAge()) + 0.4 * this.random.nextDouble();
-    } else {
-      activity.priority = 0;
-    }
-    activity.priority = activity.priority * this.random.nextDouble();
-    return activity;
-  }
-
   private ActivityPriority socialVisitActivityWeight() {
     ActivityPriority activity = new ActivityPriority();
     activity.activityMapping = ActivityMapping.VISIT_SOCIAL;
-    if (this.refugee.getAge() > 18 && this.minuteInDay < (16 * 60)) {
+    if (this.refugee.getAge() > 15 && this.minuteInDay < (16 * 60)) {
       activity.priority = 0.3 * (this.refugee.getAge() / 100.0) + 0.4 * this.random.nextDouble();
     } else {
       activity.priority = 0;

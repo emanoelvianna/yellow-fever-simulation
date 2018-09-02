@@ -212,17 +212,11 @@ public class Dadaab extends SimState {
           case SCHOOL:
             sumAct[1] += 1;
             break;
-          case MOSQUE:
+          case RELIGION_ACTIVITY:
             sumAct[2] += 1;
             break;
           case MARKET:
             sumAct[3] += 1;
-            break;
-          case FOOD_CENTER:
-            sumAct[4] += 1;
-            break;
-          case SOCIAL_RELATIVES:
-            sumAct[5] += 1;
             break;
           case VISIT_SOCIAL:
             sumAct[6] += 1;

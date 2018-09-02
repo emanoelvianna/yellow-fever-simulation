@@ -26,10 +26,10 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   private int age;
   private int sex;
-  private boolean isStudent; // 0 = not enrolled 1 = enrolled,
-  private FieldUnit position; // current position
-  private FieldUnit home;// home
-  private FieldUnit goal; // location of the goal
+  private boolean isStudent;
+  private FieldUnit currentPosition;
+  private FieldUnit home;
+  private FieldUnit goal;
   private int currentStep;
   private double jitterX; // Visualization
   private double jitterY;
@@ -46,16 +46,16 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   public static final int ORDERING = 2;
   protected Stoppable stopper;
-  // cholera info
+  public int stayingTime;
+  // infection info
   private boolean bitten;
   public boolean isrecieveTreatment = false;
-  public int stayingTime;
   private double bodyResistance;// after infection how long stay alive- depreciate as cholera progress
   private int infectionPeriod; // time after first infection to show syptom
   private int recoveryPeriod;
 
   private int symtomaticType; // either sympmatic==1 or asymptomatic =2
-//    private double protectiveImmunity; // after recovery agent will not likely infected immediately
+  // private double protectiveImmunity; // after recovery agent will not likely infected immediately
   // but immunity will decay over time
   private Dadaab d;
   public int minuteInDay;
@@ -72,7 +72,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.setGoal(home);
     this.jitterX = seed.nextDouble();
     this.jitterY = seed.nextDouble();
-    this.setPosition(position);
+    this.setCurrentPosition(position);
     this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
     time = new TimeManager();
     d = null;
@@ -117,18 +117,17 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   // assign the best goal
   public void calcGoal() {
-    if (this.getPosition().equals(this.getHome()) == true) {
+    if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
       ActivityMapping bestActivity = activity.calculateActivityWeight(); // select the best goal
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, d)); // search the best location of
-      // your
-      // selected activity
+      // your selected activity
       this.setCurrentActivity(bestActivity); // track current activity - for the visualization
       this.setStayingTime(stayingPeriod(this.getCurrentActivity()));
-
       return;
     } // from goal to home
-    else if (this.getPosition().equals(this.getGoal()) == true && this.getGoal().equals(this.getHome()) != true) {
+    else if (this.getCurrentPosition().equals(this.getGoal()) == true
+        && this.getGoal().equals(this.getHome()) != true) {
       this.setGoal(this.getHome());
       this.setStayingTime(stayingPeriod(ActivityMapping.STAY_HOME));
       this.setCurrentActivity(ActivityMapping.STAY_HOME);
@@ -143,17 +142,16 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   // where to move
   public void move(int steps) {
-
     // if you do not have goal- return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
       return;
-    } else if (this.getPosition().equals(this.getGoal()) == true && this.getGoal().equals(this.getHome()) != true
+    } else if (this.getCurrentPosition().equals(this.getGoal()) == true && this.getGoal().equals(this.getHome()) != true
         && isStay() == true) {
       return;
     }
     // at your goal- do activity and recalulate goal
-    else if (this.getPosition().equals(this.getGoal()) == true) {
+    else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       doActivity(this.getGoal(), this.getCurrentActivity());
       if (steps % 1440 < 17) {
         if (random.nextDouble() > 0.3) {
@@ -166,7 +164,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     else {
       // make sure we have a path to the goal!
       if (path == null || path.size() == 0) {
-        path = AStar.astarPath(d, (Node) d.closestNodes.get(this.getPosition().getX(), this.getPosition().getY()),
+        path = AStar.astarPath(d,
+            (Node) d.closestNodes.get(this.getCurrentPosition().getX(), this.getCurrentPosition().getY()),
             (Node) d.closestNodes.get(this.getGoal().getX(), this.getGoal().yLoc));
         if (path != null) {
           path.add(this.getGoal());
@@ -184,7 +183,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
       } // Otherwise we have a path and should continue to move along it
       else {
         // have we reached the end of an edge? If so, move to the next edge
-        if (path.get(0).equals(this.getPosition())) {
+        if (path.get(0).equals(this.getCurrentPosition())) {
           path.remove(0);
         }
         // our current subgoal is the end of the current edge
@@ -196,11 +195,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
       }
 
       Activity current = new Activity(this, time, currentStep, random, minuteInDay);
-      FieldUnit loc = current.getNextTile(d, subgoal, this.getPosition());
-      FieldUnit oldLoc = this.getPosition();
+      FieldUnit loc = current.getNextTile(d, subgoal, this.getCurrentPosition());
+      FieldUnit oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
 
-      this.setPosition(loc);
+      this.setCurrentPosition(loc);
       loc.addRefugee(this);
       d.allRefugees.setObjectLocation(this, new Double2D(loc.getX() + this.jitterX, loc.getY() + jitterY));
     }
@@ -244,10 +243,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
     case HEALTH_CENTER:
       receiveTreatment(f, d);
       break;
-    case SOCIAL_RELATIVES:
-      if (random.nextDouble() < d.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-      }
-      break;
     case VISIT_SOCIAL:
       if (random.nextDouble() < d.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
       }
@@ -261,7 +256,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     int period = 0;
     int minStay = 20; // minumum time to stay in any facility
     int maxStay = 180; // three hour
-    int curMin = minuteInDay;
+    int currentMinute = minuteInDay;
 
     switch (activityMapping) {
     case STAY_HOME:
@@ -269,48 +264,38 @@ public class Refugee implements Steppable, Valuable, Serializable {
       break;
     case SCHOOL:
       // time at school max until 4;00pm
-      if (curMin + maxStay + 120 > (17 * 60)) {
+      if (currentMinute + maxStay + 120 > (17 * 60)) {
         period = minStay;
       } else
         period = maxStay + 120;
       break;
-    case MOSQUE:
+    case WORK:
+      // TODO: tempo de permanencia do trabalho
+    case VISIT_SOCIAL:
+      // time vist camp 2 hour
+      if (currentMinute + maxStay > (12 * 60)) {
+        period = minStay;
+      } else
+        period = minStay + random.nextInt(maxStay - 60);
+      break;
+    case RELIGION_ACTIVITY:
       // time staying at mosq max 80 minute
-      if (curMin + maxStay > (16 * 60)) {
+      if (currentMinute + maxStay > (16 * 60)) {
         period = minStay;
       } else
         period = minStay + random.nextInt(maxStay);
       break;
     case MARKET:
       // time at the market max 5 hour
-      if (curMin + maxStay > (12 * 60)) {
+      if (currentMinute + maxStay > (12 * 60)) {
         period = minStay;
       } else
         period = minStay + random.nextInt(maxStay);
       break;
-    case FOOD_CENTER:
-      // time at food dist max 5 hour
-      if (curMin + maxStay > (15 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay);
-      break;
-    case SOCIAL_RELATIVES:
-      // time for social max until 5;00pm
-      if (curMin + maxStay > (12 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay);
-      break;
-    case VISIT_SOCIAL:
-      // time vist camp 2 hour
-      if (curMin + maxStay > (12 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay - 60);
-      break;
+    case HEALTH_CENTER:
+      // TODO:
     }
-    return (period + curMin);
+    return (period + currentMinute);
   }
 
   // how long agent need to stay at location
@@ -339,7 +324,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   public void step(SimState state) {
-
     d = (Dadaab) state;
     currentStep = (int) d.schedule.getSteps();
 
@@ -400,13 +384,12 @@ public class Refugee implements Steppable, Valuable, Serializable {
     stopper.stop();
   }
 
-  private void setPosition(FieldUnit position) {
-    this.position = position;
-
+  private void setCurrentPosition(FieldUnit position) {
+    this.currentPosition = position;
   }
 
-  public FieldUnit getPosition() {
-    return position;
+  public FieldUnit getCurrentPosition() {
+    return currentPosition;
   }
 
   // goal position - where to go

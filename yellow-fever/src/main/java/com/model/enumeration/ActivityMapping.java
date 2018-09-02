@@ -2,12 +2,10 @@ package com.model.enumeration;
 
 public enum ActivityMapping {
   STAY_HOME,
+  WORK,
   SCHOOL,
-  JOB,
-  MOSQUE,
+  VISIT_SOCIAL,
+  RELIGION_ACTIVITY,
   MARKET,
-  FOOD_CENTER,
-  HEALTH_CENTER,
-  SOCIAL_RELATIVES,
-  VISIT_SOCIAL;
+  HEALTH_CENTER;
 }
