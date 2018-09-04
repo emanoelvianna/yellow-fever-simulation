@@ -5,21 +5,32 @@ import com.model.enumeration.HealthStatus;
 import sim.util.Bag;
 
 public class Family {
-  // location
-  // food requirement
-  //
-  // private double foodReq;
 
   private int rationDate; // food ration date;
-  Bag relatives; // hold relative location
-  FieldUnit location; // location of the house
-  Bag members; // holds the family members
+  private Bag relatives; // hold relative location
+  private FieldUnit location; // location of the house
+  private Bag members; // holds the family members
   private boolean hasLaterine = false;
 
   public Family(FieldUnit loc) {
     this.setCampLocation(loc);
     members = new Bag();
     relatives = new Bag();
+  }
+
+  public int numberOfInfectedFamilyMembers() {
+    int count = 0;
+    for (Object f : this.getMembers()) {
+      Refugee ref = (Refugee) f;
+      if (ref.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
+        count = count + 1;
+      } else if (ref.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
+        count = count + 1;
+      } else if (ref.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
+        count = count + 1;
+      }
+    }
+    return count;
   }
 
   public void setHasLaterine(boolean laterine) {
@@ -80,21 +91,6 @@ public class Family {
 
   public void removeFriend(FieldUnit relative) {
     relatives.remove(relative);
-  }
-
-  public int numberOfInfectedFamilyMembers() {
-    int count = 0;
-    for (Object f : this.getMembers()) {
-      Refugee ref = (Refugee) f;
-      if (ref.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
-        count = count + 1;
-      } else if (ref.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
-        count = count + 1;
-      } else if (ref.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
-        count = count + 1;
-      }
-    }
-    return count;
   }
 
 }

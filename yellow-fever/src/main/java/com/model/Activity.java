@@ -37,7 +37,6 @@ public class Activity {
     case WORK:
       // TODO: Agente deve ser removido do mapa
       // TODO: Considerando na maioria dos casos seu trabalho não proximo de casa
-
     case SCHOOL:
       return betstLoc(ref.getHome(), d.schooles, d);
     case RELIGION_ACTIVITY:
@@ -46,7 +45,7 @@ public class Activity {
       return betstLoc(ref.getHome(), d.market, d);
     case HEALTH_CENTER:
       return betstLoc(ref.getHome(), d.healthCenters, d);
-    case VISIT_SOCIAL:
+    case SOCIAL_VISIT:
       return socialize(ref, d);
     default:
       return ref.getHome();
@@ -84,8 +83,8 @@ public class Activity {
   public FieldUnit getNextTile(Dadaab dadaab, FieldUnit subgoal, FieldUnit position) {
     // move in which direction?
     int moveX = 0, moveY = 0;
-    int dx = subgoal.getX() - position.getX();
-    int dy = subgoal.getY() - position.getY();
+    int dx = subgoal.getLocationX() - position.getLocationX();
+    int dy = subgoal.getLocationY() - position.getLocationY();
     if (dx < 0) {
       moveX = -1;
     } else if (dx > 0) {
@@ -99,11 +98,11 @@ public class Activity {
     // ((FieldUnit) o).loc
 
     // can either move in Y direction or X direction: see which is better
-    FieldUnit xmove = ((FieldUnit) dadaab.allCamps.field[position.getX() + moveX][position.getY()]);
-    FieldUnit ymove = ((FieldUnit) dadaab.allCamps.field[position.getX()][position.getY() + moveY]);
+    FieldUnit xmove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
+    FieldUnit ymove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
 
-    boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getX(), xmove.getY())) > 0;
-    boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getX(), ymove.getX())) > 0;
+    boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
+    boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
 
     if (moveX == 0 && moveY == 0) { // we are ON the subgoal, so don't move at all!
       // both are the same result, so just return the xmove (which is identical)
@@ -327,7 +326,7 @@ public class Activity {
 
   private ActivityPriority socialVisitActivityWeight() {
     ActivityPriority activity = new ActivityPriority();
-    activity.activityMapping = ActivityMapping.VISIT_SOCIAL;
+    activity.activityMapping = ActivityMapping.SOCIAL_VISIT;
     if (this.refugee.getAge() > 15 && this.minuteInDay < (16 * 60)) {
       activity.priority = 0.3 * (this.refugee.getAge() / 100.0) + 0.4 * this.random.nextDouble();
     } else {

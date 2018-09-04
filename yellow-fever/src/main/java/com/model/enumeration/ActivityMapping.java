@@ -4,7 +4,7 @@ public enum ActivityMapping {
   STAY_HOME,
   WORK,
   SCHOOL,
-  VISIT_SOCIAL,
+  SOCIAL_VISIT,
   RELIGION_ACTIVITY,
   MARKET,
   HEALTH_CENTER;

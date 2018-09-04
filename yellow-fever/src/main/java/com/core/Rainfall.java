@@ -148,7 +148,7 @@ public class Rainfall implements Steppable {
     n.clear();
     // get moore neighborhood
 
-    d.allCamps.getNeighborsMaxDistance(field.getX(), field.getY(), 1, false, n, null, null);
+    d.allCamps.getNeighborsMaxDistance(field.getLocationX(), field.getLocationY(), 1, false, n, null, null);
 
     if (n.isEmpty() == true) {
       return;
@@ -185,7 +185,7 @@ public class Rainfall implements Steppable {
       }
 
       double avoidW = 0;
-      if (field.getX() == 0 || field.getY() == 0 || field.getX() >= 144 || field.getY() >= 268) {
+      if (field.getLocationX() == 0 || field.getLocationY() == 0 || field.getLocationX() >= 144 || field.getLocationY() >= 268) {
         avoidW = 0;
       } else {
         avoidW = 1.0;
@@ -268,7 +268,7 @@ public class Rainfall implements Steppable {
       for (int y = 0; y < d.allCamps.getHeight(); y++) {
 
         FieldUnit field = (FieldUnit) d.allCamps.field[x][y];
-        d.rainfallGrid.field[field.getX()][field.getY()] = field.getWater();
+        d.rainfallGrid.field[field.getLocationX()][field.getLocationY()] = field.getWater();
 //                
         totBac = totBac + field.getVibrioCholerae();
         // elevation

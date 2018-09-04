@@ -259,15 +259,15 @@ public class DadaabObserver implements Steppable {
     // then write the current refugee health status
     for (Object o : d.allRefugees.allObjects) {
       Refugee r = (Refugee) o;
-      double tot = grid.field[r.getCurrentPosition().getX()][r.getCurrentPosition().getY()];
+      double tot = grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()];
       if (r.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
-        grid.field[r.getCurrentPosition().getX()][r.getCurrentPosition().getY()] = tot + 1;
+        grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()] = tot + 1;
       } else if (r.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
-        grid.field[r.getCurrentPosition().getX()][r.getCurrentPosition().getY()] = tot + 1;
+        grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()] = tot + 1;
       } else if (r.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
-        grid.field[r.getCurrentPosition().getX()][r.getCurrentPosition().getY()] = tot + 1;
+        grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()] = tot + 1;
       } else {
-        grid.field[r.getCurrentPosition().getX()][r.getCurrentPosition().getY()] = tot;
+        grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()] = tot;
       }
 
     }

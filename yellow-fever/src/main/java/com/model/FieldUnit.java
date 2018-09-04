@@ -15,13 +15,9 @@ public class FieldUnit implements Valuable, Serializable {
   private double elevation; // elevation
   private double vibrioCholerae = 0; // contamination level
   private int patientCounter = 0;
-  // public static final int ORDERING = 1;
-
-  Facility facility;
-
-  int xLoc;
-  int yLoc;
-
+  private Facility facility;
+  private int locationX;
+  private int locationY;
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
 
@@ -33,8 +29,8 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public FieldUnit(int x, int y) {
-    this.setX(x);
-    this.setY(y);
+    this.setLocationX(x);
+    this.setLocationY(y);
   }
 
   // check how many familes can occupied in a field
@@ -44,6 +40,35 @@ public class FieldUnit implements Valuable, Serializable {
     } else {
       return false;
     }
+  }
+
+  public boolean equals(FieldUnit b) {
+    if (b.getLocationX() == this.getLocationX() && b.getLocationY() == this.getLocationY()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean equals(int x, int y) {
+    if (x == this.getLocationX() && y == this.getLocationY()) {
+      return true;
+    }
+    return false;
+  }
+
+  // calaculate distance
+  public double distanceTo(FieldUnit b) {
+    return Math.sqrt(Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
+  }
+
+  public double distanceTo(int xCoord, int yCoord) {
+    return Math.sqrt(Math.pow(xCoord - this.getLocationX(), 2) + Math.pow(yCoord - this.getLocationY(), 2));
+  }
+
+  public FieldUnit copy() {
+    FieldUnit fieldUnit = new FieldUnit(this.getLocationX(), this.getLocationY());
+    return fieldUnit;
   }
 
   public void setRefugeeHH(Bag refugees) {
@@ -135,50 +160,20 @@ public class FieldUnit implements Valuable, Serializable {
     return elevation;
   }
 
-  public boolean equals(FieldUnit b) {
-    if (b.getX() == this.getX() && b.getY() == this.getY()) {
-      return true;
-    } else {
-      return false;
-    }
+  final public int getLocationX() {
+    return locationX;
   }
 
-  public boolean equals(int x, int y) {
-    if (x == this.getX() && y == this.getY()) {
-      return true;
-    }
-    return false;
+  final public void setLocationX(int x) {
+    this.locationX = x;
   }
 
-  // calaculate distance
-  public double distanceTo(FieldUnit b) {
-    return Math.sqrt(Math.pow(b.getX() - this.getX(), 2) + Math.pow(b.getY() - this.getY(), 2));
+  final public int getLocationY() {
+    return locationY;
   }
 
-  public double distanceTo(int xCoord, int yCoord) {
-    return Math.sqrt(Math.pow(xCoord - this.getX(), 2) + Math.pow(yCoord - this.getY(), 2));
-  }
-
-  FieldUnit copy() {
-    FieldUnit l = new FieldUnit(this.getX(), this.getY());
-    return l;
-  }
-
-  final public int getX() {
-    return xLoc;
-  }
-
-  final public void setX(int x) {
-    this.xLoc = x;
-  }
-
-  // location Y
-  final public int getY() {
-    return yLoc;
-  }
-
-  final public void setY(int y) {
-    this.yLoc = y;
+  final public void setLocationY(int y) {
+    this.locationY = y;
   }
 
   public double doubleValue() {

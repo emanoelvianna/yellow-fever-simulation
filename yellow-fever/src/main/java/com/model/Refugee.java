@@ -26,6 +26,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   private int age;
   private int sex;
+  private boolean isWorker;
   private boolean isStudent;
   private FieldUnit currentPosition;
   private FieldUnit home;
@@ -41,7 +42,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
   // agent may go up to 10 times more
   // Nochola et al - symptomic patient may lose 1 litre/hour floud for 2-3 weeks -
   // but asymptomic - 1l/day
-  private Family hh;
+  private Family family;
   private ActivityMapping currentActivity;
 
   public static final int ORDERING = 2;
@@ -55,19 +56,20 @@ public class Refugee implements Steppable, Valuable, Serializable {
   private int recoveryPeriod;
 
   private int symtomaticType; // either sympmatic==1 or asymptomatic =2
-  // private double protectiveImmunity; // after recovery agent will not likely infected immediately
+  // private double protectiveImmunity; // after recovery agent will not likely
+  // infected immediately
   // but immunity will decay over time
-  private Dadaab d;
+  private Dadaab dadaab;
   public int minuteInDay;
   private TimeManager time;// time contorler-identify the hour, day, week
   private ArrayList<FieldUnit> path = null; // the agent's current path to its current goal
   private MersenneTwisterFast random;
 
-  public Refugee(int age, int sex, Family hh, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
+  public Refugee(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
       Continuous2D allRefugees) {
     this.setAge(age);
     this.setSex(sex);
-    this.setFamily(hh);
+    this.setFamily(family);
     this.setHome(home);
     this.setGoal(home);
     this.jitterX = seed.nextDouble();
@@ -75,7 +77,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.setCurrentPosition(position);
     this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
     time = new TimeManager();
-    d = null;
+    dadaab = null;
     currentStep = 0;
     this.setBitten(false);
     infectionPeriod = 0;
@@ -84,89 +86,38 @@ public class Refugee implements Steppable, Valuable, Serializable {
     random = seed;
     // stayingTime = 0;
     // frequencyLaterine = 1;
-    allRefugees.setObjectLocation(this,
-        new Double2D(hh.getCampLocation().getX() + jitterX, hh.getCampLocation().getY() + jitterY));
-  }
-
-  // TODO: Importante rever este conceito para a febre amarela
-  public void healthDepretiation() {
-    if (this.isInfected()) {
-      // childern may die sooner than old people
-      this.setBodyResistance(
-          this.getBodyResistance() - (d.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
-    }
-  }
-
-  // TODO: Importante rever estes conceitos relacionados a saúde
-  public void infected() {
-    if (this.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
-      this.infectionPeriod++;
-      // TODO: tempo de incupação medio da febre amarela
-      if (this.infectionPeriod > 4) {
-        // TODO: Calcular probabilidade de ficar em algum caso de infecção
-        if (d.random.nextDouble() <= 0.5) {
-          this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
-        } else if (d.random.nextDouble() <= 0.3) {
-          this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION); // immediately infected
-        }
-      }
-    } else if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
-      // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
-    }
-  }
-
-  // assign the best goal
-  public void calcGoal() {
-    if (this.getCurrentPosition().equals(this.getHome()) == true) {
-      Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
-      ActivityMapping bestActivity = activity.calculateActivityWeight(); // select the best goal
-      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, d)); // search the best location of
-      // your selected activity
-      this.setCurrentActivity(bestActivity); // track current activity - for the visualization
-      this.setStayingTime(stayingPeriod(this.getCurrentActivity()));
-      return;
-    } // from goal to home
-    else if (this.getCurrentPosition().equals(this.getGoal()) == true
-        && this.getGoal().equals(this.getHome()) != true) {
-      this.setGoal(this.getHome());
-      this.setStayingTime(stayingPeriod(ActivityMapping.STAY_HOME));
-      this.setCurrentActivity(ActivityMapping.STAY_HOME);
-      return;
-    } // incase
-    else {
-      this.setGoal(this.getHome());
-      this.setCurrentActivity(ActivityMapping.STAY_HOME);
-      return;
-    }
+    allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
+        family.getCampLocation().getLocationY() + jitterY));
   }
 
   // where to move
   public void move(int steps) {
-    // if you do not have goal- return
+    // if you do not have goal then return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
       return;
     } else if (this.getCurrentPosition().equals(this.getGoal()) == true && this.getGoal().equals(this.getHome()) != true
-        && isStay() == true) {
+        && this.isStay() == true) {
       return;
     }
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       doActivity(this.getGoal(), this.getCurrentActivity());
-      if (steps % 1440 < 17) {
-        if (random.nextDouble() > 0.3) {
-          calcGoal();
+      if (steps % 1440 < 17) { // TODO: Qual é a necessidade disto? Parece relacionado a hora
+        if (random.nextDouble() > 0.3) { // TODO: Qual é a necessidade disto?
+          calculateGoal();
         }
       } else {
-        calcGoal();
+        calculateGoal();
       }
     } // else move to your goal
     else {
       // make sure we have a path to the goal!
       if (path == null || path.size() == 0) {
-        path = AStar.astarPath(d,
-            (Node) d.closestNodes.get(this.getCurrentPosition().getX(), this.getCurrentPosition().getY()),
-            (Node) d.closestNodes.get(this.getGoal().getX(), this.getGoal().yLoc));
+        path = AStar.astarPath(dadaab,
+            (Node) dadaab.closestNodes.get(this.getCurrentPosition().getLocationX(),
+                this.getCurrentPosition().getLocationY()),
+            (Node) dadaab.closestNodes.get(this.getGoal().getLocationX(), this.getGoal().getLocationY()));
         if (path != null) {
           path.add(this.getGoal());
         }
@@ -195,33 +146,144 @@ public class Refugee implements Steppable, Valuable, Serializable {
       }
 
       Activity current = new Activity(this, time, currentStep, random, minuteInDay);
-      FieldUnit loc = current.getNextTile(d, subgoal, this.getCurrentPosition());
+      FieldUnit loc = current.getNextTile(dadaab, subgoal, this.getCurrentPosition());
       FieldUnit oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
 
       this.setCurrentPosition(loc);
       loc.addRefugee(this);
-      d.allRefugees.setObjectLocation(this, new Double2D(loc.getX() + this.jitterX, loc.getY() + jitterY));
+      dadaab.allRefugees.setObjectLocation(this,
+          new Double2D(loc.getLocationX() + this.jitterX, loc.getLocationY() + jitterY));
     }
   }
 
-  /* define go to activity in relation current hour */
-  public ActivityMapping goActivity(Dadaab dadaab) {
-    // TODO: está ativo?
-    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if ((time.currentDayInWeek(currentStep) > 5)) {
-        // TODO: realizar atividade de lazer
+  // assign the best goal
+  public void calculateGoal() {
+    if (this.getCurrentPosition().equals(this.getHome()) == true) {
+      Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
+      ActivityMapping bestActivity = activity.calculateActivityWeight(); // select the best goal
+      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search the best
+                                                                                               // location of
+      // your selected activity
+      this.setCurrentActivity(bestActivity); // track current activity - for the visualization
+      this.setStayingTime(this.stayingPeriod(this.getCurrentActivity()));
+      return;
+    } // from goal to home
+    else if (this.getCurrentPosition().equals(this.getGoal()) == true
+        && this.getGoal().equals(this.getHome()) != true) {
+      this.setGoal(this.getHome());
+      this.setStayingTime(this.stayingPeriod(ActivityMapping.STAY_HOME));
+      this.setCurrentActivity(ActivityMapping.STAY_HOME);
+      return;
+    } // incase
+    else {
+      this.setGoal(this.getHome());
+      this.setCurrentActivity(ActivityMapping.STAY_HOME);
+      return;
+    }
+  }
+
+  // TODO: Verificar a necessidade da realização de uma segunda atividade
+  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao médico
+  public void doActivity(FieldUnit f, ActivityMapping activityMapping) {
+    switch (activityMapping) {
+    case STAY_HOME:
+      break;
+    case HEALTH_CENTER:
+      receiveTreatment(f, dadaab);
+      break;
+    case SOCIAL_VISIT:
+      if (random.nextDouble() < dadaab.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
+      }
+      break;
+    default:
+    }
+  }
+
+  // TODO: Importante rever as atividades e os tempos relacionados
+  public int stayingPeriod(ActivityMapping activityMapping) {
+    int period = 0;
+    int minimumStay = 20; // minimum delay
+    int maximumStay = 180; // three hour
+
+    switch (activityMapping) {
+    case STAY_HOME:
+      period = maximumStay;
+      break;
+    case SCHOOL:
+      // time at school max until 4;00pm
+      if (this.minuteInDay + maximumStay + 120 > (17 * 60)) {
+        period = minimumStay;
+      } else
+        period = maximumStay + 120;
+      break;
+    case WORK:
+      // TODO:
+      if ((this.minuteInDay - (19 * 60) < (19 * 60))) {
+        period = (8 * 60);
       } else {
-        if (this.age > 16 && this.age < 65) {
-          // TODO: frequentar a escolha
-        } else {
-          // TODO: frequentar o trabalho
+        period = minimumStay;
+      }
+    case SOCIAL_VISIT:
+      // time vist camp 2 hour
+      if (this.minuteInDay + maximumStay > (12 * 60)) {
+        period = minimumStay;
+      } else
+        period = minimumStay + random.nextInt(maximumStay - 60);
+      break;
+    case RELIGION_ACTIVITY:
+      // time staying at mosq max 80 minute
+      if (this.minuteInDay + maximumStay > (16 * 60)) {
+        period = minimumStay;
+      } else
+        period = minimumStay + random.nextInt(maximumStay);
+      break;
+    case MARKET:
+      // time at the market max 5 hour
+      if (this.minuteInDay + maximumStay > (12 * 60)) {
+        period = minimumStay;
+      } else
+        period = minimumStay + random.nextInt(maximumStay);
+      break;
+    case HEALTH_CENTER:
+      // TODO:
+    }
+    return (period + this.minuteInDay);
+  }
+
+  // how long agent need to stay at location
+  public boolean isStay() {
+    if (this.minuteInDay < this.getStayingTime()) {
+      return true;
+    } else
+      return false;
+  }
+
+  // TODO: Importante rever este conceito para a febre amarela
+  public void healthDepretiation() {
+    if (this.isInfected()) {
+      // childern may die sooner than old people
+      this.setBodyResistance(this.getBodyResistance()
+          - (dadaab.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
+    }
+  }
+
+  // TODO: Importante rever estes conceitos relacionados a saúde
+  public void infected() {
+    if (this.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+      this.infectionPeriod++;
+      // TODO: tempo de incupação medio da febre amarela
+      if (this.infectionPeriod > 4) {
+        // TODO: Calcular probabilidade de ficar em algum caso de infecção
+        if (dadaab.random.nextDouble() <= 0.5) {
+          this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
+        } else if (dadaab.random.nextDouble() <= 0.3) {
+          this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION); // immediately infected
         }
       }
-    } else {
-      // TODO: permanecer em casa
+    } else if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
+      // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
     }
-    return null;
   }
 
   public boolean isInfected() {
@@ -235,81 +297,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     return false;
   }
 
-  public void doActivity(FieldUnit f, ActivityMapping activityMapping) {
-    switch (activityMapping) {
-    default:
-    case STAY_HOME:
-      break;
-    case HEALTH_CENTER:
-      receiveTreatment(f, d);
-      break;
-    case VISIT_SOCIAL:
-      if (random.nextDouble() < d.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-      }
-      break;
-    }
-  }
-
-  // TODO: Importante rever as atividades
-  // TODO: Deve ser incluido o tempo relativo ao tratamento médico
-  public int stayingPeriod(ActivityMapping activityMapping) {
-    int period = 0;
-    int minStay = 20; // minumum time to stay in any facility
-    int maxStay = 180; // three hour
-    int currentMinute = minuteInDay;
-
-    switch (activityMapping) {
-    case STAY_HOME:
-      period = maxStay;
-      break;
-    case SCHOOL:
-      // time at school max until 4;00pm
-      if (currentMinute + maxStay + 120 > (17 * 60)) {
-        period = minStay;
-      } else
-        period = maxStay + 120;
-      break;
-    case WORK:
-      // TODO: tempo de permanencia do trabalho
-    case VISIT_SOCIAL:
-      // time vist camp 2 hour
-      if (currentMinute + maxStay > (12 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay - 60);
-      break;
-    case RELIGION_ACTIVITY:
-      // time staying at mosq max 80 minute
-      if (currentMinute + maxStay > (16 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay);
-      break;
-    case MARKET:
-      // time at the market max 5 hour
-      if (currentMinute + maxStay > (12 * 60)) {
-        period = minStay;
-      } else
-        period = minStay + random.nextInt(maxStay);
-      break;
-    case HEALTH_CENTER:
-      // TODO:
-    }
-    return (period + currentMinute);
-  }
-
-  // how long agent need to stay at location
-  public boolean isStay() {
-    // TimeManager tm = new TimeManager();
-    boolean isStay = false;
-    if (minuteInDay < this.getStayingTime()) {
-      isStay = true;
-    } else
-      isStay = false;
-    return isStay;
-
-  }
-
+  // TODO: Como irá funcionar o tratamento?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     // based on the capacity of the
     if (this.isInfected() && f.getFacility().isReachedCapacity(f, d) == false) {
@@ -324,8 +312,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   public void step(SimState state) {
-    d = (Dadaab) state;
-    currentStep = (int) d.schedule.getSteps();
+    dadaab = (Dadaab) state;
+    currentStep = (int) dadaab.schedule.getSteps();
 
     if (currentStep < 1440) {
       minuteInDay = currentStep;
@@ -348,7 +336,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
       }
     }
 
-    if (random.nextDouble() < d.getParams().getGlobal().getProbRecoveryToSuscebtable()
+    if (random.nextDouble() < dadaab.getParams().getGlobal().getProbRecoveryToSuscebtable()
         && this.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
       this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
@@ -357,7 +345,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
     // death
     if (this.getBodyResistance() <= 0) {
-      d.killrefugee(this);
+      dadaab.killrefugee(this);
     }
 
     move(currentStep);
@@ -437,13 +425,21 @@ public class Refugee implements Steppable, Valuable, Serializable {
     return isStudent;
   }
 
-  // faimly memeber
-  public void setFamily(Family hh) {
-    this.hh = hh;
+  public boolean isWorker() {
+    return isWorker;
+  }
+
+  public void setWorker(boolean isWorker) {
+    this.isWorker = isWorker;
+  }
+
+  // family memeber
+  public void setFamily(Family family) {
+    this.family = family;
   }
 
   public Family getFamily() {
-    return hh;
+    return family;
   }
 
   public void setPreviousHealthStatus(HealthStatus status) {
@@ -463,7 +459,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
     return symtomaticType;
   }
 
-  // current activity
   public void setCurrentActivity(ActivityMapping activityMapping) {
     this.currentActivity = activityMapping;
   }

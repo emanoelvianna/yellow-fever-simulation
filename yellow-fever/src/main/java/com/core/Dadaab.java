@@ -218,7 +218,7 @@ public class Dadaab extends SimState {
           case MARKET:
             sumAct[3] += 1;
             break;
-          case VISIT_SOCIAL:
+          case SOCIAL_VISIT:
             sumAct[6] += 1;
             break;
           }

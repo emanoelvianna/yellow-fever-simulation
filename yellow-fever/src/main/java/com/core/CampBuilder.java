@@ -108,8 +108,8 @@ public class CampBuilder {
             fieldUnit.setFieldID(0);
           }
 
-          fieldUnit.setX(curr_col);
-          fieldUnit.setY(curr_row);
+          fieldUnit.setLocationX(curr_col);
+          fieldUnit.setLocationY(curr_row);
           fieldUnit.setWater(0);
           // dadaab.allFields.add(fieldUnit);
           dadaab.allCamps.field[curr_col][curr_row] = fieldUnit;
@@ -353,15 +353,25 @@ public class CampBuilder {
       newRefugee.setSymtomaticType(2); // asymptotic
     }
 
-    newRefugee.setStudent(isStudent(age, dadaab));
+    newRefugee.setStudent(this.isStudent(age));
+    newRefugee.setWorker(this.isWorker(age));
 
     newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
   }
 
   // TODO: Rever a faixa de idade de estudante
   // TODO: Considerar uma faixa como estudante universitário
-  public boolean isStudent(int age, Dadaab dadaab) {
+  public boolean isStudent(int age) {
     if (age >= 5 && age < 16) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // TODO: Está feixa de idade de trabalhador está no texto?
+  public boolean isWorker(int age) {
+    if (age >= 16 && age <= 65) {
       return true;
     } else {
       return false;
@@ -672,18 +682,18 @@ public class CampBuilder {
         Crawler c = crawlers.remove(index);
 
         // check if the location has already been claimed
-        Node n = (Node) closestNodes.get(c.location.getX(), c.location.getY());
+        Node n = (Node) closestNodes.get(c.location.getLocationX(), c.location.getLocationY());
 
         if (n == null) { // found something new! Mark it and reproduce
 
           // set it
-          closestNodes.set(c.location.getX(), c.location.getY(), c.node);
+          closestNodes.set(c.location.getLocationX(), c.location.getLocationY(), c.node);
 
           // reproduce
           Bag neighbors = new Bag();
 
-          dadaab.allCamps.getNeighborsHamiltonianDistance(c.location.getX(), c.location.getY(), 1, false, neighbors,
-              null, null);
+          dadaab.allCamps.getNeighborsHamiltonianDistance(c.location.getLocationX(), c.location.getLocationY(), 1,
+              false, neighbors, null, null);
 
           for (Object o : neighbors) {
             FieldUnit l = (FieldUnit) o;
