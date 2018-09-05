@@ -211,19 +211,19 @@ public class Refugee implements Steppable, Valuable, Serializable {
       period = maximumStay;
       break;
     case SCHOOL:
-      // time at school max until 4;00pm
+      // time at school max until 17:00pm
       if (this.minuteInDay + maximumStay + 120 > (17 * 60)) {
         period = minimumStay;
       } else
         period = maximumStay + 120;
       break;
     case WORK:
-      // TODO:
-      if ((this.minuteInDay - (19 * 60) < (19 * 60))) {
-        period = (8 * 60);
-      } else {
+      // time at work max until 18:00pm
+      if (this.minuteInDay + maximumStay + 120 > (18 * 60)) {
         period = minimumStay;
-      }
+      } else
+        period = maximumStay + 120;
+      break;
     case SOCIAL_VISIT:
       // time vist camp 2 hour
       if (this.minuteInDay + maximumStay > (12 * 60)) {

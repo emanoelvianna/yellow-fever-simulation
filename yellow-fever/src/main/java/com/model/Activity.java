@@ -35,17 +35,20 @@ public class Activity {
     case STAY_HOME:
       return ref.getHome();
     case WORK:
-      // TODO: Agente deve ser removido do mapa
-      // TODO: Considerando na maioria dos casos seu trabalho não proximo de casa
+      // TODO: BoreHoles podem ser considerados os locais de trabalho?
+      return betstLoc(ref.getHome(), d.boreHoles, d);
     case SCHOOL:
       return betstLoc(ref.getHome(), d.schooles, d);
     case RELIGION_ACTIVITY:
+      System.out.println("RELIGION_ACTIVITY");
       return betstLoc(ref.getHome(), d.mosques, d);
     case MARKET:
+      System.out.println("MARKET");
       return betstLoc(ref.getHome(), d.market, d);
     case HEALTH_CENTER:
       return betstLoc(ref.getHome(), d.healthCenters, d);
     case SOCIAL_VISIT:
+      System.out.println("MARKET");
       return socialize(ref, d);
     default:
       return ref.getHome();
