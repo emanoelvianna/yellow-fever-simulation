@@ -361,8 +361,8 @@ public class CampBuilder {
 
   // TODO: Rever a faixa de idade de estudante
   // TODO: Considerar uma faixa como estudante universitário
-  public boolean isStudent(int age) {
-    if (age >= 5 && age < 16) {
+  private boolean isStudent(int age) {
+    if (age < 25) {
       return true;
     } else {
       return false;
@@ -370,8 +370,8 @@ public class CampBuilder {
   }
 
   // TODO: Está feixa de idade de trabalhador está no texto?
-  public boolean isWorker(int age) {
-    if (age >= 16 && age <= 65) {
+  private boolean isWorker(int age) {
+    if (age >= 25 && age <= 65) {
       return true;
     } else {
       return false;
@@ -504,42 +504,36 @@ public class CampBuilder {
         double rn = dadaab.random.nextDouble();
         int age = 0;
         for (int i = 0; i < tot; i++) {
-
-          // a household head need to be between 18-59;
-
           if (i == 0) {
-            age = 18 + dadaab.random.nextInt(42); // 18-59
+            // a household head need to be between 18-59;
+            age = 18 + dadaab.random.nextInt(42);
           } else {
-
             if (rn <= 0.1) {
-              age = 1 + dadaab.random.nextInt(4); // 1-4 age
-            } else if (rn > 0.1 && rn <= 0.40) {
-              age = 5 + dadaab.random.nextInt(7); // 5=11
-
-            } else if (rn > 0.40 && rn <= 0.57) {
-              age = 12 + dadaab.random.nextInt(6); // 11-17
+              age = 5 + dadaab.random.nextInt(14); // 20% chance the age between 5-19
             } else if (rn > 0.57 && rn <= 0.97) {
-              age = 18 + dadaab.random.nextInt(42); // 18-59
+              age = 20 + dadaab.random.nextInt(14); // 40% chance the age between 20-34
+            } else if (rn > 0.1 && rn <= 0.40) {
+              age = 35 + dadaab.random.nextInt(14); // 25% chance the age between 35-49
+            } else if (rn > 0.40 && rn <= 0.57) {
+              age = 50 + dadaab.random.nextInt(14); // 12% chance the age between 50-64
             } else {
-              age = 60 + dadaab.random.nextInt(40); // 60 +
+              age = 65 + dadaab.random.nextInt(25); // 3% chance the age between 65-90
             }
           }
-
-          int sex = 0; // sex 50-50 chance
-          if (dadaab.random.nextDouble() > 0.5) {
-            sex = 1;
-          } else {
-            sex = 2;
-          }
-
-          // System.out.println("age: " + age + ": sex: " + sex);
+          int sex = this.defineSex(dadaab);
           addAllRefugees(age, sex, hh, random, dadaab);
-
         }
       }
-
     }
+  }
 
+  public int defineSex(Dadaab dadaab) {
+    // sex 50-50 chance
+    if (dadaab.random.nextDouble() > 0.5) {
+      return 1;
+    } else {
+      return 2;
+    }
   }
 
   private void populate(MersenneTwisterFast random, Dadaab dadaab) {

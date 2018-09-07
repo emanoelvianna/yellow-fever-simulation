@@ -57,7 +57,6 @@ public class DadaabGUI extends GUIState {
 
   private Display2D display;
   private JFrame displayFrame;
-
   private Display2D displayRainfall;
   private JFrame displayFrameRainfall;
 

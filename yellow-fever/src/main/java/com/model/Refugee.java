@@ -161,18 +161,18 @@ public class Refugee implements Steppable, Valuable, Serializable {
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
-      ActivityMapping bestActivity = activity.calculateActivityWeight(); // select the best goal
+      ActivityMapping bestActivity = activity.calculateActivityWeight(dadaab); // select the best goal
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search the best
                                                                                                // location of
       // your selected activity
       this.setCurrentActivity(bestActivity); // track current activity - for the visualization
-      this.setStayingTime(this.stayingPeriod(this.getCurrentActivity()));
+      this.setStayingTime(activity.stayingPeriod(this.getCurrentActivity()));
       return;
     } // from goal to home
     else if (this.getCurrentPosition().equals(this.getGoal()) == true
         && this.getGoal().equals(this.getHome()) != true) {
       this.setGoal(this.getHome());
-      this.setStayingTime(this.stayingPeriod(ActivityMapping.STAY_HOME));
+      // this.setStayingTime(activity.stayingPeriod(ActivityMapping.STAY_HOME));
       this.setCurrentActivity(ActivityMapping.STAY_HOME);
       return;
     } // incase
@@ -198,57 +198,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
       break;
     default:
     }
-  }
-
-  // TODO: Importante rever as atividades e os tempos relacionados
-  public int stayingPeriod(ActivityMapping activityMapping) {
-    int period = 0;
-    int minimumStay = 20; // minimum delay
-    int maximumStay = 180; // three hour
-
-    switch (activityMapping) {
-    case STAY_HOME:
-      period = maximumStay;
-      break;
-    case SCHOOL:
-      // time at school max until 17:00pm
-      if (this.minuteInDay + maximumStay + 120 > (17 * 60)) {
-        period = minimumStay;
-      } else
-        period = maximumStay + 120;
-      break;
-    case WORK:
-      // time at work max until 18:00pm
-      if (this.minuteInDay + maximumStay + 120 > (18 * 60)) {
-        period = minimumStay;
-      } else
-        period = maximumStay + 120;
-      break;
-    case SOCIAL_VISIT:
-      // time vist camp 2 hour
-      if (this.minuteInDay + maximumStay > (12 * 60)) {
-        period = minimumStay;
-      } else
-        period = minimumStay + random.nextInt(maximumStay - 60);
-      break;
-    case RELIGION_ACTIVITY:
-      // time staying at mosq max 80 minute
-      if (this.minuteInDay + maximumStay > (16 * 60)) {
-        period = minimumStay;
-      } else
-        period = minimumStay + random.nextInt(maximumStay);
-      break;
-    case MARKET:
-      // time at the market max 5 hour
-      if (this.minuteInDay + maximumStay > (12 * 60)) {
-        period = minimumStay;
-      } else
-        period = minimumStay + random.nextInt(maximumStay);
-      break;
-    case HEALTH_CENTER:
-      // TODO:
-    }
-    return (period + this.minuteInDay);
   }
 
   // how long agent need to stay at location
