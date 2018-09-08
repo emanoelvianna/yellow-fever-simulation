@@ -232,7 +232,7 @@ public class Dadaab extends SimState {
               totSusDag = totSusDag + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpDag = totExpDag + 1;
-            } else if (r.isInfected()) {
+            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
               totInfDag = totInfDag + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecDag = totRecDag + 1;
@@ -247,7 +247,7 @@ public class Dadaab extends SimState {
               totSusInfo = totSusInfo + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpInfo = totExpInfo + 1;
-            } else if (r.isInfected()) {
+            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
               totInfInfo = totInfInfo + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecInfo = totRecInfo + 1;
@@ -261,7 +261,7 @@ public class Dadaab extends SimState {
               totSusHag = totSusHag + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpHag = totExpHag + 1;
-            } else if (r.isInfected()) {
+            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
               totInfHag = totInfHag + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecHag = totRecHag + 1;
@@ -276,7 +276,7 @@ public class Dadaab extends SimState {
             totalSus = totalSus + 1;
           } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
-          } else if (r.isInfected()) {
+          } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
             totalInf = totalInf + 1;
           } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;
@@ -289,7 +289,7 @@ public class Dadaab extends SimState {
               totalSusNewly = totalSusNewly + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totalExpNewly = totalExpNewly + 1;
-            } else if (r.isInfected()) {
+            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
               totalInfNewly = totalInfNewly + 1;
             } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totalRecNewly = totalRecNewly + 1;
@@ -388,6 +388,7 @@ public class Dadaab extends SimState {
     // System.out.println("total:- "+ allRefugees.getAllObjects().numObjs);
   }
 
+  // TODO: Rever está informação
   // age class or ageset
   private int ageClass(int age) {
     int a = 0;

@@ -24,6 +24,40 @@ public class Activity {
     this.minuteInDay = minuteInDay;
   }
 
+  // check the crowded level on the road or at your goal location
+  // this method is taken from Haiti project
+  /*
+   * activity selection currently is made by simple assumption that consider age,
+   * sex, need and time in most cases based on these each activity is given some
+   * weight and the best of all will e selected
+   */
+  public ActivityMapping calculateActivityWeight(Dadaab dadaab) {
+    ActivityMapping activity = ActivityMapping.STAY_HOME;
+    if (HealthStatus.isInfected(this.refugee.getCurrentHealthStatus())) {
+      // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
+      // TODO: Sim, levando em consideração que nem todos buscam ajuda imediata
+      return ActivityMapping.HEALTH_CENTER;
+    } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+      if (time.currentDayInWeek(currentStep) < 5) {
+        if (this.refugee.isWorker()) {
+          activity = ActivityMapping.WORK;
+        } else if (this.refugee.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+          activity = ActivityMapping.SCHOOL;
+        }
+      } else {
+        int random = dadaab.random.nextInt(100);
+        if (random < 30) {
+          return ActivityMapping.MARKET;
+        } else if (random > 30 && random < 60) {
+          return ActivityMapping.RELIGION_ACTIVITY;
+        } else {
+          return ActivityMapping.SOCIAL_VISIT;
+        }
+      }
+    }
+    return activity;
+  }
+
   // best location is mainly determine by distance
   // near is best
   public FieldUnit bestActivityLocation(Refugee ref, FieldUnit position, ActivityMapping activityMapping, Dadaab d) {
@@ -86,6 +120,23 @@ public class Activity {
       break;
     }
     return (period + this.minuteInDay);
+  }
+
+  // TODO: Verificar a necessidade de realizar alguma operação na atividade
+  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao médico
+  public void doActivity(FieldUnit f, ActivityMapping activityMapping, Dadaab dadaab) {
+    switch (activityMapping) {
+    case STAY_HOME:
+      break;
+    case HEALTH_CENTER:
+      this.refugee.receiveTreatment(f, dadaab);
+      break;
+    case SOCIAL_VISIT:
+      if (random.nextDouble() < dadaab.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
+      }
+      break;
+    default:
+    }
   }
 
   private FieldUnit betstLoc(FieldUnit fLoc, Bag fieldBag, Dadaab d) {
@@ -256,40 +307,6 @@ public class Activity {
     }
     return fieldP;
 
-  }
-
-  // check the crowded level on the road or at your goal location
-  // this method is taken from Haiti project
-  /*
-   * activity selection currently is made by simple assumption that consider age,
-   * sex, need and time in most cases based on these each activity is given some
-   * weight and the best of all will e selected
-   */
-  public ActivityMapping calculateActivityWeight(Dadaab dadaab) {
-    ActivityMapping activity = ActivityMapping.STAY_HOME;
-    if (HealthStatus.isInfected(this.refugee.getCurrentHealthStatus())) {
-      // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
-      // TODO: Sim, levando em consideração que nem todos buscam ajuda imediata
-      return ActivityMapping.HEALTH_CENTER;
-    } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if (time.currentDayInWeek(currentStep) < 5) {
-        if (this.refugee.isWorker()) {
-          activity = ActivityMapping.WORK;
-        } else if (this.refugee.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
-          activity = ActivityMapping.SCHOOL;
-        }
-      } else {
-        int random = dadaab.random.nextInt(100);
-        if (random < 30) {
-          return ActivityMapping.MARKET;
-        } else if (random > 30 && random < 60) {
-          return ActivityMapping.RELIGION_ACTIVITY;
-        } else {
-          return ActivityMapping.SOCIAL_VISIT;
-        }
-      }
-    }
-    return activity;
   }
 
   public Refugee getRefugee() {

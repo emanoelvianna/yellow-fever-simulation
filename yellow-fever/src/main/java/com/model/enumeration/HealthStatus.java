@@ -1,7 +1,7 @@
 package com.model.enumeration;
 
 public enum HealthStatus {
-  SUSCEPTIBLE, EXPOSED, SEVERE_INFECTION, MILD_INFECTION, TOXIC_INFECTION, RECOVERED, DEAD;
+  SUSCEPTIBLE, EXPOSED, MILD_INFECTION, SEVERE_INFECTION, TOXIC_INFECTION, RECOVERED, DEAD;
 
   public static HealthStatus typeOfHealthStatus(HealthStatus currentHealthStatus) {
     switch (currentHealthStatus) {

@@ -90,6 +90,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   // where to move
   public void move(int steps) {
+    Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
@@ -100,7 +101,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
-      doActivity(this.getGoal(), this.getCurrentActivity());
+      activity.doActivity(this.getGoal(), this.getCurrentActivity(), dadaab);
       if (steps % 1440 < 17) { // TODO: Qual é a necessidade disto? Parece relacionado a hora
         if (random.nextDouble() > 0.3) { // TODO: Qual é a necessidade disto?
           calculateGoal();
@@ -143,8 +144,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
         }
       }
 
-      Activity current = new Activity(this, time, currentStep, random, minuteInDay);
-      FieldUnit loc = current.getNextTile(dadaab, subgoal, this.getCurrentPosition());
+      FieldUnit loc = activity.getNextTile(dadaab, subgoal, this.getCurrentPosition());
       FieldUnit oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
 
@@ -181,23 +181,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Verificar a necessidade de realizar alguma operação na atividade
-  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao médico
-  public void doActivity(FieldUnit f, ActivityMapping activityMapping) {
-    switch (activityMapping) {
-    case STAY_HOME:
-      break;
-    case HEALTH_CENTER:
-      receiveTreatment(f, dadaab);
-      break;
-    case SOCIAL_VISIT:
-      if (random.nextDouble() < dadaab.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-      }
-      break;
-    default:
-    }
-  }
-
   // how long agent need to stay at location
   public boolean isStay() {
     if (this.minuteInDay < this.getStayingTime()) {
@@ -212,17 +195,21 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   public void currentStateOfInfection() {
-    if (this.incubationPeriod == 0) {
-      // TODO: Calcular probabilidade de ficar em algum caso de infecção
-      if (dadaab.random.nextDouble() <= 0.5) {
-        this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
-      } else if (dadaab.random.nextDouble() <= 0.3) {
-        this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION); // immediately infected
+    if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+      if (dadaab.random.nextInt(10) <= 9) { // 90% of cases are mild
+        this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
+      } else {
+        this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
       }
+    } else if (this.incubationPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
+        // TODO: Valor aleatório para testes
+        if (dadaab.random.nextInt(10) <= 1) { // 10% of cases are toxic
+          this.setCurrentHealthStatus(HealthStatus.TOXIC_INFECTION);
+        }
         // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
         // TODO: Com a probabilidade X o agente acaba piorando o estado
-        this.healthDepretiation();
+        // this.healthDepretiation();
       }
     } else {
       this.incubationPeriod--;
@@ -240,15 +227,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   // TODO: Como irá funcionar o tratamento?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
-    // based on the capacity of the
-    if (HealthStatus.isInfected(this.currentHealthStatus) && f.getFacility().isReachedCapacity(f, d) == false) {
-      f.setPatientCounter(f.getPatientCounter() + 1);
-      if (random.nextDouble() < d.getParams().getGlobal().getprobabilityOfEffectiveNessofmedicine()) {
-        int recovery = currentStep + (400 + random.nextInt(1440));
-        this.setIsrecieveTreatment(true);
-        this.setRecoveryPeriod(recovery);
-        this.setBodyResistance(1.0);
-      }
+    if (dadaab.random.nextDouble() > 0.5) {
+      this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
   }
 
@@ -260,6 +240,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
       minuteInDay = currentStep;
     } else {
       minuteInDay = currentStep % 1440;
+    }
+
+    // TODO: Remover, utilizado para teste sobre a infecção
+    if (dadaab.random.nextDouble() > 0.5 && !HealthStatus.RECOVERED.equals(this.currentHealthStatus)) {
+      this.infected();
     }
 
     // TODO: Importante rever estes conceitos relacionados a saúde
