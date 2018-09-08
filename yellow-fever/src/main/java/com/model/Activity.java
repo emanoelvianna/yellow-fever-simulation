@@ -31,7 +31,7 @@ public class Activity {
    * sex, need and time in most cases based on these each activity is given some
    * weight and the best of all will e selected
    */
-  public ActivityMapping calculateActivityWeight(Dadaab dadaab) {
+  public ActivityMapping defineActivity(Dadaab dadaab) {
     ActivityMapping activity = ActivityMapping.STAY_HOME;
     if (HealthStatus.isInfected(this.refugee.getCurrentHealthStatus())) {
       // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?

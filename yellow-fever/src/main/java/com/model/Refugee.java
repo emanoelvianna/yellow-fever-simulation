@@ -49,10 +49,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
   protected Stoppable stopper;
   public int stayingTime;
   // infection info
-  public boolean isrecieveTreatment = false;
-  private double bodyResistance;// after infection how long stay alive- depreciate as cholera progress
-  private int incubationPeriod; // time after first infection to show syptom
-  private int recoveryPeriod;
+  private boolean vaccinated;
+  private double bodyResistance;
+  private int incubationPeriod;
+  private int infectionPeriod;
+  private int toxicPeriod;
 
   private int symtomaticType; // either sympmatic==1 or asymptomatic =2
   // private double protectiveImmunity; // after recovery agent will not likely
@@ -76,12 +77,14 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.setCurrentPosition(position);
     this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
     this.time = new TimeManager();
-    this.dadaab = null;
-    this.currentStep = 0;
-    this.incubationPeriod = 0;
-    this.recoveryPeriod = 0;
     this.minuteInDay = 0;
     this.random = seed;
+    this.dadaab = null;
+    this.currentStep = 0;
+    this.vaccinated = false;
+    this.incubationPeriod = 0;
+    this.infectionPeriod = 0;
+    this.toxicPeriod = 0;
     // stayingTime = 0;
     // frequencyLaterine = 1;
     allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
@@ -159,9 +162,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
-      ActivityMapping bestActivity = activity.calculateActivityWeight(dadaab); // select the best goal
+      ActivityMapping bestActivity = activity.defineActivity(dadaab); // select the best goal
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search the best
-                                                                                               // location of
       // your selected activity
       this.setCurrentActivity(bestActivity); // track current activity - for the visualization
       this.setStayingTime(activity.stayingPeriod(this.getCurrentActivity()));
@@ -202,18 +204,32 @@ public class Refugee implements Steppable, Valuable, Serializable {
         this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
       }
     } else if (this.incubationPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
-      if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
-        // TODO: Valor aleatório para testes
-        if (dadaab.random.nextInt(10) <= 1) { // 10% of cases are toxic
-          this.setCurrentHealthStatus(HealthStatus.TOXIC_INFECTION);
-        }
-        // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
-        // TODO: Com a probabilidade X o agente acaba piorando o estado
-        // this.healthDepretiation();
+      // TODO: Com a probabilidade X o agente acaba piorando o estado
+      // TODO: Valor aleatório para testes
+      if (dadaab.random.nextInt(10) <= 1) { // 10% of cases are toxic
+        this.currentHealthStatus = HealthStatus.TOXIC_INFECTION;
+      } else {
+        this.currentHealthStatus = HealthStatus.MILD_INFECTION;
       }
     } else {
       this.incubationPeriod--;
     }
+  }
+
+  public boolean isPeriodOfInfection() {
+    if (this.infectionPeriod > 0 || this.toxicPeriod > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void definePeriodOfInfection() {
+    this.infectionPeriod = 3 + dadaab.random.nextInt(4);
+  }
+
+  public void definePeriodOfToxicInfection() {
+    this.toxicPeriod = 8;
   }
 
   // TODO: Importante rever este conceito para a febre amarela
@@ -223,12 +239,29 @@ public class Refugee implements Steppable, Valuable, Serializable {
       this.setBodyResistance(this.getBodyResistance()
           - (dadaab.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
     }
+
+    if (HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus) && this.isPeriodOfInfection()) {
+      if (dadaab.random.nextDouble() > 0.5) { // 50-50 chance
+        this.currentHealthStatus = HealthStatus.RECOVERED;
+      } else {
+        this.currentHealthStatus = HealthStatus.DEAD;
+        dadaab.killrefugee(this);
+      }
+    }
   }
 
   // TODO: Como irá funcionar o tratamento?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
       this.setCurrentHealthStatus(HealthStatus.RECOVERED);
+    }
+  }
+
+  public void applyVaccine() {
+    if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+      this.vaccinated = true;
+      // TODO: Existe algum tempo para acabar sendo imune?
+      this.currentHealthStatus = HealthStatus.RECOVERED;
     }
   }
 
@@ -245,6 +278,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     // TODO: Remover, utilizado para teste sobre a infecção
     if (dadaab.random.nextDouble() > 0.5 && !HealthStatus.RECOVERED.equals(this.currentHealthStatus)) {
       this.infected();
+      this.infectionPeriod = 3;
     }
 
     // TODO: Importante rever estes conceitos relacionados a saúde
@@ -254,11 +288,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
 
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
-      if (this.getRecoveryPeriod() == currentStep && this.getIsrecieveTreatment() == true) {
+      // TODO: Existem casos de recuperação sem tratamento?
+      // TODO: Recebendo tratamento suas chances de recuperação acabam aumentando?
+      if (!this.isPeriodOfInfection()) {
         this.setCurrentHealthStatus(HealthStatus.RECOVERED);
-        this.setRecoveryPeriod(0);
         this.setBodyResistance(1.0);
-        this.setIsrecieveTreatment(false);
       }
     }
 
@@ -411,22 +445,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
     return incubationPeriod;
   }
 
-  public void setRecoveryPeriod(int inf) {
-    this.recoveryPeriod = inf;
-  }
-
-  public int getRecoveryPeriod() {
-    return recoveryPeriod;
-  }
-
-  public void setIsrecieveTreatment(boolean tr) {
-    isrecieveTreatment = tr;
-  }
-
-  public boolean getIsrecieveTreatment() {
-    return isrecieveTreatment;
-  }
-
   // counts time after infection
   public void setStayingTime(int sty) {
     this.stayingTime = sty;
@@ -442,6 +460,30 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   public void setCurrentHealthStatus(HealthStatus healthStatus) {
     this.currentHealthStatus = healthStatus;
+  }
+
+  public int getInfectionPeriod() {
+    return infectionPeriod;
+  }
+
+  public void setInfectionPeriod(int infectionPeriod) {
+    this.infectionPeriod = infectionPeriod;
+  }
+
+  public int getToxicPeriod() {
+    return toxicPeriod;
+  }
+
+  public void setToxicPeriod(int toxicPeriod) {
+    this.toxicPeriod = toxicPeriod;
+  }
+
+  public boolean isVaccinated() {
+    return vaccinated;
+  }
+
+  public void setVaccinated(boolean vaccinated) {
+    this.vaccinated = vaccinated;
   }
 
 }

@@ -339,7 +339,7 @@ public class CampBuilder {
         dadaab.allRefugees);
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
-    newRefugee.setBodyResistance(1);
+    newRefugee.setBodyResistance(1.0);
     newRefugee.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
 

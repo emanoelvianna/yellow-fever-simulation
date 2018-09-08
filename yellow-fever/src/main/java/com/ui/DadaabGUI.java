@@ -91,7 +91,7 @@ public class DadaabGUI extends GUIState {
   }
 
   public static String getName() {
-    return "Dadaab Refugee Camp";
+    return "Yellow Fever";
   }
 
   public Object getSimulationInspectedObject() {
