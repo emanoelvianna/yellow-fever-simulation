@@ -1,12 +1,9 @@
 package com.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import com.core.Dadaab;
 import com.core.TimeManager;
 import com.model.enumeration.ActivityMapping;
+import com.model.enumeration.HealthStatus;
 
 import ec.util.MersenneTwisterFast;
 import sim.util.Bag;
@@ -76,6 +73,7 @@ public class Activity {
       break;
     case RELIGION_ACTIVITY:
       // time at maximum unti 2 hours
+      System.out.println("RELIGION_ACTIVITY");
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case MARKET:
@@ -269,25 +267,22 @@ public class Activity {
    */
   public ActivityMapping calculateActivityWeight(Dadaab dadaab) {
     ActivityMapping activity = ActivityMapping.STAY_HOME;
-    // is active
-    if (this.refugee.isInfected()) {
+    if (HealthStatus.isInfected(this.refugee.getCurrentHealthStatus())) {
       // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
       // TODO: Sim, levando em consideração que nem todos buscam ajuda imediata
-      // TODO: O agente deve ir ao médico sempre quando não estiver ativo?
-      // TODO: Todos vão imediatamente procurar ajuda médica?
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if (time.currentDayInWeek(currentStep) < 1) {
+      if (time.currentDayInWeek(currentStep) < 5) {
         if (this.refugee.isWorker()) {
           activity = ActivityMapping.WORK;
         } else if (this.refugee.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
           activity = ActivityMapping.SCHOOL;
         }
       } else {
-        int random = dadaab.random.nextInt();
+        int random = dadaab.random.nextInt(100);
         if (random < 30) {
           return ActivityMapping.MARKET;
-        } else if (random < 60) {
+        } else if (random > 30 && random < 60) {
           return ActivityMapping.RELIGION_ACTIVITY;
         } else {
           return ActivityMapping.SOCIAL_VISIT;

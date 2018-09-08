@@ -49,10 +49,9 @@ public class Refugee implements Steppable, Valuable, Serializable {
   protected Stoppable stopper;
   public int stayingTime;
   // infection info
-  private boolean bitten;
   public boolean isrecieveTreatment = false;
   private double bodyResistance;// after infection how long stay alive- depreciate as cholera progress
-  private int infectionPeriod; // time after first infection to show syptom
+  private int incubationPeriod; // time after first infection to show syptom
   private int recoveryPeriod;
 
   private int symtomaticType; // either sympmatic==1 or asymptomatic =2
@@ -76,14 +75,13 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.jitterY = seed.nextDouble();
     this.setCurrentPosition(position);
     this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
-    time = new TimeManager();
-    dadaab = null;
-    currentStep = 0;
-    this.setBitten(false);
-    infectionPeriod = 0;
-    recoveryPeriod = 0;
-    minuteInDay = 0;
-    random = seed;
+    this.time = new TimeManager();
+    this.dadaab = null;
+    this.currentStep = 0;
+    this.incubationPeriod = 0;
+    this.recoveryPeriod = 0;
+    this.minuteInDay = 0;
+    this.random = seed;
     // stayingTime = 0;
     // frequencyLaterine = 1;
     allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
@@ -183,7 +181,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Verificar a necessidade da realização de uma segunda atividade
+  // TODO: Verificar a necessidade de realizar alguma operação na atividade
   // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao médico
   public void doActivity(FieldUnit f, ActivityMapping activityMapping) {
     switch (activityMapping) {
@@ -208,48 +206,42 @@ public class Refugee implements Steppable, Valuable, Serializable {
       return false;
   }
 
+  public void infected() {
+    this.incubationPeriod = 3 + dadaab.random.nextInt(10);
+    this.currentHealthStatus = HealthStatus.EXPOSED;
+  }
+
+  public void currentStateOfInfection() {
+    if (this.incubationPeriod == 0) {
+      // TODO: Calcular probabilidade de ficar em algum caso de infecção
+      if (dadaab.random.nextDouble() <= 0.5) {
+        this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
+      } else if (dadaab.random.nextDouble() <= 0.3) {
+        this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION); // immediately infected
+      }
+      if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
+        // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
+        // TODO: Com a probabilidade X o agente acaba piorando o estado
+        this.healthDepretiation();
+      }
+    } else {
+      this.incubationPeriod--;
+    }
+  }
+
   // TODO: Importante rever este conceito para a febre amarela
   public void healthDepretiation() {
-    if (this.isInfected()) {
+    if (HealthStatus.isInfected(this.currentHealthStatus)) {
       // childern may die sooner than old people
       this.setBodyResistance(this.getBodyResistance()
           - (dadaab.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
     }
   }
 
-  // TODO: Importante rever estes conceitos relacionados a saúde
-  public void infected() {
-    if (this.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
-      this.infectionPeriod++;
-      // TODO: tempo de incupação medio da febre amarela
-      if (this.infectionPeriod > 4) {
-        // TODO: Calcular probabilidade de ficar em algum caso de infecção
-        if (dadaab.random.nextDouble() <= 0.5) {
-          this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION); // immediately infected
-        } else if (dadaab.random.nextDouble() <= 0.3) {
-          this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION); // immediately infected
-        }
-      }
-    } else if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
-      // TODO: Considerar o caso grave da infecção TOXIC_INFECTION
-    }
-  }
-
-  public boolean isInfected() {
-    if (this.getCurrentHealthStatus().equals(HealthStatus.MILD_INFECTION)) {
-      return true;
-    } else if (this.getCurrentHealthStatus().equals(HealthStatus.SEVERE_INFECTION)) {
-      return true;
-    } else if (this.getCurrentHealthStatus().equals(HealthStatus.TOXIC_INFECTION)) {
-      return true;
-    }
-    return false;
-  }
-
   // TODO: Como irá funcionar o tratamento?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     // based on the capacity of the
-    if (this.isInfected() && f.getFacility().isReachedCapacity(f, d) == false) {
+    if (HealthStatus.isInfected(this.currentHealthStatus) && f.getFacility().isReachedCapacity(f, d) == false) {
       f.setPatientCounter(f.getPatientCounter() + 1);
       if (random.nextDouble() < d.getParams().getGlobal().getprobabilityOfEffectiveNessofmedicine()) {
         int recovery = currentStep + (400 + random.nextInt(1440));
@@ -272,11 +264,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
     // TODO: Importante rever estes conceitos relacionados a saúde
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
-    if (this.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
-      infected();
+    if (HealthStatus.isInfected(this.currentHealthStatus)) {
+      this.currentStateOfInfection();
     }
 
-    if (this.isInfected()) {
+    if (HealthStatus.isInfected(this.currentHealthStatus)) {
       if (this.getRecoveryPeriod() == currentStep && this.getIsrecieveTreatment() == true) {
         this.setCurrentHealthStatus(HealthStatus.RECOVERED);
         this.setRecoveryPeriod(0);
@@ -426,12 +418,12 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   // counts time after infection
-  public void setInfectionPeriod(int inf) {
-    this.infectionPeriod = inf;
+  public void setIncubationPeriod(int inf) {
+    this.incubationPeriod = inf;
   }
 
-  public int getInfectionPeriod() {
-    return infectionPeriod;
+  public int getIncubationPeriod() {
+    return incubationPeriod;
   }
 
   public void setRecoveryPeriod(int inf) {
@@ -467,11 +459,4 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.currentHealthStatus = healthStatus;
   }
 
-  public boolean isBitten() {
-    return bitten;
-  }
-
-  public void setBitten(boolean bitten) {
-    this.bitten = bitten;
-  }
 }
