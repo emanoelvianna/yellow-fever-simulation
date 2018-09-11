@@ -32,16 +32,10 @@ public class Refugee implements Steppable, Valuable, Serializable {
   private FieldUnit home;
   private FieldUnit goal;
   private int currentStep;
-  private double jitterX; // Visualization
+  private double jitterX;
   private double jitterY;
-  private HealthStatus currentHealthStatus;// health status - susceptable - 1, exposed - 2, infected-3, recovered - 4
-  private HealthStatus previousHealthStatus; // monitors health status of agent in the previous step - to capture the
-                                             // change
-  // in each day
-  // private int frequencyLaterine; // once in a day for health agent- infected
-  // agent may go up to 10 times more
-  // Nochola et al - symptomic patient may lose 1 litre/hour floud for 2-3 weeks -
-  // but asymptomic - 1l/day
+  private HealthStatus currentHealthStatus;
+  private HealthStatus previousHealthStatus;
   private Family family;
   private ActivityMapping currentActivity;
 
@@ -55,14 +49,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
   private int infectionPeriod;
   private int toxicPeriod;
 
-  private int symtomaticType; // either sympmatic==1 or asymptomatic =2
-  // private double protectiveImmunity; // after recovery agent will not likely
-  // infected immediately
-  // but immunity will decay over time
   private Dadaab dadaab;
   public int minuteInDay;
   private TimeManager time;// time contorler-identify the hour, day, week
-  private ArrayList<FieldUnit> path = null; // the agent's current path to its current goal
+  private ArrayList<FieldUnit> path = null; // the agent's current path to its
+                                            // current goal
   private MersenneTwisterFast random;
 
   public Refugee(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
@@ -74,8 +65,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.setGoal(home);
     this.jitterX = seed.nextDouble();
     this.jitterY = seed.nextDouble();
-    this.setCurrentPosition(position);
-    this.setPreviousHealthStatus(HealthStatus.SUSCEPTIBLE);
+    this.currentPosition = position;
+    this.previousHealthStatus = HealthStatus.SUSCEPTIBLE;
     this.time = new TimeManager();
     this.minuteInDay = 0;
     this.random = seed;
@@ -105,7 +96,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       activity.doActivity(this.getGoal(), this.getCurrentActivity(), dadaab);
-      if (steps % 1440 < 17) { // TODO: Qual é a necessidade disto? Parece relacionado a hora
+      if (steps % 1440 < 17) { // TODO: Qual é a necessidade disto? Parece
+                               // relacionado a hora
         if (random.nextDouble() > 0.3) { // TODO: Qual é a necessidade disto?
           calculateGoal();
         }
@@ -126,9 +118,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
       }
       // determine the best location to immediately move *toward*
       FieldUnit subgoal;
-      // It's possible that the agent isn't close to a node that can take it to the
+      // It's possible that the agent isn't close to a node that can take it to
+      // the
       // center.
-      // In that case, the A* will return null. If this is so the agent should move
+      // In that case, the A* will return null. If this is so the agent should
+      // move
       // toward
       // the goal until such a node is found.
       if (path == null) {
@@ -162,10 +156,16 @@ public class Refugee implements Steppable, Valuable, Serializable {
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
-      ActivityMapping bestActivity = activity.defineActivity(dadaab); // select the best goal
-      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search the best
+      ActivityMapping bestActivity = activity.defineActivity(dadaab); // select
+                                                                      // the
+                                                                      // best
+                                                                      // goal
+      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search
+                                                                                               // the
+                                                                                               // best
       // your selected activity
-      this.setCurrentActivity(bestActivity); // track current activity - for the visualization
+      this.setCurrentActivity(bestActivity); // track current activity - for the
+                                             // visualization
       this.setStayingTime(activity.stayingPeriod(this.getCurrentActivity()));
       return;
     } // from goal to home
@@ -200,8 +200,10 @@ public class Refugee implements Steppable, Valuable, Serializable {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       if (dadaab.random.nextInt(10) <= 9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
+        this.definePeriodOfInfection();
       } else {
         this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
+        this.definePeriodOfInfection();
       }
     } else if (this.incubationPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       // TODO: Com a probabilidade X o agente acaba piorando o estado
@@ -233,6 +235,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   // TODO: Importante rever este conceito para a febre amarela
+  // TODO: Considerar o periodo infeccioso como agravante para troca de estados
+  // da infecção
   public void healthDepretiation() {
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       // childern may die sooner than old people
@@ -276,6 +280,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
 
     // TODO: Remover, utilizado para teste sobre a infecção
+    // TODO: Considerar periodo infeccioso como agravante
     if (dadaab.random.nextDouble() > 0.5 && !HealthStatus.RECOVERED.equals(this.currentHealthStatus)) {
       this.infected();
       this.infectionPeriod = 3;
@@ -289,7 +294,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       // TODO: Existem casos de recuperação sem tratamento?
-      // TODO: Recebendo tratamento suas chances de recuperação acabam aumentando?
+      // TODO: Recebendo tratamento suas chances de recuperação acabam
+      // aumentando?
       if (!this.isPeriodOfInfection()) {
         this.setCurrentHealthStatus(HealthStatus.RECOVERED);
         this.setBodyResistance(1.0);
@@ -308,7 +314,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
       dadaab.killrefugee(this);
     }
 
-    move(currentStep);
+    this.move(currentStep);
   }
 
   public double doubleValue() {
@@ -408,15 +414,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   public HealthStatus getPreviousHealthStatus() {
     return previousHealthStatus;
-  }
-
-  public void setSymtomaticType(int im) {
-    this.symtomaticType = im;
-
-  }
-
-  public int getSymtomaticType() {
-    return symtomaticType;
   }
 
   public void setCurrentActivity(ActivityMapping activityMapping) {

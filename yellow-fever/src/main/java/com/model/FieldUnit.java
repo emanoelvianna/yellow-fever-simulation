@@ -12,6 +12,8 @@ public class FieldUnit implements Valuable, Serializable {
   private int fieldID; // identify the type pf the field
   private int campID; // holds id of the three camps
   private double water; // hold water amount
+  private boolean sap;
+  private boolean nectar;
   private double elevation; // elevation
   private double vibrioCholerae = 0; // contamination level
   private int patientCounter = 0;
@@ -20,6 +22,7 @@ public class FieldUnit implements Valuable, Serializable {
   private int locationY;
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
+  private boolean empty;
 
   // getter and setter
   public FieldUnit() {
@@ -59,7 +62,8 @@ public class FieldUnit implements Valuable, Serializable {
 
   // calaculate distance
   public double distanceTo(FieldUnit b) {
-    return Math.sqrt(Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
+    return Math.sqrt(
+        Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
   }
 
   public double distanceTo(int xCoord, int yCoord) {
@@ -178,5 +182,29 @@ public class FieldUnit implements Valuable, Serializable {
 
   public double doubleValue() {
     return getCampID();
+  }
+
+  public boolean containsSap() {
+    return sap;
+  }
+
+  public void setSap(boolean sap) {
+    this.sap = sap;
+  }
+
+  public boolean containsNectar() {
+    return nectar;
+  }
+
+  public void setNectar(boolean nectar) {
+    this.nectar = nectar;
+  }
+
+  public boolean isEmpty() {
+    return empty;
+  }
+
+  public void setEmpty(boolean empty) {
+    this.empty = empty;
   }
 }

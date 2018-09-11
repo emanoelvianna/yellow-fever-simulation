@@ -151,6 +151,7 @@ public class CampBuilder {
               facilityField.setVibrioCholerae(0);
               facility.setFacilityID(2);
 
+              // TODO: add os locais de alimentação do mosquito (seiva/nectar)
               facilityField.setWater(dadaab.getParams().getGlobal().getBoreholeWaterSupplyPerDay());
 
               dadaab.boreHoles.add(facilityField);
@@ -270,7 +271,8 @@ public class CampBuilder {
       URL raodLinkUL = file2.toURL();
       ShapeFileImporter.read(raodLinkUL, dadaab.roadLinks, masked);
 
-      extractFromRoadLinks(dadaab.roadLinks, dadaab); // construct a network of roads
+      extractFromRoadLinks(dadaab.roadLinks, dadaab); // construct a network of
+                                                      // roads
 
       // set up the locations and nearest node capability
 
@@ -314,7 +316,6 @@ public class CampBuilder {
       }
 
     }
-
   }
 
   private static void createGrids(int width, int height, Dadaab dadaab) {
@@ -342,20 +343,8 @@ public class CampBuilder {
     newRefugee.setBodyResistance(1.0);
     newRefugee.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
-
-    double ratioInfected = (dadaab.getParams().getGlobal().getPercentageOfAsymptomatic() / (100));
-    double ageEffect = 0.5 + 0.5 * (Math.pow(newRefugee.getAge(), 2) / (Math.pow(60, 2.5)));
-
-    if (dadaab.random.nextDouble() > ratioInfected * ageEffect) {
-
-      newRefugee.setSymtomaticType(1);// symtotic
-    } else {
-      newRefugee.setSymtomaticType(2); // asymptotic
-    }
-
     newRefugee.setStudent(this.isStudent(age));
     newRefugee.setWorker(this.isWorker(age));
-
     newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
   }
 
@@ -416,8 +405,11 @@ public class CampBuilder {
 
     // int hhsize = (totalRef * teta /10 ) +
 
-    double[] prop = { 0.30, 0.12, 0.11, 0.13, 0.12, 0.10, 0.06, 0.03, 0.01, 0.01, 0.01 }; // proportion of household
-    int[] size = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // family size - all are zero
+    double[] prop = { 0.30, 0.12, 0.11, 0.13, 0.12, 0.10, 0.06, 0.03, 0.01, 0.01, 0.01 }; // proportion
+                                                                                          // of
+                                                                                          // household
+    int[] size = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // family size - all are
+                                                      // zero
     // family size ranges from 1 to 11
 
     int count = 0;
@@ -509,15 +501,20 @@ public class CampBuilder {
             age = 18 + dadaab.random.nextInt(42);
           } else {
             if (rn <= 0.1) {
-              age = 5 + dadaab.random.nextInt(14); // 20% chance the age between 5-19
+              age = 5 + dadaab.random.nextInt(14); // 20% chance the age between
+                                                   // 5-19
             } else if (rn > 0.57 && rn <= 0.97) {
-              age = 20 + dadaab.random.nextInt(14); // 40% chance the age between 20-34
+              age = 20 + dadaab.random.nextInt(14); // 40% chance the age
+                                                    // between 20-34
             } else if (rn > 0.1 && rn <= 0.40) {
-              age = 35 + dadaab.random.nextInt(14); // 25% chance the age between 35-49
+              age = 35 + dadaab.random.nextInt(14); // 25% chance the age
+                                                    // between 35-49
             } else if (rn > 0.40 && rn <= 0.57) {
-              age = 50 + dadaab.random.nextInt(14); // 12% chance the age between 50-64
+              age = 50 + dadaab.random.nextInt(14); // 12% chance the age
+                                                    // between 50-64
             } else {
-              age = 65 + dadaab.random.nextInt(25); // 3% chance the age between 65-90
+              age = 65 + dadaab.random.nextInt(25); // 3% chance the age between
+                                                    // 65-90
             }
           }
           int sex = this.defineSex(dadaab);
@@ -567,12 +564,18 @@ public class CampBuilder {
    * network int width, int height, Dadaab dadaab
    * 
    * @param geometry
-   * @param xcols    - number of columns in the field
-   * @param ycols    - number of rows in the field
-   * @param xmin     - minimum x value in shapefile
-   * @param ymin     - minimum y value in shapefile
-   * @param xmax     - maximum x value in shapefile
-   * @param ymax     - maximum y value in shapefile
+   * @param xcols
+   *          - number of columns in the field
+   * @param ycols
+   *          - number of rows in the field
+   * @param xmin
+   *          - minimum x value in shapefile
+   * @param ymin
+   *          - minimum y value in shapefile
+   * @param xmax
+   *          - maximum x value in shapefile
+   * @param ymax
+   *          - maximum y value in shapefile
    */
   static void readLineString(LineString geometry, int xcols, int ycols, double xmin, double ymin, double xmax,
       double ymax, Dadaab dadaab) {
@@ -587,7 +590,12 @@ public class CampBuilder {
       // calculate the location of the node in question
       double x = cs.getX(i), y = cs.getY(i);
       int xint = (int) Math.floor(xcols * (x - xmin) / (xmax - xmin)),
-          yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER TO FLIP THE Y VALUE
+          yint = (int) (ycols - Math.floor(ycols * (y - ymin) / (ymax - ymin))); // REMEMBER
+                                                                                 // TO
+                                                                                 // FLIP
+                                                                                 // THE
+                                                                                 // Y
+                                                                                 // VALUE
 
       if (xint >= gridWidth) {
         continue;
@@ -618,7 +626,9 @@ public class CampBuilder {
         continue;
       }
 
-      int weight = (int) n.getLocation().distanceTo(oldNode.getLocation()); // weight is just
+      int weight = (int) n.getLocation().distanceTo(oldNode.getLocation()); // weight
+                                                                            // is
+                                                                            // just
       // distance
 
       // create the new link and save it
@@ -649,7 +659,8 @@ public class CampBuilder {
   /**
    * Calculate the nodes nearest to each location and store the information
    * 
-   * @param closestNodes - the field to populate
+   * @param closestNodes
+   *          - the field to populate
    */
   static ObjectGrid2D setupNearestNodes(Dadaab dadaab) {
 
