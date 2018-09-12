@@ -7,6 +7,7 @@ import com.core.TimeManager;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
+import sim.engine.Stoppable;
 import sim.util.Valuable;
 
 public class Mosquito implements Steppable, Valuable, Serializable {
@@ -18,6 +19,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private int currentStep;
   private FieldUnit currentPosition;
   private TimeManager time;
+  protected Stoppable stopper;
 
   public Mosquito(FieldUnit position, TimeManager time) {
     this.speed = 1.0;
@@ -25,11 +27,16 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.sensoryAmplitude = 3;
     this.currentPosition = position;
     this.time = time;
+    this.dadaab = null;
   }
 
   public void toBite(Refugee refugee) {
     // TODO: Com probabilidade x infecção agente humano
     refugee.infected();
+    // TODO: Verificar este valor junto ao modelo
+    refugee.setInfectionPeriod(0);
+    // TODO: adicionado para testes
+    refugee.setIncubationPeriod(0);
   }
 
   public void ThereIsFood() {
@@ -43,8 +50,16 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.isActivity(currentStep);
   }
 
+  public void setStoppable(Stoppable stopp) {
+    stopper = stopp;
+  }
+
+  public void stop() {
+    stopper.stop();
+  }
+
   private void isActivity(int currentStep) {
-    if (this.time.currentHour(currentStep) >= 7 || this.time.currentHour(currentStep) <= 18) {
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
       // TODO: Considerar está mudança junto ao modelo do mosquito
       if (this.hungry) {
         if (this.carryingEggs()) {
@@ -77,15 +92,18 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void bloodFood() {
-    if (!this.currentPosition.isEmpty()) {
+    if (this.currentPosition.containsPresentHumans()) {
       // TODO: Considerar probabilidade de alimentação
+      this.toBite((Refugee) currentPosition.getRefugee().get(0));
+      this.hungry = true;
+    } else {
       this.hungry = false;
     }
   }
 
   public boolean carryingEggs() {
     // TODO:
-    return false;
+    return true;
   }
 
   public double doubleValue() {

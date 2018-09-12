@@ -22,13 +22,16 @@ public class FieldUnit implements Valuable, Serializable {
   private int locationY;
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
-  private boolean empty;
+  private Bag mosquito;
+  // TODO: quem sabe ainda não está muito claro, ou mesmo errado
+  private boolean presentHumans;
 
   // getter and setter
   public FieldUnit() {
     super();
     refugeeHH = new Bag();
     refugee = new Bag();
+    this.setMosquito(new Bag());
   }
 
   public FieldUnit(int x, int y) {
@@ -200,11 +203,16 @@ public class FieldUnit implements Valuable, Serializable {
     this.nectar = nectar;
   }
 
-  public boolean isEmpty() {
-    return empty;
+  public Bag getMosquito() {
+    return mosquito;
   }
 
-  public void setEmpty(boolean empty) {
-    this.empty = empty;
+  public void setMosquito(Bag mosquito) {
+    this.mosquito = mosquito;
   }
+
+  public boolean containsPresentHumans() {
+    return !refugee.isEmpty();
+  }
+
 }

@@ -235,8 +235,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   // TODO: Importante rever este conceito para a febre amarela
-  // TODO: Considerar o periodo infeccioso como agravante para troca de estados
-  // da infecção
+  // TODO: Considerar periodo infeccioso como agravante?
   public void healthDepretiation() {
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       // childern may die sooner than old people
@@ -279,13 +278,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
       minuteInDay = currentStep % 1440;
     }
 
-    // TODO: Remover, utilizado para teste sobre a infecção
-    // TODO: Considerar periodo infeccioso como agravante
-    if (dadaab.random.nextDouble() > 0.5 && !HealthStatus.RECOVERED.equals(this.currentHealthStatus)) {
-      this.infected();
-      this.infectionPeriod = 3;
-    }
-
     // TODO: Importante rever estes conceitos relacionados a saúde
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
@@ -294,8 +286,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       // TODO: Existem casos de recuperação sem tratamento?
-      // TODO: Recebendo tratamento suas chances de recuperação acabam
-      // aumentando?
+      // TODO: Recebendo tratamento a chance recuperação acaba aumentando?
       if (!this.isPeriodOfInfection()) {
         this.setCurrentHealthStatus(HealthStatus.RECOVERED);
         this.setBodyResistance(1.0);

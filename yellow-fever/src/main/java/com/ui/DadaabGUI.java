@@ -123,13 +123,13 @@ public class DadaabGUI extends GUIState {
         if (object != null) {
           double cType = ((Valuable) object).doubleValue();
           if (cType == 1) {
-            paint = Color.BLACK;
+            paint = Color.BLACK; // SUSCEPTIBLE
           } else if (cType == 2) {
-            paint = Color.YELLOW;
+            paint = Color.YELLOW; // EXPOSED
           } else if (cType == 3) {
-            paint = Color.RED;
+            paint = Color.RED; // INFECTION
           } else {
-            paint = Color.BLUE;
+            paint = Color.BLUE; // RECOVERED
           }
           super.draw(object, graphics, info);
         } else {

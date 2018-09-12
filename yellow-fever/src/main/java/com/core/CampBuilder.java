@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
+import com.model.Mosquito;
 import com.model.Refugee;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
@@ -340,6 +341,7 @@ public class CampBuilder {
         dadaab.allRefugees);
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
+    // TODO: Verificar como deve ser considerado a resistencia sobre a doença
     newRefugee.setBodyResistance(1.0);
     newRefugee.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
@@ -492,6 +494,10 @@ public class CampBuilder {
         }
 
         f.addRefugeeHH(hh);
+        // TODO: Melhorar a forma como está sendo distribuido os mosquitos
+        f.setMosquito(this.populateMosquito(random, dadaab, f));
+        f.setNectar(true);
+        f.setSap(true);
 
         double rn = dadaab.random.nextDouble();
         int age = 0;
@@ -533,8 +539,15 @@ public class CampBuilder {
     }
   }
 
+  public Bag populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
+    Bag list = new Bag();
+    Mosquito mosquito = new Mosquito(position, dadaab.getTime());
+    mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, 1.0));
+    return list;
+  }
+
   private void populate(MersenneTwisterFast random, Dadaab dadaab) {
-    populateRefugee(random, dadaab);
+    this.populateRefugee(random, dadaab);
   }
 
   /// raod network methods from haiti project
