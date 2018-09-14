@@ -197,7 +197,9 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.currentHealthStatus = HealthStatus.EXPOSED;
   }
 
-  public void currentStateOfInfection() {
+  // TODO: Refatorar
+  // TODO: Considerando os casos de evolução da infecção considerando dias!
+  private void checkCurrentStateOfInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       if (dadaab.random.nextInt(11) <= 9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
@@ -212,7 +214,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
     if (this.infectionPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       // TODO: Com a probabilidade X o agente acaba piorando o estado
-      // TODO: Valor aleatório para testes
+      // TODO: Importante buscar referencias mais concretas para a evolução
       if (dadaab.random.nextInt(11) <= 9) { // 10% of cases are toxic
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
@@ -224,6 +226,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
 
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+      // TODO: Com a probabilidade X o agente acaba piorando o estado
+      // TODO: Importante buscar referencias mais concretas para a evolução
       if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
@@ -243,11 +247,11 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
   }
 
-  public void definePeriodOfInfection() {
+  private void definePeriodOfInfection() {
     this.infectionPeriod = 3 + dadaab.random.nextInt(4);
   }
 
-  public void definePeriodOfToxicInfection() {
+  private void definePeriodOfToxicInfection() {
     this.toxicPeriod = 8;
   }
 
@@ -281,10 +285,9 @@ public class Refugee implements Steppable, Valuable, Serializable {
       minuteInDay = currentStep % 1440;
     }
 
-    // TODO: Importante rever estes conceitos relacionados a saúde
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
-      this.currentStateOfInfection();
+      this.checkCurrentStateOfInfection();
     }
 
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
@@ -310,6 +313,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.move(currentStep);
   }
 
+  // TODO: Melhorar a visualização em relação a outros casos?
   public double doubleValue() {
     switch (this.currentHealthStatus) {
     case SUSCEPTIBLE:

@@ -226,7 +226,6 @@ public class Activity {
   // three camp sites in the model
   // agent select one camp which is not their camp randomly
   private FieldUnit socialize(Refugee ref, Dadaab d) {
-
     Bag potential = new Bag();
     FieldUnit newLoc = null;
     potential.clear();
@@ -258,7 +257,6 @@ public class Activity {
 
   // find the nearest water points
   public FieldUnit nearestWaterPoint(FieldUnit f, Dadaab d) {
-
     return betstLoc(f, d.rainfallWater, d);
   }
 
@@ -266,7 +264,6 @@ public class Activity {
   // this is useful if one of the borehole is empty
   // agent will selct another borehole nearest from the current
   private FieldUnit nearestBorehole(FieldUnit f, Dadaab d) {
-
     return betstLoc(f, d.boreHoles, d);
   }
 
@@ -291,22 +288,18 @@ public class Activity {
 
     if (nearestBorehole(f, d) == null) {
       preference_borehole = 0.0;
-    }
-
-    else {
+    } else {
       preference_borehole = (1.0 / (1.0 + Math.log(1 + f.distanceTo(nearestBorehole(f, d)))))
           * d.getParams().getGlobal().getWaterSourcePreference_Borehole() + (0.2 * d.random.nextDouble());
     }
 
     if (preference_river > preference_borehole) {
       fieldP = nearestWaterPoint(f, d);
-    }
-
-    else {
+    } else {
       fieldP = nearestBorehole(f, d);
     }
+    
     return fieldP;
-
   }
 
   public Refugee getRefugee() {
