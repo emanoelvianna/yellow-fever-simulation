@@ -192,29 +192,46 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   public void infected() {
-    this.incubationPeriod = 3 + dadaab.random.nextInt(10);
+    // TODO: verificar os valores aleatorios, certificar que estão na faixa correta
+    this.defineIncubationPeriod();
     this.currentHealthStatus = HealthStatus.EXPOSED;
   }
 
   public void currentStateOfInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
-      if (dadaab.random.nextInt(10) <= 9) { // 90% of cases are mild
+      if (dadaab.random.nextInt(11) <= 9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
         this.definePeriodOfInfection();
       } else {
         this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
         this.definePeriodOfInfection();
       }
-    } else if (this.incubationPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+      this.incubationPeriod--;
+    }
+
+    if (this.infectionPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       // TODO: Com a probabilidade X o agente acaba piorando o estado
       // TODO: Valor aleatório para testes
-      if (dadaab.random.nextInt(10) <= 1) { // 10% of cases are toxic
-        this.currentHealthStatus = HealthStatus.TOXIC_INFECTION;
+      if (dadaab.random.nextInt(11) <= 9) { // 10% of cases are toxic
+        this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
-        this.currentHealthStatus = HealthStatus.MILD_INFECTION;
+        this.currentHealthStatus = HealthStatus.TOXIC_INFECTION;
+        this.definePeriodOfToxicInfection();
       }
-    } else {
-      this.incubationPeriod--;
+    } else if (HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+      this.infectionPeriod--;
+    }
+
+    if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+      if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
+        this.currentHealthStatus = HealthStatus.RECOVERED;
+      } else {
+        this.currentHealthStatus = HealthStatus.DEAD;
+        dadaab.killrefugee(this);
+      }
+    } else if (HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+      this.toxicPeriod--;
     }
   }
 
@@ -234,26 +251,12 @@ public class Refugee implements Steppable, Valuable, Serializable {
     this.toxicPeriod = 8;
   }
 
-  // TODO: Importante rever este conceito para a febre amarela
-  // TODO: Considerar periodo infeccioso como agravante?
-  public void healthDepretiation() {
-    if (HealthStatus.isInfected(this.currentHealthStatus)) {
-      // childern may die sooner than old people
-      this.setBodyResistance(this.getBodyResistance()
-          - (dadaab.getParams().getGlobal().getHealthDepreciation() * (1 / Math.pow(this.age, 2))));
-    }
-
-    if (HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus) && this.isPeriodOfInfection()) {
-      if (dadaab.random.nextDouble() > 0.5) { // 50-50 chance
-        this.currentHealthStatus = HealthStatus.RECOVERED;
-      } else {
-        this.currentHealthStatus = HealthStatus.DEAD;
-        dadaab.killrefugee(this);
-      }
-    }
+  private void defineIncubationPeriod() {
+    this.incubationPeriod = 3 + dadaab.random.nextInt(10);
   }
 
   // TODO: Como irá funcionar o tratamento?
+  // TODO: O tempo de recuperação deve considerar o tempo?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
       this.setCurrentHealthStatus(HealthStatus.RECOVERED);
@@ -289,6 +292,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
       // TODO: Recebendo tratamento a chance recuperação acaba aumentando?
       if (!this.isPeriodOfInfection()) {
         this.setCurrentHealthStatus(HealthStatus.RECOVERED);
+        // TODO: Ainda faz sentido existir?
         this.setBodyResistance(1.0);
       }
     }
@@ -297,8 +301,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
         && this.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
       this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
-
-    healthDepretiation();
 
     // death
     if (this.getBodyResistance() <= 0) {
