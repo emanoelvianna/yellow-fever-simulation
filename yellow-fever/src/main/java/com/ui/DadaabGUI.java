@@ -127,7 +127,11 @@ public class DadaabGUI extends GUIState {
           } else if (cType == 2) {
             paint = Color.YELLOW; // EXPOSED
           } else if (cType == 3) {
-            paint = Color.RED; // INFECTION
+            paint = Color.PINK; // MILD_INFECTION
+          } else if (cType == 4) {
+            paint = Color.ORANGE; // SEVERE_INFECTION
+          } else if (cType == 5) {
+            paint = Color.RED; // TOXIC_INFECTION
           } else {
             paint = Color.BLUE; // RECOVERED
           }

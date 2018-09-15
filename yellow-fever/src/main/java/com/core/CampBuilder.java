@@ -15,7 +15,7 @@ import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
 import com.model.Mosquito;
-import com.model.Refugee;
+import com.model.Human;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
 import com.vividsolutions.jts.geom.CoordinateSequence;
@@ -337,7 +337,7 @@ public class CampBuilder {
   //// add households
   private void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
 
-    Refugee newRefugee = new Refugee(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random,
+    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random,
         dadaab.allRefugees);
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
@@ -347,7 +347,7 @@ public class CampBuilder {
     newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
     newRefugee.setStudent(this.isStudent(age));
     newRefugee.setWorker(this.isWorker(age));
-    newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Refugee.ORDERING, 1.0));
+    newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Human.ORDERING, 1.0));
   }
 
   // TODO: Rever a faixa de idade de estudante

@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.model.FieldUnit;
-import com.model.Refugee;
+import com.model.Human;
 import com.model.enumeration.HealthStatus;
 
 import net.sf.csv4j.CSVWriter;
@@ -258,7 +258,7 @@ public class DadaabObserver implements Steppable {
     // TODO: Verificar a funcionalidade sobre a febre amarela
     // then write the current refugee health status
     for (Object o : d.allRefugees.allObjects) {
-      Refugee r = (Refugee) o;
+      Human r = (Human) o;
       double tot = grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()];
       if (r.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
         grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()] = tot + 1;

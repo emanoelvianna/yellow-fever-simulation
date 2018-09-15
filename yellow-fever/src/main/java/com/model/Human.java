@@ -15,14 +15,11 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
 import sim.field.continuous.Continuous2D;
-/**
- *
- * @author gmu
- */
+
 import sim.util.Double2D;
 import sim.util.Valuable;
 
-public class Refugee implements Steppable, Valuable, Serializable {
+public class Human implements Steppable, Valuable, Serializable {
 
   private int age;
   private int sex;
@@ -48,6 +45,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
   private int incubationPeriod;
   private int infectionPeriod;
   private int toxicPeriod;
+  private boolean serious;
 
   private Dadaab dadaab;
   public int minuteInDay;
@@ -56,7 +54,7 @@ public class Refugee implements Steppable, Valuable, Serializable {
                                             // current goal
   private MersenneTwisterFast random;
 
-  public Refugee(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
+  public Human(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
       Continuous2D allRefugees) {
     this.setAge(age);
     this.setSex(sex);
@@ -96,8 +94,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       activity.doActivity(this.getGoal(), this.getCurrentActivity(), dadaab);
-      if (steps % 1440 < 17) { // TODO: Qual é a necessidade disto? Parece
-                               // relacionado a hora
+      // TODO: Qual é a necessidade disto? Parece relacionado a hora
+      if (steps % 1440 < 17) {
         if (random.nextDouble() > 0.3) { // TODO: Qual é a necessidade disto?
           calculateGoal();
         }
@@ -156,13 +154,8 @@ public class Refugee implements Steppable, Valuable, Serializable {
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
-      ActivityMapping bestActivity = activity.defineActivity(dadaab); // select
-                                                                      // the
-                                                                      // best
-                                                                      // goal
-      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab)); // search
-                                                                                               // the
-                                                                                               // best
+      ActivityMapping bestActivity = activity.defineActivity(dadaab);
+      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab));
       // your selected activity
       this.setCurrentActivity(bestActivity); // track current activity - for the
                                              // visualization
@@ -192,14 +185,18 @@ public class Refugee implements Steppable, Valuable, Serializable {
   }
 
   public void infected() {
-    // TODO: verificar os valores aleatorios, certificar que estão na faixa correta
     this.defineIncubationPeriod();
     this.currentHealthStatus = HealthStatus.EXPOSED;
   }
 
-  // TODO: Refatorar
-  // TODO: Considerando os casos de evolução da infecção considerando dias!
   private void checkCurrentStateOfInfection() {
+    this.defineInfection();
+    this.defineMildInfectionEvolution();
+    this.defineSevereInfectionEvolution();
+    this.defineToxicInfectionEvolution();
+  }
+
+  private void defineInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       if (dadaab.random.nextInt(11) <= 9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
@@ -207,34 +204,42 @@ public class Refugee implements Steppable, Valuable, Serializable {
       } else {
         this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
         this.definePeriodOfInfection();
+        this.serious = this.infectionPeriod == 4 ? true : false;
       }
-    } else if (HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+    } else if (this.incubationPeriod > 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       this.incubationPeriod--;
     }
+  }
 
-    if (this.infectionPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
-      // TODO: Com a probabilidade X o agente acaba piorando o estado
-      // TODO: Importante buscar referencias mais concretas para a evolução
-      if (dadaab.random.nextInt(11) <= 9) { // 10% of cases are toxic
-        this.currentHealthStatus = HealthStatus.RECOVERED;
-      } else {
-        this.currentHealthStatus = HealthStatus.TOXIC_INFECTION;
-        this.definePeriodOfToxicInfection();
-      }
-    } else if (HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+  private void defineMildInfectionEvolution() {
+    if (this.infectionPeriod == 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
+      this.currentHealthStatus = HealthStatus.RECOVERED;
+    } else if (this.infectionPeriod > 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
       this.infectionPeriod--;
     }
+  }
 
+  private void defineSevereInfectionEvolution() {
+    if (this.serious && this.infectionPeriod == 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+      this.currentHealthStatus = HealthStatus.TOXIC_INFECTION;
+      this.definePeriodOfToxicInfection();
+    } else if (!this.serious && this.infectionPeriod == 0
+        && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+      this.currentHealthStatus = HealthStatus.RECOVERED;
+    } else if (this.infectionPeriod > 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+      this.infectionPeriod--;
+    }
+  }
+
+  private void defineToxicInfectionEvolution() {
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
-      // TODO: Com a probabilidade X o agente acaba piorando o estado
-      // TODO: Importante buscar referencias mais concretas para a evolução
       if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
         this.currentHealthStatus = HealthStatus.DEAD;
         dadaab.killrefugee(this);
       }
-    } else if (HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.toxicPeriod > 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
       this.toxicPeriod--;
     }
   }
@@ -247,23 +252,24 @@ public class Refugee implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void definePeriodOfInfection() {
-    this.infectionPeriod = 3 + dadaab.random.nextInt(4);
-  }
-
-  private void definePeriodOfToxicInfection() {
-    this.toxicPeriod = 8;
-  }
-
-  private void defineIncubationPeriod() {
-    this.incubationPeriod = 3 + dadaab.random.nextInt(10);
+  public boolean hasSymptomsOfInfection() {
+    switch (this.currentHealthStatus) {
+    case MILD_INFECTION:
+      return true;
+    case SEVERE_INFECTION:
+      return true;
+    case TOXIC_INFECTION:
+      return true;
+    default:
+      return false;
+    }
   }
 
   // TODO: Como irá funcionar o tratamento?
   // TODO: O tempo de recuperação deve considerar o tempo?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
-      this.setCurrentHealthStatus(HealthStatus.RECOVERED);
+      // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
   }
 
@@ -273,6 +279,18 @@ public class Refugee implements Steppable, Valuable, Serializable {
       // TODO: Existe algum tempo para acabar sendo imune?
       this.currentHealthStatus = HealthStatus.RECOVERED;
     }
+  }
+
+  private void definePeriodOfInfection() {
+    this.infectionPeriod = 3 + dadaab.random.nextInt(2);
+  }
+
+  private void definePeriodOfToxicInfection() {
+    this.toxicPeriod = 8;
+  }
+
+  private void defineIncubationPeriod() {
+    this.incubationPeriod = 3 + dadaab.random.nextInt(4);
   }
 
   public void step(SimState state) {
@@ -290,26 +308,6 @@ public class Refugee implements Steppable, Valuable, Serializable {
       this.checkCurrentStateOfInfection();
     }
 
-    if (HealthStatus.isInfected(this.currentHealthStatus)) {
-      // TODO: Existem casos de recuperação sem tratamento?
-      // TODO: Recebendo tratamento a chance recuperação acaba aumentando?
-      if (!this.isPeriodOfInfection()) {
-        this.setCurrentHealthStatus(HealthStatus.RECOVERED);
-        // TODO: Ainda faz sentido existir?
-        this.setBodyResistance(1.0);
-      }
-    }
-
-    if (random.nextDouble() < dadaab.getParams().getGlobal().getProbRecoveryToSuscebtable()
-        && this.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
-      this.setCurrentHealthStatus(HealthStatus.RECOVERED);
-    }
-
-    // death
-    if (this.getBodyResistance() <= 0) {
-      dadaab.killrefugee(this);
-    }
-
     this.move(currentStep);
   }
 
@@ -320,10 +318,14 @@ public class Refugee implements Steppable, Valuable, Serializable {
       return 1;
     case EXPOSED:
       return 2;
-    case RECOVERED:
-      return 4;
-    default:
+    case MILD_INFECTION:
       return 3;
+    case SEVERE_INFECTION:
+      return 4;
+    case TOXIC_INFECTION:
+      return 5;
+    default:
+      return 4;
     }
   }
 
@@ -478,6 +480,14 @@ public class Refugee implements Steppable, Valuable, Serializable {
 
   public void setVaccinated(boolean vaccinated) {
     this.vaccinated = vaccinated;
+  }
+
+  public boolean isSerious() {
+    return serious;
+  }
+
+  public void setSerious(boolean serious) {
+    this.serious = serious;
   }
 
 }

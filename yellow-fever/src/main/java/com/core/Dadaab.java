@@ -7,7 +7,7 @@ import org.jfree.data.xy.XYSeries;
 import com.core.enumeration.Parameters;
 import com.model.Facility;
 import com.model.Family;
-import com.model.Refugee;
+import com.model.Human;
 import com.model.enumeration.HealthStatus;
 
 import sim.engine.SimState;
@@ -203,7 +203,7 @@ public class Dadaab extends SimState {
         int none = 0;
         // accessing each agent
         for (int i = 0; i < ref.numObjs; i++) {
-          Refugee r = (Refugee) ref.objs[i];
+          Human r = (Human) ref.objs[i];
           // TODO: Refatorar
           switch (r.getCurrentActivity()) {
           case STAY_HOME:
@@ -411,7 +411,7 @@ public class Dadaab extends SimState {
    */
   // initial number of agent
 
-  public void killrefugee(Refugee f) {
+  public void killrefugee(Human f) {
     f.getFamily().removeMembers(f);
 
     if (f.getFamily().getMembers().numObjs == 0) {

@@ -10,14 +10,14 @@ import sim.util.Bag;
 
 public class Activity {
 
-  private Refugee refugee;
+  private Human human;
   private TimeManager time;
   private int currentStep;
   private int minuteInDay;
   private MersenneTwisterFast random;
 
-  public Activity(Refugee refugee, TimeManager time, int currentStep, MersenneTwisterFast random, int minuteInDay) {
-    this.refugee = refugee;
+  public Activity(Human human, TimeManager time, int currentStep, MersenneTwisterFast random, int minuteInDay) {
+    this.human = human;
     this.time = time;
     this.currentStep = currentStep;
     this.random = random;
@@ -27,21 +27,20 @@ public class Activity {
   // check the crowded level on the road or at your goal location
   // this method is taken from Haiti project
   /*
-   * activity selection currently is made by simple assumption that consider age,
-   * sex, need and time in most cases based on these each activity is given some
-   * weight and the best of all will e selected
+   * activity selection currently is made by simple assumption that consider
+   * age, sex, need and time in most cases based on these each activity is given
+   * some weight and the best of all will e selected
    */
   public ActivityMapping defineActivity(Dadaab dadaab) {
     ActivityMapping activity = ActivityMapping.STAY_HOME;
-    if (HealthStatus.isInfected(this.refugee.getCurrentHealthStatus())) {
-      // TODO: Faz sentido existe uma probabilidade de procurar ajuda médica?
-      // TODO: Sim, levando em consideração que nem todos buscam ajuda imediata
+    if (this.gettingMedicalHelp(dadaab)) {
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+      // TODO: A definição do dia da semana possui um problema!
       if (time.currentDayInWeek(currentStep) < 5) {
-        if (this.refugee.isWorker()) {
+        if (this.human.isWorker()) {
           activity = ActivityMapping.WORK;
-        } else if (this.refugee.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+        } else if (this.human.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
           activity = ActivityMapping.SCHOOL;
         }
       } else {
@@ -58,9 +57,20 @@ public class Activity {
     return activity;
   }
 
+  private boolean gettingMedicalHelp(Dadaab dadaab) {
+    if (this.human.hasSymptomsOfInfection()) {
+      if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
   // best location is mainly determine by distance
-  // near is best
-  public FieldUnit bestActivityLocation(Refugee ref, FieldUnit position, ActivityMapping activityMapping, Dadaab d) {
+  public FieldUnit bestActivityLocation(Human ref, FieldUnit position, ActivityMapping activityMapping, Dadaab d) {
     switch (activityMapping) {
     case STAY_HOME:
       return ref.getHome();
@@ -91,7 +101,13 @@ public class Activity {
 
     switch (activityMapping) {
     case STAY_HOME:
-      period = maximumStay;
+      if (this.human.isPeriodOfInfection()) {
+        if (this.human.getInfectionPeriod() > 0) {
+          period = minimumStay + random.nextInt(24 * MINUTE);
+        }
+      } else {
+        period = maximumStay;
+      }
       break;
     case SCHOOL:
       // time at school maximum until ~12:00 pm
@@ -107,7 +123,6 @@ public class Activity {
       break;
     case RELIGION_ACTIVITY:
       // time at maximum unti 2 hours
-      System.out.println("RELIGION_ACTIVITY");
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case MARKET:
@@ -116,20 +131,31 @@ public class Activity {
       break;
     case HEALTH_CENTER:
       // time at maximum unti 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
+      if (HealthStatus.TOXIC_INFECTION.equals(this.human.getCurrentHealthStatus())) {
+        if (this.human.getToxicPeriod() > 0) {
+          period = minimumStay + random.nextInt(24 * MINUTE);
+        } else {
+          period = minimumStay;
+        }
+      } else {
+        period = minimumStay + random.nextInt(2 * MINUTE);
+      }
       break;
     }
+
     return (period + this.minuteInDay);
   }
 
   // TODO: Verificar a necessidade de realizar alguma operação na atividade
-  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao médico
+  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao
+  // médico
   public void doActivity(FieldUnit f, ActivityMapping activityMapping, Dadaab dadaab) {
     switch (activityMapping) {
     case STAY_HOME:
       break;
     case HEALTH_CENTER:
-      this.refugee.receiveTreatment(f, dadaab);
+      this.human.receiveTreatment(f, dadaab);
+      // TODO: Recebe orientação para remoção de focos do mosquito?
       break;
     case SOCIAL_VISIT:
       if (random.nextDouble() < dadaab.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
@@ -191,16 +217,20 @@ public class Activity {
     boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
     boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
 
-    if (moveX == 0 && moveY == 0) { // we are ON the subgoal, so don't move at all!
+    if (moveX == 0 && moveY == 0) { // we are ON the subgoal, so don't move at
+                                    // all!
       // both are the same result, so just return the xmove (which is identical)
       return xmove;
-    } else if (moveX == 0) // this means that moving in the x direction is not a valid move: it's +0
+    } else if (moveX == 0) // this means that moving in the x direction is not a
+                           // valid move: it's +0
     {
       return ymove;
-    } else if (moveY == 0) // this means that moving in the y direction is not a valid move: it's +0
+    } else if (moveY == 0) // this means that moving in the y direction is not a
+                           // valid move: it's +0
     {
       return xmove;
-    } else if (xmoveToRoad == ymoveToRoad) { // equally good moves: pick randomly between them
+    } else if (xmoveToRoad == ymoveToRoad) { // equally good moves: pick
+                                             // randomly between them
       if (dadaab.random.nextBoolean()) {
         return xmove;
       } else {
@@ -225,7 +255,7 @@ public class Activity {
 
   // three camp sites in the model
   // agent select one camp which is not their camp randomly
-  private FieldUnit socialize(Refugee ref, Dadaab d) {
+  private FieldUnit socialize(Human ref, Dadaab d) {
     Bag potential = new Bag();
     FieldUnit newLoc = null;
     potential.clear();
@@ -243,9 +273,9 @@ public class Activity {
       }
     }
 
-//        if(potential.isEmpty() ==true){
-//            System.out.println("empty");
-//        }
+    // if(potential.isEmpty() ==true){
+    // System.out.println("empty");
+    // }
     if (potential.numObjs == 1) {
       newLoc = (FieldUnit) potential.objs[0];
     } else {
@@ -298,16 +328,16 @@ public class Activity {
     } else {
       fieldP = nearestBorehole(f, d);
     }
-    
+
     return fieldP;
   }
 
-  public Refugee getRefugee() {
-    return refugee;
+  public Human getRefugee() {
+    return human;
   }
 
-  public void setRefugee(Refugee refugee) {
-    this.refugee = refugee;
+  public void setRefugee(Human refugee) {
+    this.human = refugee;
   }
 
 }

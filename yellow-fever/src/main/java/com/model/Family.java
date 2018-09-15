@@ -21,7 +21,7 @@ public class Family {
   public int numberOfInfectedFamilyMembers() {
     int count = 0;
     for (Object f : this.getMembers()) {
-      Refugee ref = (Refugee) f;
+      Human ref = (Human) f;
       if (ref.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
         count = count + 1;
       } else if (ref.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
@@ -59,11 +59,11 @@ public class Family {
     return members;
   }
 
-  public void addMembers(Refugee r) {
+  public void addMembers(Human r) {
     this.members.add(r);
   }
 
-  public void removeMembers(Refugee r) {
+  public void removeMembers(Human r) {
     this.members.remove(r);
   }
 

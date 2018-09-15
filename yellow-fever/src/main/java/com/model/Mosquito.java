@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import com.core.Dadaab;
 import com.core.TimeManager;
+import com.model.enumeration.HealthStatus;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -30,13 +31,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.dadaab = null;
   }
 
-  public void toBite(Refugee refugee) {
-    // TODO: Com probabilidade x infecção agente humano
-    refugee.infected();
-    // TODO: Verificar este valor junto ao modelo
-    refugee.setInfectionPeriod(0);
-    // TODO: adicionado para testes
-    refugee.setIncubationPeriod(0);
+  public void toBite(Human human) {
+    // TODO: Considerar probabilidade
+    if (!HealthStatus.RECOVERED.equals(human.getCurrentHealthStatus())) {
+      if (!HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+        human.infected();
+      }
+    }
   }
 
   public void ThereIsFood() {
@@ -94,7 +95,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void bloodFood() {
     if (this.currentPosition.containsPresentHumans()) {
       // TODO: Considerar probabilidade de alimentação
-      this.toBite((Refugee) currentPosition.getRefugee().get(0));
+      this.toBite((Human) currentPosition.getRefugee().get(0));
       this.hungry = true;
     } else {
       this.hungry = false;

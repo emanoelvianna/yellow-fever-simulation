@@ -102,11 +102,11 @@ public class FieldUnit implements Valuable, Serializable {
     return refugee;
   }
 
-  public void addRefugee(Refugee r) {
+  public void addRefugee(Human r) {
     this.refugee.add(r);
   }
 
-  public void removeRefugee(Refugee r) {
+  public void removeRefugee(Human r) {
     this.refugee.remove(r);
   }
 
