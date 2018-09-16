@@ -23,15 +23,13 @@ public class FieldUnit implements Valuable, Serializable {
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
   private Bag mosquito;
-  // TODO: quem sabe ainda não está muito claro, ou mesmo errado
-  private boolean presentHumans;
 
   // getter and setter
   public FieldUnit() {
     super();
-    refugeeHH = new Bag();
-    refugee = new Bag();
-    this.setMosquito(new Bag());
+    this.refugeeHH = new Bag();
+    this.refugee = new Bag();
+    this.mosquito = new Bag();
   }
 
   public FieldUnit(int x, int y) {
@@ -108,6 +106,14 @@ public class FieldUnit implements Valuable, Serializable {
 
   public void removeRefugee(Human r) {
     this.refugee.remove(r);
+  }
+
+  public void addMosquito(Mosquito mosquito) {
+    this.mosquito.add(mosquito);
+  }
+
+  public void removeMosquito(Mosquito mosquito) {
+    this.mosquito.remove(mosquito);
   }
 
   public void setFieldID(int id) {
@@ -201,6 +207,11 @@ public class FieldUnit implements Valuable, Serializable {
 
   public void setNectar(boolean nectar) {
     this.nectar = nectar;
+  }
+
+  // TODO:
+  public boolean containsWater() {
+    return water != 0;
   }
 
   public Bag getMosquito() {

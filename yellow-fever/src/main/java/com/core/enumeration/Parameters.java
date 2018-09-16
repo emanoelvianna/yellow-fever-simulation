@@ -141,7 +141,7 @@ public class Parameters {
 
   public class GlobalParamters {
 
-    public int initialRefugeeNumber = 4000;// min-1000
+    public int initialRefugeeNumber = 100;// min-1000
     public double PercentageOfAsymptomatic = 70; // how many of the total refugee are asymtototic
     public double recovery_To_Susceb_Rate = 0.000001; // prob of change from recovered to suscebtible
     public int MaxDistanceLaterine = 20;

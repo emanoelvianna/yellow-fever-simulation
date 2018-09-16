@@ -8,6 +8,7 @@ import com.core.enumeration.Parameters;
 import com.model.Facility;
 import com.model.Family;
 import com.model.Human;
+import com.model.Mosquito;
 import com.model.enumeration.HealthStatus;
 
 import sim.engine.SimState;
@@ -28,16 +29,19 @@ import sim.util.Bag;
 
 public class Dadaab extends SimState {
 
-  public ObjectGrid2D allCamps; // The model environment - holds fields ( parcels)
+  public ObjectGrid2D allCamps; // The model environment - holds fields (
+                                // parcels)
   public GeomGridField allCampGeoGrid;
   public DoubleGrid2D rainfallGrid; // mainly for rainfall vizualization
   public Continuous2D allRefugees; // refugee agents
-  public SparseGrid2D facilityGrid;// facilities: schools, health center, borehol etc
+  public SparseGrid2D facilityGrid;// facilities: schools, health center,
+                                   // borehol etc
   public IntGrid2D roadGrid; // road in grid- for navigation
   public GeomVectorField roadLinks;
   public GeomVectorField campShape;
   public SparseGrid2D nodes;
-  public ObjectGrid2D closestNodes; // the road nodes closest to each of the // locations
+  public ObjectGrid2D closestNodes; // the road nodes closest to each of the //
+                                    // locations
   Network roadNetwork = new Network();
 
   private final Parameters params;
@@ -60,28 +64,68 @@ public class Dadaab extends SimState {
    */
   // agent health status
   private static final long serialVersionUID = -5966446373681187141L;
-  public XYSeries totalsusceptibleSeries = new XYSeries("Susceptible"); // shows number of Susceptible agents
+  public XYSeries totalsusceptibleSeries = new XYSeries("Susceptible"); // shows
+                                                                        // number
+                                                                        // of
+                                                                        // Susceptible
+                                                                        // agents
   public XYSeries totalExposedSeries = new XYSeries("Exposed");
-  public XYSeries totalInfectedSeries = new XYSeries(" Infected"); // shows number of infected agents
-  public XYSeries totalRecoveredSeries = new XYSeries(" Recovered"); // shows number of recovered agents
+  public XYSeries totalInfectedSeries = new XYSeries(" Infected"); // shows
+                                                                   // number of
+                                                                   // infected
+                                                                   // agents
+  public XYSeries totalRecoveredSeries = new XYSeries(" Recovered"); // shows
+                                                                     // number
+                                                                     // of
+                                                                     // recovered
+                                                                     // agents
 
   public XYSeries rainfallSeries = new XYSeries(" Rainfall"); //
-  public XYSeries totalsusceptibleSeriesNewly = new XYSeries("Newly Susceptible"); // shows number of Newly Susceptible
+  public XYSeries totalsusceptibleSeriesNewly = new XYSeries("Newly Susceptible"); // shows
+                                                                                   // number
+                                                                                   // of
+                                                                                   // Newly
+                                                                                   // Susceptible
                                                                                    // agents
   public XYSeries totalExposedSeriesNewly = new XYSeries("Newly Exposed");
-  public XYSeries totalInfectedSeriesNewly = new XYSeries("Newly Infected"); // shows number of Newly infected agents
-  public XYSeries totalRecoveredSeriesNewly = new XYSeries("Newly Recovered"); // shows number of Newly recovered agents
-  public XYSeries totalTotalPopSeries = new XYSeries(" Total"); // shows number of dead agents
-  public XYSeries totalDeathSeries = new XYSeries(" Death"); // shows number of dead agents
+  public XYSeries totalInfectedSeriesNewly = new XYSeries("Newly Infected"); // shows
+                                                                             // number
+                                                                             // of
+                                                                             // Newly
+                                                                             // infected
+                                                                             // agents
+  public XYSeries totalRecoveredSeriesNewly = new XYSeries("Newly Recovered"); // shows
+                                                                               // number
+                                                                               // of
+                                                                               // Newly
+                                                                               // recovered
+                                                                               // agents
+  public XYSeries totalTotalPopSeries = new XYSeries(" Total"); // shows number
+                                                                // of dead
+                                                                // agents
+  public XYSeries totalDeathSeries = new XYSeries(" Death"); // shows number of
+                                                             // dead agents
 
-  public XYSeries totalBacteriaLoadSeries = new XYSeries(" Total vibrio Cholerae /million"); // shows number of
-                                                                                             // recovered agents
+  public XYSeries totalBacteriaLoadSeries = new XYSeries(" Total vibrio Cholerae /million"); // shows
+                                                                                             // number
+                                                                                             // of
+                                                                                             // recovered
+                                                                                             // agents
   // private static final long serialVersionUID = -5966446373681187141L;
   public DefaultCategoryDataset dataset = new DefaultCategoryDataset(); //
-  public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();// shows age structure of agents
-  public DefaultCategoryDataset familydataset = new DefaultCategoryDataset(); // shows family size
+  public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();// shows
+                                                                          // age
+                                                                          // structure
+                                                                          // of
+                                                                          // agents
+  public DefaultCategoryDataset familydataset = new DefaultCategoryDataset(); // shows
+                                                                              // family
+                                                                              // size
   // timer graphics
-  public DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows the current hour
+  public DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows
+                                                                     // the
+                                                                     // current
+                                                                     // hour
   public DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
   public int totalgridWidth = 10;
   public int totalgridHeight = 10;
@@ -153,14 +197,17 @@ public class Dadaab extends SimState {
 
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
-
         Bag ref = allRefugees.getAllObjects(); // getting all refugees
         //
-        int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity and puting the value in array
+        int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity
+                                                         // and puting the value
+                                                         // in array
 
-        int[] sumAge = { 0, 0, 0, 0, 0 }; // adding agent all agents whose age falls in a given age-class
+        int[] sumAge = { 0, 0, 0, 0, 0 }; // adding agent all agents whose age
+                                          // falls in a given age-class
 
-        int[] sumfamSiz = { 0, 0, 0, 0, 0, 0, 0 }; // adding all agent families based o their family size
+        int[] sumfamSiz = { 0, 0, 0, 0, 0, 0, 0 }; // adding all agent families
+                                                   // based o their family size
 
         int totalSus = 0; // total suscibtible
         int totalExp = 0;
@@ -193,7 +240,8 @@ public class Dadaab extends SimState {
           Family f = (Family) allFamilies.objs[i];
           // killrefugee(f);
           int siz = 0;
-          if (f.getMembers().numObjs > 6) { // aggregate all families of >6 family size
+          if (f.getMembers().numObjs > 6) { // aggregate all families of >6
+                                            // family size
             siz = 6;
           } else {
             siz = f.getMembers().numObjs - 1;
@@ -411,13 +459,18 @@ public class Dadaab extends SimState {
    */
   // initial number of agent
 
-  public void killrefugee(Human f) {
-    f.getFamily().removeMembers(f);
+  public void killrefugee(Human human) {
+    human.getFamily().removeMembers(human);
 
-    if (f.getFamily().getMembers().numObjs == 0) {
-      allFamilies.remove(f.getFamily());
+    if (human.getFamily().getMembers().numObjs == 0) {
+      allFamilies.remove(human.getFamily());
     }
-    allRefugees.remove(f);
+    allRefugees.remove(human);
+  }
+
+  // TODO: O que deve ser considerado para remover o mosquito?
+  public void killmosquito(Mosquito mosquito) {
+    mosquito.getCurrentPosition().removeMosquito(mosquito);
   }
 
   int PrevPop = 0;

@@ -337,8 +337,7 @@ public class CampBuilder {
   //// add households
   private void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
 
-    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random,
-        dadaab.allRefugees);
+    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random, dadaab.allRefugees);
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
     // TODO: Verificar como deve ser considerado a resistencia sobre a doença
@@ -539,10 +538,12 @@ public class CampBuilder {
     }
   }
 
+  // TODO:
   public Bag populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
     Bag list = new Bag();
-    Mosquito mosquito = new Mosquito(position, dadaab.getTime());
-    mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, 1.0));
+    Mosquito mosquito = new Mosquito(position);
+    mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+    list.add(mosquito);
     return list;
   }
 

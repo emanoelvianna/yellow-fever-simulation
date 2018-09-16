@@ -20,7 +20,9 @@ import sim.util.Double2D;
 import sim.util.Valuable;
 
 public class Human implements Steppable, Valuable, Serializable {
-
+  
+  public static final int ORDERING = 2;
+  protected Stoppable stopper;
   private int age;
   private int sex;
   private boolean isWorker;
@@ -35,9 +37,6 @@ public class Human implements Steppable, Valuable, Serializable {
   private HealthStatus previousHealthStatus;
   private Family family;
   private ActivityMapping currentActivity;
-
-  public static final int ORDERING = 2;
-  protected Stoppable stopper;
   public int stayingTime;
   // infection info
   private boolean vaccinated;
@@ -46,6 +45,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private int infectionPeriod;
   private int toxicPeriod;
   private boolean serious;
+  private int currentDay;
 
   private Dadaab dadaab;
   public int minuteInDay;
@@ -74,6 +74,7 @@ public class Human implements Steppable, Valuable, Serializable {
     this.incubationPeriod = 0;
     this.infectionPeriod = 0;
     this.toxicPeriod = 0;
+    this.currentDay = 0;
     // stayingTime = 0;
     // frequencyLaterine = 1;
     allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
@@ -206,7 +207,7 @@ public class Human implements Steppable, Valuable, Serializable {
         this.definePeriodOfInfection();
         this.serious = this.infectionPeriod == 4 ? true : false;
       }
-    } else if (this.incubationPeriod > 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+    } else if (this.incubationPeriod > 0 && this.isNewDay() && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       this.incubationPeriod--;
     }
   }
@@ -214,7 +215,8 @@ public class Human implements Steppable, Valuable, Serializable {
   private void defineMildInfectionEvolution() {
     if (this.infectionPeriod == 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.infectionPeriod > 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.infectionPeriod > 0 && this.isNewDay()
+        && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
       this.infectionPeriod--;
     }
   }
@@ -226,7 +228,8 @@ public class Human implements Steppable, Valuable, Serializable {
     } else if (!this.serious && this.infectionPeriod == 0
         && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.infectionPeriod > 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.infectionPeriod > 0 && this.isNewDay()
+        && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       this.infectionPeriod--;
     }
   }
@@ -239,7 +242,7 @@ public class Human implements Steppable, Valuable, Serializable {
         this.currentHealthStatus = HealthStatus.DEAD;
         dadaab.killrefugee(this);
       }
-    } else if (this.toxicPeriod > 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.toxicPeriod > 0 && this.isNewDay() && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
       this.toxicPeriod--;
     }
   }
@@ -269,7 +272,7 @@ public class Human implements Steppable, Valuable, Serializable {
   // TODO: O tempo de recuperação deve considerar o tempo?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
-      // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
+      //this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
   }
 
@@ -282,7 +285,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void definePeriodOfInfection() {
-    this.infectionPeriod = 3 + dadaab.random.nextInt(2);
+    this.infectionPeriod = 3 + this.dadaab.random.nextInt(2);
   }
 
   private void definePeriodOfToxicInfection() {
@@ -290,28 +293,54 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void defineIncubationPeriod() {
-    this.incubationPeriod = 3 + dadaab.random.nextInt(4);
+    this.incubationPeriod = 3 + this.dadaab.random.nextInt(4);
+  }
+
+  private boolean isNewDay() {
+    if (this.time.dayCount(currentStep) > this.currentDay) {
+      this.currentDay = this.time.dayCount(currentStep);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public void step(SimState state) {
-    dadaab = (Dadaab) state;
-    currentStep = (int) dadaab.schedule.getSteps();
+    this.dadaab = (Dadaab) state;
+    this.currentStep = (int) dadaab.schedule.getSteps();
 
-    if (currentStep < 1440) {
-      minuteInDay = currentStep;
+    if (this.currentStep < 1440) {
+      this.minuteInDay = this.currentStep;
     } else {
-      minuteInDay = currentStep % 1440;
+      this.minuteInDay = this.currentStep % 1440;
     }
-
+    
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       this.checkCurrentStateOfInfection();
     }
 
     this.move(currentStep);
+
+    // TODO: Remover, utilizado para realização de testes
+    if (HealthStatus.DEAD.equals(this.currentHealthStatus)) {
+      System.out.println("Estou: " + this.currentHealthStatus);
+      System.out.println("Quantidade de mosquito em casa: " + this.home.getMosquito().size());
+      System.out.println("Estou em casa: " + this.currentPosition.equals(this.home));
+      Mosquito mosquito = (Mosquito) this.home.getMosquito().get(0);
+      System.out.println("Mosquito ativo: " + mosquito.isActivity());
+      System.out.println("Mosquito com fome: " + mosquito.isHungry());
+      System.out.println("---");
+    }
+    
+    System.out.println("---");
+    System.out.println(this.currentHealthStatus);
+    System.out.println("Perido de incuvação: " + this.incubationPeriod);
+    System.out.println("Perido de infecção: " + this.infectionPeriod);
+    System.out.println("Perido de tóxico: " + this.toxicPeriod);
+    System.out.println("---");
   }
 
-  // TODO: Melhorar a visualização em relação a outros casos?
   public double doubleValue() {
     switch (this.currentHealthStatus) {
     case SUSCEPTIBLE:
@@ -325,7 +354,7 @@ public class Human implements Steppable, Valuable, Serializable {
     case TOXIC_INFECTION:
       return 5;
     default:
-      return 4;
+      return 6;
     }
   }
 

@@ -13,46 +13,40 @@ import sim.util.Valuable;
 
 public class Mosquito implements Steppable, Valuable, Serializable {
 
+  public static final int ORDERING = 2;
+  protected Stoppable stopper;
+  private int age;
   private double speed;
   private boolean hungry;
+  private boolean carryingEggs;
+  private boolean matureEggs;
+  private boolean activity;
   private int sensoryAmplitude;
   private Dadaab dadaab;
   private int currentStep;
   private FieldUnit currentPosition;
   private TimeManager time;
-  protected Stoppable stopper;
+  private int currentDay;
 
-  public Mosquito(FieldUnit position, TimeManager time) {
+  public Mosquito(FieldUnit position) {
+    this.age = 0;
     this.speed = 1.0;
     this.hungry = true;
+    this.activity = false;
     this.sensoryAmplitude = 3;
     this.currentPosition = position;
-    this.time = time;
-    this.dadaab = null;
-  }
-
-  public void toBite(Human human) {
-    // TODO: Considerar probabilidade
-    if (!HealthStatus.RECOVERED.equals(human.getCurrentHealthStatus())) {
-      if (!HealthStatus.isInfected(human.getCurrentHealthStatus())) {
-        human.infected();
-      }
-    }
-  }
-
-  public void ThereIsFood() {
-
+    this.carryingEggs = false;
   }
 
   public void step(SimState state) {
     this.dadaab = (Dadaab) state;
-    currentStep = (int) dadaab.schedule.getSteps();
+    this.time = this.dadaab.getTime();
+    this.currentStep = (int) dadaab.schedule.getSteps();
 
     this.isActivity(currentStep);
-  }
-
-  public void setStoppable(Stoppable stopp) {
-    stopper = stopp;
+    if (this.isNewDay()) {
+      this.probabilityOfDie();
+    }
   }
 
   public void stop() {
@@ -60,35 +54,58 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void isActivity(int currentStep) {
-    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 22) {
       // TODO: Considerar está mudança junto ao modelo do mosquito
       if (this.hungry) {
-        if (this.carryingEggs()) {
+        if (this.isCarryingEggs()) {
           this.bloodFood();
         } else {
           this.normalFood();
         }
       }
-      if (this.carryingEggs() && this.isMature()) {
-        // TODO: realiza processo de busca de fonte de água para oviposição
+      if (this.isCarryingEggs()) {
+        if (this.isMatureEggs()) {
+          if (this.currentPosition.containsWater()) {
+            this.ovipositionProcess();
+          }
+        } else {
+          this.probabilityOfMature();
+        }
       } else {
-        // TODO: realiza probabilidade da maturação
+        this.probabilityOfCarryingEggs();
       }
+      this.activity = true;
     } else {
-      // TODO: Mosquito parado
+      this.activity = false;
     }
   }
 
-  private boolean isMature() {
-    // TODO:
-    return true;
+  private void probabilityOfCarryingEggs() {
+    if (this.dadaab.random.nextDouble() < 0.2) { // 20% chance
+      this.setCarryingEggs(true);
+    } else {
+      this.setCarryingEggs(false);
+    }
+  }
+
+  private void probabilityOfMature() {
+    // TODO: Como devo representar a equação?
+    this.setMatureEggs(true);
+  }
+
+  private int ovipositionProcess() {
+    if (dadaab.random.nextDouble() > 0.5) { // 50-50 chance
+      return 0;
+    } else {
+      return 1;
+    }
   }
 
   private void normalFood() {
     // TODO: Uma residencia irá sempre conter este tipo de alimento?
     // TODO: Faz sentido ser algum tipo de probabilidade?
     if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
-      this.hungry = false;
+      this.hungry = true;
     }
   }
 
@@ -96,15 +113,40 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     if (this.currentPosition.containsPresentHumans()) {
       // TODO: Considerar probabilidade de alimentação
       this.toBite((Human) currentPosition.getRefugee().get(0));
-      this.hungry = true;
-    } else {
       this.hungry = false;
+    } else {
+      this.hungry = true;
     }
   }
 
-  public boolean carryingEggs() {
-    // TODO:
-    return true;
+  private void probabilityOfDie() {
+    if (this.dadaab.random.nextDouble() < 0.2) { // 20% chance
+      this.dadaab.killmosquito(this);
+      // TODO: Rever a probabilidade relacionada a idade
+    } else if (this.age > 30 + this.dadaab.random.nextInt(16)) {
+      this.dadaab.killmosquito(this);
+    }
+  }
+
+  public void toBite(Human human) {
+    // TODO: Considerar probabilidade
+    if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
+      human.infected();
+    }
+  }
+
+  private boolean isNewDay() {
+    if (this.time.dayCount(currentStep) > this.currentDay) {
+      this.currentDay = this.time.dayCount(currentStep);
+      this.hungry = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void setStoppable(Stoppable stopp) {
+    stopper = stopp;
   }
 
   public double doubleValue() {
@@ -141,6 +183,30 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public void setCurrentPosition(FieldUnit currentPosition) {
     this.currentPosition = currentPosition;
+  }
+
+  public boolean isActivity() {
+    return activity;
+  }
+
+  public void setActivity(boolean activity) {
+    this.activity = activity;
+  }
+
+  public boolean isCarryingEggs() {
+    return carryingEggs;
+  }
+
+  public void setCarryingEggs(boolean carryingEggs) {
+    this.carryingEggs = carryingEggs;
+  }
+
+  private boolean isMatureEggs() {
+    return this.matureEggs;
+  }
+
+  private void setMatureEggs(boolean matureEggs) {
+    this.matureEggs = matureEggs;
   }
 
 }
