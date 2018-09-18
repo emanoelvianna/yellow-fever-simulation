@@ -20,9 +20,17 @@ import sim.util.Double2D;
 import sim.util.Valuable;
 
 public class Human implements Steppable, Valuable, Serializable {
-  
+
   public static final int ORDERING = 2;
   protected Stoppable stopper;
+  private Dadaab dadaab;
+  // the agent's current path to its current goal
+  private ArrayList<FieldUnit> path = null;
+  private MersenneTwisterFast random;
+  // time contorler-identify the hour, day, week
+  private TimeManager time;
+  public int minuteInDay;
+
   private int age;
   private int sex;
   private boolean isWorker;
@@ -38,7 +46,6 @@ public class Human implements Steppable, Valuable, Serializable {
   private Family family;
   private ActivityMapping currentActivity;
   public int stayingTime;
-  // infection info
   private boolean vaccinated;
   private double bodyResistance;
   private int incubationPeriod;
@@ -46,13 +53,6 @@ public class Human implements Steppable, Valuable, Serializable {
   private int toxicPeriod;
   private boolean serious;
   private int currentDay;
-
-  private Dadaab dadaab;
-  public int minuteInDay;
-  private TimeManager time;// time contorler-identify the hour, day, week
-  private ArrayList<FieldUnit> path = null; // the agent's current path to its
-                                            // current goal
-  private MersenneTwisterFast random;
 
   public Human(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
       Continuous2D allRefugees) {
@@ -75,15 +75,11 @@ public class Human implements Steppable, Valuable, Serializable {
     this.infectionPeriod = 0;
     this.toxicPeriod = 0;
     this.currentDay = 0;
-    // stayingTime = 0;
-    // frequencyLaterine = 1;
-    allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
-        family.getCampLocation().getLocationY() + jitterY));
+    this.setObjectLocation(allRefugees);
   }
 
-  // where to move
   public void move(int steps) {
-    Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
+    Activity activity = new Activity(this, time, currentStep, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
@@ -103,7 +99,8 @@ public class Human implements Steppable, Valuable, Serializable {
       } else {
         calculateGoal();
       }
-    } // else move to your goal
+    }
+    // else move to your goal
     else {
       // make sure we have a path to the goal!
       if (path == null || path.size() == 0) {
@@ -115,15 +112,7 @@ public class Human implements Steppable, Valuable, Serializable {
           path.add(this.getGoal());
         }
       }
-      // determine the best location to immediately move *toward*
       FieldUnit subgoal;
-      // It's possible that the agent isn't close to a node that can take it to
-      // the
-      // center.
-      // In that case, the A* will return null. If this is so the agent should
-      // move
-      // toward
-      // the goal until such a node is found.
       if (path == null) {
         subgoal = this.getGoal();
       } // Otherwise we have a path and should continue to move along it
@@ -143,7 +132,6 @@ public class Human implements Steppable, Valuable, Serializable {
       FieldUnit loc = activity.getNextTile(dadaab, subgoal, this.getCurrentPosition());
       FieldUnit oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
-
       this.setCurrentPosition(loc);
       loc.addRefugee(this);
       dadaab.allRefugees.setObjectLocation(this,
@@ -154,7 +142,7 @@ public class Human implements Steppable, Valuable, Serializable {
   // assign the best goal
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
-      Activity activity = new Activity(this, time, currentStep, random, minuteInDay);
+      Activity activity = new Activity(this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity(dadaab);
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab));
       // your selected activity
@@ -242,7 +230,8 @@ public class Human implements Steppable, Valuable, Serializable {
         this.currentHealthStatus = HealthStatus.DEAD;
         dadaab.killrefugee(this);
       }
-    } else if (this.toxicPeriod > 0 && this.isNewDay() && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.toxicPeriod > 0 && this.isNewDay()
+        && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
       this.toxicPeriod--;
     }
   }
@@ -272,7 +261,7 @@ public class Human implements Steppable, Valuable, Serializable {
   // TODO: O tempo de recuperação deve considerar o tempo?
   public void receiveTreatment(FieldUnit f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
-      //this.setCurrentHealthStatus(HealthStatus.RECOVERED);
+      // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
   }
 
@@ -314,7 +303,7 @@ public class Human implements Steppable, Valuable, Serializable {
     } else {
       this.minuteInDay = this.currentStep % 1440;
     }
-    
+
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       this.checkCurrentStateOfInfection();
@@ -324,21 +313,16 @@ public class Human implements Steppable, Valuable, Serializable {
 
     // TODO: Remover, utilizado para realização de testes
     if (HealthStatus.DEAD.equals(this.currentHealthStatus)) {
-      System.out.println("Estou: " + this.currentHealthStatus);
-      System.out.println("Quantidade de mosquito em casa: " + this.home.getMosquito().size());
-      System.out.println("Estou em casa: " + this.currentPosition.equals(this.home));
-      Mosquito mosquito = (Mosquito) this.home.getMosquito().get(0);
-      System.out.println("Mosquito ativo: " + mosquito.isActivity());
-      System.out.println("Mosquito com fome: " + mosquito.isHungry());
+      System.out.println("---");
+      System.out.println("Status da saúde: " + this.currentHealthStatus);
+      System.out.println("Idade: " + this.age);
+      System.out.println("Perido de inbuvação: " + this.incubationPeriod);
+      System.out.println("Perido de infecção: " + this.infectionPeriod);
+      System.out.println("Perido de tóxico: " + this.toxicPeriod);
+      System.out.println("Estou em casa:" + this.currentPosition.equals(this.home));
+      System.out.println("Meu objetivo:" + this.currentActivity);
       System.out.println("---");
     }
-    
-    System.out.println("---");
-    System.out.println(this.currentHealthStatus);
-    System.out.println("Perido de incuvação: " + this.incubationPeriod);
-    System.out.println("Perido de infecção: " + this.infectionPeriod);
-    System.out.println("Perido de tóxico: " + this.toxicPeriod);
-    System.out.println("---");
   }
 
   public double doubleValue() {
@@ -356,6 +340,11 @@ public class Human implements Steppable, Valuable, Serializable {
     default:
       return 6;
     }
+  }
+
+  private void setObjectLocation(Continuous2D allRefugees) {
+    allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
+        family.getCampLocation().getLocationY() + jitterY));
   }
 
   public void setStoppable(Stoppable stopp) {

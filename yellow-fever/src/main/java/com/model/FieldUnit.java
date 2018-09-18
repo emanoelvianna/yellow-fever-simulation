@@ -23,6 +23,7 @@ public class FieldUnit implements Valuable, Serializable {
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
   private Bag mosquito;
+  private Bag eggs;
 
   // getter and setter
   public FieldUnit() {
@@ -30,6 +31,7 @@ public class FieldUnit implements Valuable, Serializable {
     this.refugeeHH = new Bag();
     this.refugee = new Bag();
     this.mosquito = new Bag();
+    this.eggs = new Bag();
   }
 
   public FieldUnit(int x, int y) {
@@ -224,6 +226,14 @@ public class FieldUnit implements Valuable, Serializable {
 
   public boolean containsPresentHumans() {
     return !refugee.isEmpty();
+  }
+
+  public boolean containsEggs() {
+    return !eggs.isEmpty();
+  }
+
+  public void addEggs(Bag eggs) {
+    this.eggs = eggs;
   }
 
 }

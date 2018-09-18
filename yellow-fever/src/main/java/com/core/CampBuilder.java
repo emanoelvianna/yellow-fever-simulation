@@ -72,7 +72,7 @@ public class CampBuilder {
         line = camp.readLine();
       }
 
-      dadaab.campSites.clear();// clear the bag
+      dadaab.familyHousing.clear();// clear the bag
 
       for (int curr_row = 0; curr_row < height; ++curr_row) {
         line = camp.readLine();
@@ -89,7 +89,7 @@ public class CampBuilder {
             fieldUnit.setFieldID(camptype);
 
             if (camptype == 11 || camptype == 21 || camptype == 31) {
-              dadaab.campSites.add(fieldUnit);
+              dadaab.familyHousing.add(fieldUnit);
             }
 
             if (camptype >= 10 && camptype <= 12) {
@@ -373,16 +373,16 @@ public class CampBuilder {
 
     // for now random
 
-    int x = dadaab.random.nextInt(dadaab.campSites.numObjs);
-    while (((FieldUnit) dadaab.campSites.objs[x]).isCampOccupied(dadaab) == true
-        || dadaab.allFacilities.contains((FieldUnit) dadaab.campSites.objs[x]) == true) {
+    int x = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
+    while (((FieldUnit) dadaab.familyHousing.objs[x]).isCampOccupied(dadaab) == true
+        || dadaab.allFacilities.contains((FieldUnit) dadaab.familyHousing.objs[x]) == true) {
       // try another spot
-      x = dadaab.random.nextInt(dadaab.campSites.numObjs);
+      x = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
 
     }
 
     //
-    return (FieldUnit) dadaab.campSites.objs[x];
+    return (FieldUnit) dadaab.familyHousing.objs[x];
 
   }
 
@@ -495,8 +495,12 @@ public class CampBuilder {
         f.addRefugeeHH(hh);
         // TODO: Melhorar a forma como está sendo distribuido os mosquitos
         f.setMosquito(this.populateMosquito(random, dadaab, f));
-        f.setNectar(true);
-        f.setSap(true);
+        if (random.nextDouble() < 0.9) { // 90% chance to contains nectar
+          f.setNectar(true);
+        }
+        if (random.nextDouble() < 0.9) { // 90% chance to contains sap
+          f.setSap(true);
+        }
 
         double rn = dadaab.random.nextDouble();
         int age = 0;

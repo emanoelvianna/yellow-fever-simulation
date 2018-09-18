@@ -16,11 +16,11 @@ public class Activity {
   private int minuteInDay;
   private MersenneTwisterFast random;
 
-  public Activity(Human human, TimeManager time, int currentStep, MersenneTwisterFast random, int minuteInDay) {
+  public Activity(Human human, TimeManager time, int currentStep, int minuteInDay) {
     this.human = human;
     this.time = time;
     this.currentStep = currentStep;
-    this.random = random;
+    this.random = new MersenneTwisterFast();
     this.minuteInDay = minuteInDay;
   }
 
@@ -45,18 +45,21 @@ public class Activity {
         }
       } else {
         int random = dadaab.random.nextInt(100);
-        if (random < 30) {
-          return ActivityMapping.MARKET;
-        } else if (random > 30 && random < 60) {
-          return ActivityMapping.RELIGION_ACTIVITY;
+        if (random <= 80) { // 80% chance of activity away from home
+          if (random <= 40) {
+            return ActivityMapping.RELIGION_ACTIVITY;
+          } else {
+            return ActivityMapping.SOCIAL_VISIT;
+          }
         } else {
-          return ActivityMapping.SOCIAL_VISIT;
+          return ActivityMapping.STAY_HOME;
         }
       }
     }
     return activity;
   }
 
+  // TODO: Bug sobre a busca de recursos médicos!
   private boolean gettingMedicalHelp(Dadaab dadaab) {
     if (this.human.hasSymptomsOfInfection()) {
       if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
@@ -81,8 +84,6 @@ public class Activity {
       return betstLoc(ref.getHome(), d.schooles, d);
     case RELIGION_ACTIVITY:
       return betstLoc(ref.getHome(), d.mosques, d);
-    case MARKET:
-      return betstLoc(ref.getHome(), d.market, d);
     case HEALTH_CENTER:
       return betstLoc(ref.getHome(), d.healthCenters, d);
     case SOCIAL_VISIT:
@@ -101,13 +102,7 @@ public class Activity {
 
     switch (activityMapping) {
     case STAY_HOME:
-      if (this.human.isPeriodOfInfection()) {
-        if (this.human.getInfectionPeriod() > 0) {
-          period = minimumStay + random.nextInt(24 * MINUTE);
-        }
-      } else {
-        period = maximumStay;
-      }
+      period = maximumStay;
       break;
     case SCHOOL:
       // time at school maximum until ~12:00 pm
@@ -123,26 +118,14 @@ public class Activity {
       break;
     case RELIGION_ACTIVITY:
       // time at maximum unti 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
-      break;
-    case MARKET:
-      // time at maximum unti 2 hours
+      System.out.println("RELIGION_ACTIVITY");
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
       // time at maximum unti 2 hours
-      if (HealthStatus.TOXIC_INFECTION.equals(this.human.getCurrentHealthStatus())) {
-        if (this.human.getToxicPeriod() > 0) {
-          period = minimumStay + random.nextInt(24 * MINUTE);
-        } else {
-          period = minimumStay;
-        }
-      } else {
-        period = minimumStay + random.nextInt(2 * MINUTE);
-      }
+      period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     }
-
     return (period + this.minuteInDay);
   }
 
@@ -192,7 +175,6 @@ public class Activity {
     return f;
   }
 
-  // Haiti project
   public FieldUnit getNextTile(Dadaab dadaab, FieldUnit subgoal, FieldUnit position) {
     // move in which direction?
     int moveX = 0, moveY = 0;
@@ -208,8 +190,6 @@ public class Activity {
     } else if (dy > 0) {
       moveY = 1;
     }
-    // ((FieldUnit) o).loc
-
     // can either move in Y direction or X direction: see which is better
     FieldUnit xmove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
     FieldUnit ymove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
@@ -217,36 +197,30 @@ public class Activity {
     boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
     boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
 
-    if (moveX == 0 && moveY == 0) { // we are ON the subgoal, so don't move at
-                                    // all!
+    if (moveX == 0 && moveY == 0) {
+      // we are ON the subgoal, so don't move at all
       // both are the same result, so just return the xmove (which is identical)
       return xmove;
-    } else if (moveX == 0) // this means that moving in the x direction is not a
-                           // valid move: it's +0
-    {
+    } else if (moveX == 0) {
+      // this means that moving in the x direction is not a valid move: it's +0
       return ymove;
-    } else if (moveY == 0) // this means that moving in the y direction is not a
-                           // valid move: it's +0
-    {
+    } else if (moveY == 0) {
+      // this means that moving in the y direction is not a valid move: it's +0
       return xmove;
-    } else if (xmoveToRoad == ymoveToRoad) { // equally good moves: pick
-                                             // randomly between them
+    } else if (xmoveToRoad == ymoveToRoad) {
+      // equally good moves: pick randomly between them
       if (dadaab.random.nextBoolean()) {
         return xmove;
       } else {
         return ymove;
       }
-    } else if (xmoveToRoad && moveX != 0) // x is a road: pick it
-    {
+    } else if (xmoveToRoad && moveX != 0) { // x is a road: pick it
       return xmove;
-    } else if (ymoveToRoad && moveY != 0)// y is a road: pick it
-    {
+    } else if (ymoveToRoad && moveY != 0) { // yes// y is a road: pick it
       return ymove;
-    } else if (moveX != 0) // move in the better direction
-    {
+    } else if (moveX != 0) { // move in the better direction
       return xmove;
-    } else if (moveY != 0) // yes
-    {
+    } else if (moveY != 0) { // yes
       return ymove;
     } else {
       return ymove; // no justification
@@ -266,7 +240,7 @@ public class Activity {
     int camp = ref.getHome().getCampID(); // get camp id
 
     // select any camp site but not the camp that belong to the agent
-    for (Object campsite : d.campSites) {
+    for (Object campsite : d.familyHousing) {
       FieldUnit cmp = ((FieldUnit) campsite);
       if (cmp.getCampID() == camp && cmp.equals(ref.getHome()) != true && cmp.getRefugeeHH().numObjs > 0) {
         potential.add(cmp); // potential locations to visit

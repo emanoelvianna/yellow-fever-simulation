@@ -15,17 +15,18 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public static final int ORDERING = 2;
   protected Stoppable stopper;
+  private Dadaab dadaab;
+  private FieldUnit currentPosition;
+  private TimeManager time;
   private int age;
   private double speed;
   private boolean hungry;
   private boolean carryingEggs;
   private boolean matureEggs;
   private boolean activity;
+  private boolean infected;
   private int sensoryAmplitude;
-  private Dadaab dadaab;
   private int currentStep;
-  private FieldUnit currentPosition;
-  private TimeManager time;
   private int currentDay;
 
   public Mosquito(FieldUnit position) {
@@ -36,6 +37,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.sensoryAmplitude = 3;
     this.currentPosition = position;
     this.carryingEggs = false;
+    this.infected = false;
   }
 
   public void step(SimState state) {
@@ -57,10 +59,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 22) {
       // TODO: Considerar está mudança junto ao modelo do mosquito
       if (this.hungry) {
+        this.carryingEggs = true; // TODO: remover, utilizado para testes!
         if (this.isCarryingEggs()) {
           this.bloodFood();
+          this.hungry = false;
         } else {
           this.normalFood();
+          this.hungry = false;
         }
       }
       if (this.isCarryingEggs()) {
@@ -112,6 +117,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void bloodFood() {
     if (this.currentPosition.containsPresentHumans()) {
       // TODO: Considerar probabilidade de alimentação
+      // TODO: Posso considerar mais de uma pessoa
+      // TODO: Uma saida é realizar um random sobre as pessoas
       this.toBite((Human) currentPosition.getRefugee().get(0));
       this.hungry = false;
     } else {
@@ -131,7 +138,17 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   public void toBite(Human human) {
     // TODO: Considerar probabilidade
     if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
-      human.infected();
+      if (this.isInfected()) {
+        if (this.dadaab.random.nextInt(101) < 75) { // 75% chance of infection
+          human.infected();
+        }
+      }
+    }
+    if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+      // TODO: Considerar probabilidade
+      if (this.dadaab.random.nextInt(101) < 75) { // 75% chance of infection
+        this.setInfected(true);
+      }
     }
   }
 
@@ -207,6 +224,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void setMatureEggs(boolean matureEggs) {
     this.matureEggs = matureEggs;
+  }
+
+  public boolean isInfected() {
+    return infected;
+  }
+
+  public void setInfected(boolean infected) {
+    this.infected = infected;
   }
 
 }

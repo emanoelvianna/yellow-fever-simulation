@@ -7,6 +7,7 @@ import org.jfree.data.xy.XYSeries;
 import com.core.enumeration.Parameters;
 import com.model.Facility;
 import com.model.Family;
+import com.model.FieldUnit;
 import com.model.Human;
 import com.model.Mosquito;
 import com.model.enumeration.HealthStatus;
@@ -131,7 +132,7 @@ public class Dadaab extends SimState {
   public int totalgridHeight = 10;
 
   public Bag allFamilies; // holding all families
-  public Bag campSites; // hold camp sites
+  public Bag familyHousing;
   public Bag boreHoles; // holds borehols
   public Bag rainfallWater; // water points from rain
   public Bag allFacilities;
@@ -157,7 +158,7 @@ public class Dadaab extends SimState {
     rainfall = new Rainfall();
     fac = new Facility();//
     allFamilies = new Bag();
-    campSites = new Bag();
+    familyHousing = new Bag();
     boreHoles = new Bag();
     rainfallWater = new Bag();
     allFacilities = new Bag();
@@ -179,7 +180,6 @@ public class Dadaab extends SimState {
 
   // Boolean getOutputStats = true;
   public void start() {
-
     super.start();
     // accessing inpt files
     CampBuilder builder = new CampBuilder();
@@ -197,6 +197,9 @@ public class Dadaab extends SimState {
 
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
+
+        this.eggsIsReadyToHatch();
+
         Bag ref = allRefugees.getAllObjects(); // getting all refugees
         //
         int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity
@@ -262,9 +265,6 @@ public class Dadaab extends SimState {
             break;
           case RELIGION_ACTIVITY:
             sumAct[2] += 1;
-            break;
-          case MARKET:
-            sumAct[3] += 1;
             break;
           case SOCIAL_VISIT:
             sumAct[6] += 1;
@@ -429,6 +429,16 @@ public class Dadaab extends SimState {
 
         setTotalBacterialLoad(rainfall.getTotalBacterialLoad());
 
+      }
+
+      // TODO: Considerar quando os ovos estão prontos
+      private void eggsIsReadyToHatch() {
+        for (Object object : familyHousing) {
+          FieldUnit fieldUnit = (FieldUnit) object;
+          if (fieldUnit.containsEggs()) {
+
+          }
+        }
       }
     };
 
