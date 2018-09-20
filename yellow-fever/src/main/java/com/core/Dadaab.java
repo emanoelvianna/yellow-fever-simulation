@@ -1,10 +1,13 @@
 package com.core;
 
+import java.util.List;
+
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
 
 import com.core.enumeration.Parameters;
+import com.model.Climate;
 import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
@@ -34,7 +37,7 @@ public class Dadaab extends SimState {
                                 // parcels)
   public GeomGridField allCampGeoGrid;
   public DoubleGrid2D rainfallGrid; // mainly for rainfall vizualization
-  public Continuous2D allRefugees; // refugee agents
+  public Continuous2D allHumans; // refugee agents
   public SparseGrid2D facilityGrid;// facilities: schools, health center,
                                    // borehol etc
   public IntGrid2D roadGrid; // road in grid- for navigation
@@ -48,6 +51,9 @@ public class Dadaab extends SimState {
   private final Parameters params;
   private int totalSusciptible;
   private int totalExposed;
+  private int totalOfHumansWithMildInfection;
+  private int totalOfHumansWithSevereInfected;
+  private int totalOfMosquitoWithInfection;
   private int totalInfected;
   private int totalRecovered;
   private int totalSusciptibleNewly;
@@ -60,6 +66,8 @@ public class Dadaab extends SimState {
   public int[] campRecovered;
   private int[] totalActivity;
   private double totalBacterialLoad = 0;
+  private int currentDay;
+  private double temperature;
   /**
    * charts and graphs
    */
@@ -145,6 +153,7 @@ public class Dadaab extends SimState {
   // WaterContamination fm = new WaterContamination();
   Rainfall rainfall; // scheduling rainfall
   Facility fac;// schduling borehole refill
+  private Climate climate;
 
   private TimeManager time = new TimeManager();
 
@@ -163,6 +172,9 @@ public class Dadaab extends SimState {
     rainfallWater = new Bag();
     allFacilities = new Bag();
     allCampGeoGrid = new GeomGridField();
+    this.climate = new Climate();
+    this.currentDay = 0;
+    this.temperature = 0;
 
     schooles = new Bag();
     healthCenters = new Bag();
@@ -198,9 +210,12 @@ public class Dadaab extends SimState {
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
 
+        if (this.isNewDay()) {
+          this.setTemperature();
+        }
         this.eggsIsReadyToHatch();
 
-        Bag ref = allRefugees.getAllObjects(); // getting all refugees
+        Bag humans = allHumans.getAllObjects(); // getting all refugees
         //
         int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity
                                                          // and puting the value
@@ -253,10 +268,10 @@ public class Dadaab extends SimState {
         }
         int none = 0;
         // accessing each agent
-        for (int i = 0; i < ref.numObjs; i++) {
-          Human r = (Human) ref.objs[i];
+        for (int i = 0; i < humans.numObjs; i++) {
+          Human human = (Human) humans.objs[i];
           // TODO: Refatorar
-          switch (r.getCurrentActivity()) {
+          switch (human.getCurrentActivity()) {
           case STAY_HOME:
             sumAct[0] += 1;
             break;
@@ -271,47 +286,47 @@ public class Dadaab extends SimState {
             break;
           }
 
-          int age = ageClass(r.getAge()); // age class of agent i
+          int age = ageClass(human.getAge()); // age class of agent i
           // int siz = 0;
           sumAge[age] += 1;
 
-          if (r.getHome().getCampID() == 1) {
-            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (human.getHome().getCampID() == 1) {
+            if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusDag = totSusDag + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpDag = totExpDag + 1;
-            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
               totInfDag = totInfDag + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecDag = totRecDag + 1;
             } else {
               none = 0;
             }
           }
 
-          if (r.getHome().getCampID() == 2) {
+          if (human.getHome().getCampID() == 2) {
 
-            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+            if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusInfo = totSusInfo + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpInfo = totExpInfo + 1;
-            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
               totInfInfo = totInfInfo + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecInfo = totRecInfo + 1;
             } else {
               none = 0;
             }
           }
 
-          if (r.getHome().getCampID() == 3) {
-            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (human.getHome().getCampID() == 3) {
+            if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusHag = totSusHag + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpHag = totExpHag + 1;
-            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
               totInfHag = totInfHag + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecHag = totRecHag + 1;
             } else {
               none = 0;
@@ -320,30 +335,39 @@ public class Dadaab extends SimState {
 
           // total health status
 
-          if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
             totalSus = totalSus + 1;
-          } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+          } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
-          } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
+          } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
             totalInf = totalInf + 1;
-          } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
+          } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;
           } else {
             none = 0;
           }
 
-          if (r.getCurrentHealthStatus() != r.getPreviousHealthStatus()) {
-            if (r.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
+          if (human.getCurrentHealthStatus() != human.getPreviousHealthStatus()) {
+            if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totalSusNewly = totalSusNewly + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totalExpNewly = totalExpNewly + 1;
-            } else if (HealthStatus.isInfected(r.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
               totalInfNewly = totalInfNewly + 1;
-            } else if (r.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
+            } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totalRecNewly = totalRecNewly + 1;
             } else {
               none = 0;
             }
+          }
+
+          defineInfectionNumbersInHumans(human);
+        }
+
+        for (Object object : familyHousing) {
+          FieldUnit fieldUnit = (FieldUnit) object;
+          for (Object object2 : fieldUnit.getMosquito()) {
+            defineInfectionNumbersInMosquitoes((Mosquito) object2);
           }
         }
 
@@ -381,7 +405,7 @@ public class Dadaab extends SimState {
 
         // percentage - agent activity by type
         for (int i = 0; i < sumAct.length; i++) {
-          getDataset().setValue(sumAct[i] * 100 / allRefugees.getAllObjects().numObjs, actTitle, activities[i]);
+          getDataset().setValue(sumAct[i] * 100 / allHumans.getAllObjects().numObjs, actTitle, activities[i]);
         }
 
         String ageTitle = "Age Group";
@@ -389,7 +413,7 @@ public class Dadaab extends SimState {
 
         // ageset
         for (int i = 0; i < sumAge.length; i++) {
-          agedataset.setValue(sumAge[i] * 100 / allRefugees.getAllObjects().numObjs, ageTitle, ageC[i]);
+          agedataset.setValue(sumAge[i] * 100 / allHumans.getAllObjects().numObjs, ageTitle, ageC[i]);
         }
 
         String famTitle = "Household Size";
@@ -402,7 +426,7 @@ public class Dadaab extends SimState {
 
         int totDead = countDeath();
 
-        totalTotalPopSeries.add((double) (state.schedule.time()), allRefugees.getAllObjects().numObjs);
+        totalTotalPopSeries.add((double) (state.schedule.time()), allHumans.getAllObjects().numObjs);
         totalDeathSeries.add((double) (state.schedule.time()), totDead);
         // health status - percentage
 
@@ -431,12 +455,31 @@ public class Dadaab extends SimState {
 
       }
 
+      private boolean isNewDay() {
+        if (time.dayCount((int) schedule.getSteps()) > currentDay) {
+          currentDay = time.dayCount((int) schedule.getSteps());
+          return true;
+        } else {
+          return false;
+        }
+      }
+
+      private void setTemperature() {
+        List<Double> temperatures = getClimate().getTemperature();
+        if (currentDay < temperatures.size()) {
+          temperature = temperatures.get(currentDay);
+        } else {
+          // TODO:
+        }
+      }
+
       // TODO: Considerar quando os ovos estão prontos
+      // TODO: Temperatura atualmente está fixa
       private void eggsIsReadyToHatch() {
         for (Object object : familyHousing) {
           FieldUnit fieldUnit = (FieldUnit) object;
           if (fieldUnit.containsEggs()) {
-
+            double maturation = 8 + Math.abs(temperature - 25);
           }
         }
       }
@@ -444,6 +487,20 @@ public class Dadaab extends SimState {
 
     schedule.scheduleRepeating(chartUpdater);
     // System.out.println("total:- "+ allRefugees.getAllObjects().numObjs);
+  }
+
+  private void defineInfectionNumbersInHumans(Human human) {
+    if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
+      this.totalOfHumansWithMildInfection++;
+    } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
+      this.totalOfHumansWithSevereInfected++;
+    }
+  }
+
+  private void defineInfectionNumbersInMosquitoes(Mosquito mosquito) {
+    if (HealthStatus.INFECTED.equals(mosquito.getCurrentHealthStatus())) {
+      this.totalOfMosquitoWithInfection++;
+    }
   }
 
   // TODO: Rever está informação
@@ -475,7 +532,7 @@ public class Dadaab extends SimState {
     if (human.getFamily().getMembers().numObjs == 0) {
       allFamilies.remove(human.getFamily());
     }
-    allRefugees.remove(human);
+    allHumans.remove(human);
   }
 
   // TODO: O que deve ser considerado para remover o mosquito?
@@ -489,7 +546,7 @@ public class Dadaab extends SimState {
   public int countDeath() {
     int death = 0;
 
-    int current = allRefugees.getAllObjects().numObjs;
+    int current = allHumans.getAllObjects().numObjs;
     PrevPop = curPop;
     death = PrevPop - current;
     curPop = current;
@@ -528,12 +585,12 @@ public class Dadaab extends SimState {
     return totalExposed;
   }
 
-  public void setNumberOfInfected(int inf) {
-    this.totalInfected = inf;
+  public void setNumberOfInfected(int number) {
+    this.totalInfected = number;
   }
 
   public int getNumberOfInfected() {
-    return totalInfected;
+    return this.totalInfected;
   }
 
   public void setNumberOfRecovered(int rec) {
@@ -606,6 +663,54 @@ public class Dadaab extends SimState {
 
   public TimeManager getTime() {
     return time;
+  }
+
+  public int getTotalOfHumansWithSevereInfected() {
+    return totalOfHumansWithSevereInfected;
+  }
+
+  public void setTotalOfHumansWithSevereInfected(int totalOfHumansWithSevereInfected) {
+    this.totalOfHumansWithSevereInfected = totalOfHumansWithSevereInfected;
+  }
+
+  public int getTotalOfHumansWithMildInfection() {
+    return totalOfHumansWithMildInfection;
+  }
+
+  public void setTotalOfHumansWithMildInfection(int totalOfHumansWithMildInfection) {
+    this.totalOfHumansWithMildInfection = totalOfHumansWithMildInfection;
+  }
+
+  public int getTotalOfMosquitoWithInfection() {
+    return totalOfMosquitoWithInfection;
+  }
+
+  public void setTotalOfMosquitoWithInfection(int totalOfMosquitoWithInfection) {
+    this.totalOfMosquitoWithInfection = totalOfMosquitoWithInfection;
+  }
+
+  public Climate getClimate() {
+    return climate;
+  }
+
+  public void setClimate(Climate climate) {
+    this.climate = climate;
+  }
+
+  public int getCurrentDay() {
+    return currentDay;
+  }
+
+  public void setCurrentDay(int currentDay) {
+    this.currentDay = currentDay;
+  }
+
+  public double getTemperature() {
+    return temperature;
+  }
+
+  public void setTemperature(double temperature) {
+    this.temperature = temperature;
   }
 
 }

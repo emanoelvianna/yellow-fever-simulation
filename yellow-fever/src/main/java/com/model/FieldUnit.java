@@ -224,7 +224,7 @@ public class FieldUnit implements Valuable, Serializable {
     this.mosquito = mosquito;
   }
 
-  public boolean containsPresentHumans() {
+  public boolean containsHumans() {
     return !refugee.isEmpty();
   }
 

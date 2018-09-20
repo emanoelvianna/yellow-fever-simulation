@@ -15,7 +15,5 @@
 /**/npm-debug.log.*
 **/.sonar
 **/*npm-debug.log
-**/*.csv
-*.csv
 *.asc
 

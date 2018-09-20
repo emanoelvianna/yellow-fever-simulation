@@ -289,7 +289,6 @@ public class Rainfall implements Steppable {
 
   //
   public void step(SimState state) {
-
     Dadaab d = (Dadaab) state;
 
     if ((int) d.schedule.getTime() % 1440 == 1) {

@@ -3,6 +3,7 @@ package com.core;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +15,8 @@ import java.util.logging.Logger;
 import com.model.Facility;
 import com.model.Family;
 import com.model.FieldUnit;
-import com.model.Mosquito;
 import com.model.Human;
+import com.model.Mosquito;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
 import com.vividsolutions.jts.geom.CoordinateSequence;
@@ -317,12 +318,43 @@ public class CampBuilder {
       }
 
     }
+
+    // read climate file
+    String line;
+    String divider = ",";
+    BufferedReader buffered = null;
+    try {
+      buffered = new BufferedReader(new FileReader("data-poa/clima-2012-2014.csv"));
+      // skip the first line
+      buffered.readLine();
+      while ((line = buffered.readLine()) != null) {
+        String[] info = line.split(divider);
+        dadaab.getClimate().addDate(info[0]);
+        dadaab.getClimate().addPrecipitation(Double.parseDouble(info[1]));
+        dadaab.getClimate().addTemperature(Double.parseDouble(info[2]));
+      }
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (Exception exception) {
+      exception.printStackTrace();
+    } finally {
+      if (buffered != null) {
+        try {
+          buffered.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
   }
 
   private static void createGrids(int width, int height, Dadaab dadaab) {
     dadaab.allCamps = new ObjectGrid2D(width, height);
     dadaab.rainfallGrid = new DoubleGrid2D(width, height, 0);
-    dadaab.allRefugees = new Continuous2D(0.1, width, height);
+    dadaab.allHumans = new Continuous2D(0.1, width, height);
     dadaab.facilityGrid = new SparseGrid2D(width, height);
 
     dadaab.roadGrid = new IntGrid2D(width, height);
@@ -337,7 +369,7 @@ public class CampBuilder {
   //// add households
   private void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
 
-    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random, dadaab.allRefugees);
+    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random, dadaab.allHumans);
     hh.addMembers(newRefugee);
     hh.getCampLocation().addRefugee(newRefugee);
     // TODO: Verificar como deve ser considerado a resistencia sobre a doença
@@ -493,12 +525,14 @@ public class CampBuilder {
         }
 
         f.addRefugeeHH(hh);
+
         // TODO: Melhorar a forma como está sendo distribuido os mosquitos
         f.setMosquito(this.populateMosquito(random, dadaab, f));
-        if (random.nextDouble() < 0.9) { // 90% chance to contains nectar
+        // TODO: Justificativa está considerando a arborização
+        if (random.nextDouble() < 0.5) { // 50% chance to contains nectar
           f.setNectar(true);
         }
-        if (random.nextDouble() < 0.9) { // 90% chance to contains sap
+        if (random.nextDouble() < 0.5) { // 50% chance to contains sap
           f.setSap(true);
         }
 
@@ -545,7 +579,8 @@ public class CampBuilder {
   // TODO:
   public Bag populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
     Bag list = new Bag();
-    Mosquito mosquito = new Mosquito(position);
+    int age = 30 + dadaab.random.nextInt(16);
+    Mosquito mosquito = new Mosquito(position, age);
     mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
     list.add(mosquito);
     return list;

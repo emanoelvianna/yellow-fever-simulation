@@ -106,7 +106,7 @@ public class DadaabObserver implements Steppable {
     // "At Home","School","Water", "Mosque","Market", "Food C.", "Health C.","Visit
     // R.", "Social","Hygiene"
     // TODO: Refatorar, existem atividades inexistentes
-    String numTotAgent = Integer.toString(d.allRefugees.getAllObjects().numObjs);
+    String numTotAgent = Integer.toString(d.allHumans.getAllObjects().numObjs);
     String numAtHome = Integer.toString(d.getTotalActivity()[0]);
     String numSchool = Integer.toString(d.getTotalActivity()[1]);
     String numWater = Integer.toString(d.getTotalActivity()[2]);
@@ -257,7 +257,7 @@ public class DadaabObserver implements Steppable {
     }
     // TODO: Verificar a funcionalidade sobre a febre amarela
     // then write the current refugee health status
-    for (Object o : d.allRefugees.allObjects) {
+    for (Object o : d.allHumans.allObjects) {
       Human r = (Human) o;
       double tot = grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()];
       if (r.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {

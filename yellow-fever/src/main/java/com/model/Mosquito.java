@@ -1,6 +1,7 @@
 package com.model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.core.Dadaab;
 import com.core.TimeManager;
@@ -9,6 +10,7 @@ import com.model.enumeration.HealthStatus;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
+import sim.util.Bag;
 import sim.util.Valuable;
 
 public class Mosquito implements Steppable, Valuable, Serializable {
@@ -23,21 +25,26 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private boolean hungry;
   private boolean carryingEggs;
   private boolean matureEggs;
-  private boolean activity;
-  private boolean infected;
+  private int incubationPeriod;
+  private int daysWithoutFood;
+  private HealthStatus currentHealthStatus;
+  private HealthStatus previousHealthStatus;
   private int sensoryAmplitude;
   private int currentStep;
   private int currentDay;
+  private double temperature;
 
-  public Mosquito(FieldUnit position) {
-    this.age = 0;
+  public Mosquito(FieldUnit position, int age) {
+    this.age = age;
     this.speed = 1.0;
     this.hungry = true;
-    this.activity = false;
     this.sensoryAmplitude = 3;
     this.currentPosition = position;
     this.carryingEggs = false;
-    this.infected = false;
+    this.incubationPeriod = 0;
+    this.daysWithoutFood = 0;
+    this.currentDay = 0;
+    this.temperature = 0;
   }
 
   public void step(SimState state) {
@@ -45,27 +52,32 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.time = this.dadaab.getTime();
     this.currentStep = (int) dadaab.schedule.getSteps();
 
-    this.isActivity(currentStep);
     if (this.isNewDay()) {
-      this.probabilityOfDie();
+      if (this.hungry == false) {
+        this.daysWithoutFood++;
+      }
+      this.hungry = false; // reset the power
+      this.age--;
+      this.probabilityOfDying();
+      this.setTemperature();
     }
+    this.checkCurrentStateOfInfection();
+    this.isActive(currentStep);
+
   }
 
   public void stop() {
     stopper.stop();
   }
 
-  private void isActivity(int currentStep) {
-    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 22) {
+  private void isActive(int currentStep) {
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
       // TODO: Considerar está mudança junto ao modelo do mosquito
       if (this.hungry) {
-        this.carryingEggs = true; // TODO: remover, utilizado para testes!
         if (this.isCarryingEggs()) {
           this.bloodFood();
-          this.hungry = false;
         } else {
           this.normalFood();
-          this.hungry = false;
         }
       }
       if (this.isCarryingEggs()) {
@@ -79,14 +91,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       } else {
         this.probabilityOfCarryingEggs();
       }
-      this.activity = true;
-    } else {
-      this.activity = false;
     }
   }
 
   private void probabilityOfCarryingEggs() {
-    if (this.dadaab.random.nextDouble() < 0.2) { // 20% chance
+    if (this.dadaab.random.nextDouble() <= 0.2) { // 20% chance
       this.setCarryingEggs(true);
     } else {
       this.setCarryingEggs(false);
@@ -95,70 +104,94 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void probabilityOfMature() {
     // TODO: Como devo representar a equação?
+    double time = 3 + Math.abs((this.temperature - 21) / 5);
     this.setMatureEggs(true);
   }
 
-  private int ovipositionProcess() {
-    if (dadaab.random.nextDouble() > 0.5) { // 50-50 chance
-      return 0;
-    } else {
-      return 1;
-    }
-  }
-
-  private void normalFood() {
-    // TODO: Uma residencia irá sempre conter este tipo de alimento?
-    // TODO: Faz sentido ser algum tipo de probabilidade?
-    if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
-      this.hungry = true;
-    }
+  private void ovipositionProcess() {
+    this.currentPosition.addEggs(new Bag(100));
+    this.carryingEggs = false;
   }
 
   private void bloodFood() {
-    if (this.currentPosition.containsPresentHumans()) {
-      // TODO: Considerar probabilidade de alimentação
-      // TODO: Posso considerar mais de uma pessoa
-      // TODO: Uma saida é realizar um random sobre as pessoas
-      this.toBite((Human) currentPosition.getRefugee().get(0));
+    if (this.currentPosition.containsHumans()) {
+      int size = currentPosition.getRefugee().size();
+      this.dadaab.random.nextInt(size);
+      // TODO: Considerar uma probabilidade do mosquito conseguir
+      this.toBite((Human) currentPosition.getRefugee().get(this.dadaab.random.nextInt(size)));
       this.hungry = false;
     } else {
       this.hungry = true;
     }
   }
 
-  private void probabilityOfDie() {
-    if (this.dadaab.random.nextDouble() < 0.2) { // 20% chance
+  private void normalFood() {
+    if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
+      this.hungry = false;
+    } else {
+      this.hungry = true;
+    }
+  }
+
+  private void probabilityOfDying() {
+    if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
       this.dadaab.killmosquito(this);
-      // TODO: Rever a probabilidade relacionada a idade
-    } else if (this.age > 30 + this.dadaab.random.nextInt(16)) {
+    } else if (this.age <= 0) {
+      this.dadaab.killmosquito(this);
+    } else if (this.daysWithoutFood > 1) {
       this.dadaab.killmosquito(this);
     }
   }
 
+  // TODO: Rever os valores em relação ao modelo bibliográfico
   public void toBite(Human human) {
-    // TODO: Considerar probabilidade
     if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
-      if (this.isInfected()) {
-        if (this.dadaab.random.nextInt(101) < 75) { // 75% chance of infection
+      if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
+        // TODO: Adicionar as probabilidades
+        if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
           human.infected();
         }
       }
     }
     if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
-      // TODO: Considerar probabilidade
-      if (this.dadaab.random.nextInt(101) < 75) { // 75% chance of infection
-        this.setInfected(true);
+      if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
+        this.infected();
       }
     }
+  }
+
+  private void checkCurrentStateOfInfection() {
+    if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+      this.setCurrentHealthStatus(HealthStatus.INFECTED);
+    } else if (this.incubationPeriod > 0 && this.isNewDay() && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+      this.incubationPeriod--;
+    }
+  }
+
+  private void infected() {
+    this.defineIncubationPeriod();
+    this.currentHealthStatus = HealthStatus.EXPOSED;
+  }
+
+  private void defineIncubationPeriod() {
+    this.incubationPeriod = 3 + this.dadaab.random.nextInt(4);
   }
 
   private boolean isNewDay() {
     if (this.time.dayCount(currentStep) > this.currentDay) {
       this.currentDay = this.time.dayCount(currentStep);
-      this.hungry = false;
       return true;
     } else {
       return false;
+    }
+  }
+
+  private void setTemperature() {
+    List<Double> temperatures = dadaab.getClimate().getTemperature();
+    if (currentDay < temperatures.size()) {
+      this.temperature = temperatures.get(currentDay);
+    } else {
+      // TODO:
     }
   }
 
@@ -202,14 +235,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.currentPosition = currentPosition;
   }
 
-  public boolean isActivity() {
-    return activity;
-  }
-
-  public void setActivity(boolean activity) {
-    this.activity = activity;
-  }
-
   public boolean isCarryingEggs() {
     return carryingEggs;
   }
@@ -226,12 +251,36 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.matureEggs = matureEggs;
   }
 
-  public boolean isInfected() {
-    return infected;
+  public int getIncubationPeriod() {
+    return incubationPeriod;
   }
 
-  public void setInfected(boolean infected) {
-    this.infected = infected;
+  public void setIncubationPeriod(int incubationPeriod) {
+    this.incubationPeriod = incubationPeriod;
+  }
+
+  public HealthStatus getCurrentHealthStatus() {
+    return currentHealthStatus;
+  }
+
+  public void setCurrentHealthStatus(HealthStatus currentHealthStatus) {
+    this.currentHealthStatus = currentHealthStatus;
+  }
+
+  public HealthStatus getPreviousHealthStatus() {
+    return previousHealthStatus;
+  }
+
+  public void setPreviousHealthStatus(HealthStatus previousHealthStatus) {
+    this.previousHealthStatus = previousHealthStatus;
+  }
+
+  public int getDaysWithoutFood() {
+    return daysWithoutFood;
+  }
+
+  public void setDaysWithoutFood(int daysWithoutFood) {
+    this.daysWithoutFood = daysWithoutFood;
   }
 
 }

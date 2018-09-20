@@ -115,7 +115,7 @@ public class DadaabGUI extends GUIState {
     rainfallPortrayal.setField(dadaab.rainfallGrid);
     double rng = (dadaab.getParams().getGlobal().getRainfall_MM_Per_Minute() * 90 * 90 * 3); // 5 cell * area* amount of
     rainfallPortrayal.setMap(new sim.util.gui.SimpleColorMap(0, rng, Color.WHITE, Color.BLUE));
-    refugeePortrayal.setField(dadaab.allRefugees);
+    refugeePortrayal.setField(dadaab.allHumans);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
       // to draw each refugee type with differnet color

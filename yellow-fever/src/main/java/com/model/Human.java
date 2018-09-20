@@ -134,7 +134,7 @@ public class Human implements Steppable, Valuable, Serializable {
       oldLoc.removeRefugee(this);
       this.setCurrentPosition(loc);
       loc.addRefugee(this);
-      dadaab.allRefugees.setObjectLocation(this,
+      dadaab.allHumans.setObjectLocation(this,
           new Double2D(loc.getLocationX() + this.jitterX, loc.getLocationY() + jitterY));
     }
   }
