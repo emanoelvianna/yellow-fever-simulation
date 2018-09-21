@@ -20,7 +20,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private Dadaab dadaab;
   private FieldUnit currentPosition;
   private TimeManager time;
-  private int age;
+  private int daysOfLife;
   private double speed;
   private boolean hungry;
   private boolean carryingEggs;
@@ -30,12 +30,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private HealthStatus currentHealthStatus;
   private HealthStatus previousHealthStatus;
   private int sensoryAmplitude;
+  private double timeOfMaturation;
   private int currentStep;
   private int currentDay;
   private double temperature;
 
-  public Mosquito(FieldUnit position, int age) {
-    this.age = age;
+  public Mosquito(int daysOfLife, FieldUnit position) {
+    this.daysOfLife = daysOfLife;
     this.speed = 1.0;
     this.hungry = true;
     this.sensoryAmplitude = 3;
@@ -44,22 +45,29 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.incubationPeriod = 0;
     this.daysWithoutFood = 0;
     this.currentDay = 0;
-    this.temperature = 0;
+    this.temperature = 21; // TODO: Refatorar
+    this.timeOfMaturation = 0;
   }
 
   public void step(SimState state) {
     this.dadaab = (Dadaab) state;
     this.time = this.dadaab.getTime();
     this.currentStep = (int) dadaab.schedule.getSteps();
-
     if (this.isNewDay()) {
       if (this.hungry == false) {
         this.daysWithoutFood++;
       }
       this.hungry = false; // reset the power
-      this.age--;
+      this.daysOfLife--;
       this.probabilityOfDying();
       this.setTemperature();
+
+      System.out.println("tempo de maturação: " + timeOfMaturation);
+      this.timeOfMaturation--;
+      System.out.println("tempo de maturação--: " + timeOfMaturation);
+      if (this.timeOfMaturation <= 0) {
+        this.setMatureEggs(true);
+      }
     }
     this.checkCurrentStateOfInfection();
     this.isActive(currentStep);
@@ -82,11 +90,12 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       }
       if (this.isCarryingEggs()) {
         if (this.isMatureEggs()) {
+          this.timeOfMaturation = 0; // reset time
           if (this.currentPosition.containsWater()) {
             this.ovipositionProcess();
           }
-        } else {
-          this.probabilityOfMature();
+        } else if (timeOfMaturation == 0) {
+          this.defineTimeOfMaturation();
         }
       } else {
         this.probabilityOfCarryingEggs();
@@ -102,10 +111,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void probabilityOfMature() {
-    // TODO: Como devo representar a equação?
-    double time = 3 + Math.abs((this.temperature - 21) / 5);
-    this.setMatureEggs(true);
+  private void defineTimeOfMaturation() {
+    this.timeOfMaturation = 3 + Math.abs((this.temperature - 21) / 5);
   }
 
   private void ovipositionProcess() {
@@ -136,7 +143,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void probabilityOfDying() {
     if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
       this.dadaab.killmosquito(this);
-    } else if (this.age <= 0) {
+    } else if (this.daysOfLife <= 0) {
       this.dadaab.killmosquito(this);
     } else if (this.daysWithoutFood > 1) {
       this.dadaab.killmosquito(this);

@@ -1,5 +1,6 @@
 package com.core;
 
+import java.io.File;
 import java.util.List;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -174,7 +175,7 @@ public class Dadaab extends SimState {
     allCampGeoGrid = new GeomGridField();
     this.climate = new Climate();
     this.currentDay = 0;
-    this.temperature = 0;
+    this.temperature = 21; // TODO: Refatorar
 
     schooles = new Bag();
     healthCenters = new Bag();
@@ -212,8 +213,8 @@ public class Dadaab extends SimState {
 
         if (this.isNewDay()) {
           this.setTemperature();
+          this.eggsIsReadyToHatch();
         }
-        this.eggsIsReadyToHatch();
 
         Bag humans = allHumans.getAllObjects(); // getting all refugees
         //
@@ -473,13 +474,27 @@ public class Dadaab extends SimState {
         }
       }
 
-      // TODO: Considerar quando os ovos estão prontos
-      // TODO: Temperatura atualmente está fixa
       private void eggsIsReadyToHatch() {
         for (Object object : familyHousing) {
           FieldUnit fieldUnit = (FieldUnit) object;
-          if (fieldUnit.containsEggs()) {
-            double maturation = 8 + Math.abs(temperature - 25);
+          if (fieldUnit.getTimeOfMaturation() == 0 && fieldUnit.containsEggs() && !fieldUnit.isMatureEggs()) {
+            fieldUnit.defineTimeOfMaturation(temperature);
+          } else if (fieldUnit.getTimeOfMaturation() > 0 && fieldUnit.containsEggs() && !fieldUnit.isMatureEggs()) {
+            double timeOfMaturation = fieldUnit.getTimeOfMaturation();
+            timeOfMaturation--;
+            fieldUnit.setTimeOfMaturation(timeOfMaturation);
+            if (timeOfMaturation == 0) {
+              fieldUnit.setMatureEggs(true);
+            }
+          } else if (fieldUnit.getTimeOfMaturation() == 0 && fieldUnit.isMatureEggs()) {
+            int amount = fieldUnit.getEggs().size();
+            for (int i = 0; i < amount; i++) {
+              if (random.nextDouble() > 0.5) { // 50% chance of female
+                int daysOfLife = 30 + random.nextInt(16);
+                Mosquito mosquito = new Mosquito(daysOfLife, fieldUnit);
+                fieldUnit.addMosquito(mosquito);
+              }
+            }
           }
         }
       }

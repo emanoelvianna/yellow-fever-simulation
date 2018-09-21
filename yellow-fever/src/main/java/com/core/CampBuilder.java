@@ -43,6 +43,7 @@ public class CampBuilder {
 
   static int gridWidth = 0;
   static int gridHeight = 0;
+  private int index;
   // Location locations;
 
   // static MersenneTwisterFast random;
@@ -349,6 +350,19 @@ public class CampBuilder {
       }
     }
 
+    int amountOfInfectedHumans = dadaab.getParams().getGlobal().getAmountOfInfectedHumans();
+    this.generateRandomHumansInfected(dadaab, amountOfInfectedHumans);
+  }
+
+  private void generateRandomHumansInfected(Dadaab dadaab, int amount) {
+    int index = 0;
+    while (amount > 0) {
+      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
+      Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
+      human.setIncubationPeriod(3 + dadaab.random.nextInt(4));
+      human.setCurrentHealthStatus(HealthStatus.EXPOSED);
+      amount--;
+    }
   }
 
   private static void createGrids(int width, int height, Dadaab dadaab) {
@@ -369,16 +383,16 @@ public class CampBuilder {
   //// add households
   private void addAllRefugees(int age, int sex, Family hh, MersenneTwisterFast random, Dadaab dadaab) {
 
-    Human newRefugee = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random, dadaab.allHumans);
-    hh.addMembers(newRefugee);
-    hh.getCampLocation().addRefugee(newRefugee);
+    Human human = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), random, dadaab.allHumans);
+    hh.addMembers(human);
+    hh.getCampLocation().addRefugee(human);
     // TODO: Verificar como deve ser considerado a resistencia sobre a doença
-    newRefugee.setBodyResistance(1.0);
-    newRefugee.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
-    newRefugee.setCurrentActivity(ActivityMapping.STAY_HOME);
-    newRefugee.setStudent(this.isStudent(age));
-    newRefugee.setWorker(this.isWorker(age));
-    newRefugee.setStoppable(dadaab.schedule.scheduleRepeating(newRefugee, Human.ORDERING, 1.0));
+    human.setBodyResistance(1.0);
+    human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
+    human.setCurrentActivity(ActivityMapping.STAY_HOME);
+    human.setStudent(this.isStudent(age));
+    human.setWorker(this.isWorker(age));
+    human.setStoppable(dadaab.schedule.scheduleRepeating(human, Human.ORDERING, 1.0));
   }
 
   // TODO: Rever a faixa de idade de estudante
@@ -432,7 +446,7 @@ public class CampBuilder {
 
     //
     double teta = 0.3;
-    int totalRef = dadaab.getParams().getGlobal().getInitialRefugeeNumber();
+    int totalRef = dadaab.getParams().getGlobal().getInitialHumansNumber();
     // prprtion of hh to total size
     // System.out.println("s: " + totalRef);
 
@@ -580,7 +594,7 @@ public class CampBuilder {
   public Bag populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
     Bag list = new Bag();
     int age = 30 + dadaab.random.nextInt(16);
-    Mosquito mosquito = new Mosquito(position, age);
+    Mosquito mosquito = new Mosquito(age, position);
     mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
     list.add(mosquito);
     return list;

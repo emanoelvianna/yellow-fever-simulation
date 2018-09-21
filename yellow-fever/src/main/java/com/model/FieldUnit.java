@@ -14,8 +14,10 @@ public class FieldUnit implements Valuable, Serializable {
   private double water; // hold water amount
   private boolean sap;
   private boolean nectar;
+  private boolean matureEggs;
   private double elevation; // elevation
   private double vibrioCholerae = 0; // contamination level
+  private double timeOfMaturation;
   private int patientCounter = 0;
   private Facility facility;
   private int locationX;
@@ -32,11 +34,23 @@ public class FieldUnit implements Valuable, Serializable {
     this.refugee = new Bag();
     this.mosquito = new Bag();
     this.eggs = new Bag();
+    this.timeOfMaturation = 0;
+    this.matureEggs = false;
   }
 
   public FieldUnit(int x, int y) {
-    this.setLocationX(x);
-    this.setLocationY(y);
+    this.refugee = new Bag();
+    this.refugeeHH = new Bag();
+    this.mosquito = new Bag();
+    this.eggs = new Bag();
+    this.timeOfMaturation = 0;
+    this.matureEggs = false;
+    this.locationX = x;
+    this.locationY = y;
+  }
+
+  public void defineTimeOfMaturation(double temperature) {
+    this.timeOfMaturation = 8 + Math.abs(temperature - 25);
   }
 
   // check how many familes can occupied in a field
@@ -234,6 +248,26 @@ public class FieldUnit implements Valuable, Serializable {
 
   public void addEggs(Bag eggs) {
     this.eggs = eggs;
+  }
+
+  public Bag getEggs() {
+    return this.eggs;
+  }
+
+  public double getTimeOfMaturation() {
+    return timeOfMaturation;
+  }
+
+  public void setTimeOfMaturation(double timeOfMaturation) {
+    this.timeOfMaturation = timeOfMaturation;
+  }
+
+  public boolean isMatureEggs() {
+    return matureEggs;
+  }
+
+  public void setMatureEggs(boolean matureEggs) {
+    this.matureEggs = matureEggs;
   }
 
 }

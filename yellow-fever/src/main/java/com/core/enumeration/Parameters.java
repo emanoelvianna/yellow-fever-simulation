@@ -2,11 +2,6 @@ package com.core.enumeration;
 
 import java.io.File;
 import java.io.IOException;
-
-/**
- *
- * @author gmu
- */
 import ec.util.Parameter;
 import ec.util.ParameterDatabase;
 
@@ -26,10 +21,12 @@ public class Parameters {
   /**
    * Initialize parameter database from file
    *
-   * If there exists an command line argument '-file', create a parameter database
-   * from the file specified. Otherwise create an empty parameter database.
+   * If there exists an command line argument '-file', create a parameter
+   * database from the file specified. Otherwise create an empty parameter
+   * database.
    *
-   * @param args contains command line arguments
+   * @param args
+   *          contains command line arguments
    * @return newly created parameter data base
    *
    * @see loadParameters()
@@ -48,20 +45,22 @@ public class Parameters {
       }
     }
     if (parameters == null) {
-      System.out.println("\nNot in a parameter Mode");// ("\nNo parameter file was specified");
+      System.out.println("\nNot in a parameter Mode");// ("\nNo parameter file
+                                                      // was specified");
       parameters = new ParameterDatabase();
     }
     return parameters;
   }
 
   private void loadParameters(ParameterDatabase parameterDB) {
-//        
-    // global - enterprise
-//        global.SetInitialNumberOfHouseholds(returnIntParameter(parameterDB, "InitialNumberOfHouseholds",
-//                 global.getInitialNumberOfHouseholds()));
-//        
-    getGlobal().setInitialRefugeeNumber(
-        returnIntParameter(parameterDB, "initialRefugeeNumber", getGlobal().getInitialRefugeeNumber()));
+    int returnIntParameter = 0;
+
+    returnIntParameter = returnIntParameter(parameterDB, "AmountOfInfectedHumans", global.amountOfInfectedHumans);
+    global.setAmountOfInfectedHumans(returnIntParameter);
+
+    global.setInitialHumansNumber(
+        returnIntParameter(parameterDB, "InitialHumansNumber", global.getInitialHumansNumber()));
+
     getGlobal().setMaximumNumberRelative(
         returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
     getGlobal().setPercentageOfAsymptomatic(
@@ -141,49 +140,79 @@ public class Parameters {
 
   public class GlobalParamters {
 
+    public int amountOfInfectedHumans = 1;
     public int initialRefugeeNumber = 4000;// min-1000
-    public double PercentageOfAsymptomatic = 70; // how many of the total refugee are asymtototic
-    public double recovery_To_Susceb_Rate = 0.000001; // prob of change from recovered to suscebtible
+    public double PercentageOfAsymptomatic = 70; // how many of the total
+                                                 // refugee are asymtototic
+    public double recovery_To_Susceb_Rate = 0.000001; // prob of change from
+                                                      // recovered to
+                                                      // suscebtible
     public int MaxDistanceLaterine = 20;
     public int maximum_occupancy_Threshold = 1000; // arbitrary
-    public double Maximum_Water_Requirement = 15; // 15 liter per day - for all uses
+    public double Maximum_Water_Requirement = 15; // 15 liter per day - for all
+                                                  // uses
     public double Minimum_Water_Requirement = 2;
     public int MaximumNumberRelative = 15;
-    public double CROWED_LEVEL_THRESHOLD = 4000; // 50% of the cellsize 90*90=8100
+    public double CROWED_LEVEL_THRESHOLD = 4000; // 50% of the cellsize
+                                                 // 90*90=8100
     public double probabilityOfEffectiveNessofmedicine = 0.9; // 90% of the time
     public double WaterContaminationThreshold = 10000.0; // --1000/ml
                                                          // http://www.medicalecology.org/water/cholera/cholera.htm
-    public double bacteriaErosionRate = 0.8; // how much of the bacteria in feces are taken up by water
-    public double vibrioCholeraePerHealthyPerson = 100.0; // should be very much less than treshold
-    public double vibrioCholeraePerExposedPerson = 100000.0; // should be very much less than treshold
-    public double vibrioCholeraePerInfectedPerson = 1000000000.0; // person with cholera exert 1000,000,000 virus/ml
-                                                                  // franco.et al 1997
-    public int choleraInfectionDurationMIN = 12; // 12 to 72 hours after ingestion Nichlas et. al 2009Cholera
-                                                 // transmission: the host, pathogen and bacteriophage dynamic
+    public double bacteriaErosionRate = 0.8; // how much of the bacteria in
+                                             // feces are taken up by water
+    public double vibrioCholeraePerHealthyPerson = 100.0; // should be very much
+                                                          // less than treshold
+    public double vibrioCholeraePerExposedPerson = 100000.0; // should be very
+                                                             // much less than
+                                                             // treshold
+    public double vibrioCholeraePerInfectedPerson = 1000000000.0; // person with
+                                                                  // cholera
+                                                                  // exert
+                                                                  // 1000,000,000
+                                                                  // virus/ml
+                                                                  // franco.et
+                                                                  // al 1997
+    public int choleraInfectionDurationMIN = 12; // 12 to 72 hours after
+                                                 // ingestion Nichlas et. al
+                                                 // 2009Cholera
+                                                 // transmission: the host,
+                                                 // pathogen and bacteriophage
+                                                 // dynamic
     public int choleraInfectionDurationMAX = 72; // 72 hours after ingestion
-    public double healthDepreciation = 0.001; // agent will die if not get medication in 48 hours ( assumption) -
+    public double healthDepreciation = 0.001; // agent will die if not get
+                                              // medication in 48 hours (
+                                              // assumption) -
                                               // childer will die fast
     public double waterCapacityBorehole = 20; // litre/day/person
-    public double boreHoleDischareRate = 0.8; // litre/minute // proportion of total water capacity
-    public double probabilityGuestContaminationRate = 0.005;// assumption - guest who is infected may contaminte host
-                                                            // house- vomite discharge
+    public double boreHoleDischareRate = 0.8; // litre/minute // proportion of
+                                              // total water capacity
+    public double probabilityGuestContaminationRate = 0.005;// assumption -
+                                                            // guest who is
+                                                            // infected may
+                                                            // contaminte host
+                                                            // house- vomite
+                                                            // discharge
     public double waterSourcePreferenceBorehole = 0.75;
     public double waterSourcePreferenceRiver = 0.25;
     public double waterCoverageRate = 0.7; // % water coverage
-    public int healthFacilityCapacity = 1000; // 500 person/day efficient to treat cholera victim
+    public int healthFacilityCapacity = 1000; // 500 person/day efficient to
+                                              // treat cholera victim
     public double laterineCoverage = 0.6; // % of clean laterine coverage
-    public double rainfallInMM = 4.5; // assume 75mm/month - duration = 25 minute, amount = 0.5mm/minute, freq = every
+    public double rainfallInMM = 4.5; // assume 75mm/month - duration = 25
+                                      // minute, amount = 0.5mm/minute, freq =
+                                      // every
                                       // 5days (6days in a month)
     public int rainDuration = 25; // minute //
     public int firstRainfallDay = 0; // the first onset of rainfall
     public int rainfallFrequency = 25; // rain will fall in days interval
-    public double absorbtionRatePerMinute = 4.33;// mm/minute evaporation - taking median 1750 =
+    public double absorbtionRatePerMinute = 4.33;// mm/minute evaporation -
+                                                 // taking median 1750 =
 
-    public void setInitialRefugeeNumber(int num) {
+    public void setInitialHumansNumber(int num) {
       this.initialRefugeeNumber = num;
     }
 
-    public int getInitialRefugeeNumber() {
+    public int getInitialHumansNumber() {
       return initialRefugeeNumber;
 
     }
@@ -356,7 +385,9 @@ public class Parameters {
     }
 
     public double getBoreholeWaterSupplyPerDay() {
-      return (waterCoverageRate * waterCapacityBorehole * this.getInitialRefugeeNumber()) / 20.0; // 20 boreholes each
+      return (waterCoverageRate * waterCapacityBorehole * this.getInitialHumansNumber()) / 20.0; // 20
+                                                                                                 // boreholes
+                                                                                                 // each
     }
 
     // refill rate of each borehole
@@ -365,7 +396,7 @@ public class Parameters {
     }
 
     public double getBoreHoleDischareRatePerMinute() {
-      return boreHoleDischareRate * (waterCoverageRate * waterCapacityBorehole * this.getInitialRefugeeNumber())
+      return boreHoleDischareRate * (waterCoverageRate * waterCapacityBorehole * this.getInitialHumansNumber())
           / (1440 * 20.0); // 20 boreholes each / 1440 minute
     }
 
@@ -389,8 +420,8 @@ public class Parameters {
     }
 
     /*
-     * water preference of agent there are two sources - borehole ( clean and well
-     * treated) and rain ( not treated)
+     * water preference of agent there are two sources - borehole ( clean and
+     * well treated) and rain ( not treated)
      */
     // weight given to water from borehole
     public void setWaterSourcePreference_Borehole(double r) {
@@ -453,6 +484,14 @@ public class Parameters {
 
     public int getRainfallDuration_Minute() {
       return rainDuration;
+    }
+
+    public int getAmountOfInfectedHumans() {
+      return amountOfInfectedHumans;
+    }
+
+    public void setAmountOfInfectedHumans(int amountOfInfectedHumans) {
+      this.amountOfInfectedHumans = amountOfInfectedHumans;
     }
   }
 }
