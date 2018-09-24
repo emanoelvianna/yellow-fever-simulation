@@ -530,24 +530,24 @@ public class CampBuilder {
       int tot = sizeDist[a];
       counter = counter + tot;
       if (tot != 0 && counter <= totalRef) {
-        FieldUnit f = nextAvailCamp(dadaab);
-        Family hh = new Family(f);
+        FieldUnit fieldUnit = nextAvailCamp(dadaab);
+        Family hh = new Family(fieldUnit);
         dadaab.allFamilies.add(hh);
         hh.setRationDate(1 + a % 9);
         if (dadaab.random.nextDouble() > dadaab.getParams().getGlobal().getLaterineCoverage()) {
           hh.setHasLaterine(true);
         }
 
-        f.addRefugeeHH(hh);
+        fieldUnit.addRefugeeHH(hh);
 
         // TODO: Melhorar a forma como está sendo distribuido os mosquitos
-        f.setMosquito(this.populateMosquito(random, dadaab, f));
+        this.populateMosquito(random, dadaab, fieldUnit);
         // TODO: Justificativa está considerando a arborização
         if (random.nextDouble() < 0.5) { // 50% chance to contains nectar
-          f.setNectar(true);
+          fieldUnit.setNectar(true);
         }
         if (random.nextDouble() < 0.5) { // 50% chance to contains sap
-          f.setSap(true);
+          fieldUnit.setSap(true);
         }
 
         double rn = dadaab.random.nextDouble();
@@ -591,13 +591,12 @@ public class CampBuilder {
   }
 
   // TODO:
-  public Bag populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
-    Bag list = new Bag();
-    int age = 30 + dadaab.random.nextInt(16);
-    Mosquito mosquito = new Mosquito(age, position);
+  public void populateMosquito(MersenneTwisterFast random, Dadaab dadaab, FieldUnit position) {
+    Mosquito mosquito = new Mosquito(30 + dadaab.random.nextInt(16), position);
     mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-    list.add(mosquito);
-    return list;
+    mosquito.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
+    position.addMosquito(mosquito);
+    dadaab.addMosquitoes(mosquito);
   }
 
   private void populate(MersenneTwisterFast random, Dadaab dadaab) {

@@ -3,6 +3,7 @@ package com.model;
 import java.io.Serializable;
 
 import com.core.Dadaab;
+import com.model.enumeration.HealthStatus;
 
 import sim.util.Bag;
 import sim.util.Valuable;
@@ -24,7 +25,7 @@ public class FieldUnit implements Valuable, Serializable {
   private int locationY;
   private Bag refugeeHH; // camp location for household
   private Bag refugee; // who are on the field right now
-  private Bag mosquito;
+  private Bag mosquitoes;
   private Bag eggs;
 
   // getter and setter
@@ -32,7 +33,7 @@ public class FieldUnit implements Valuable, Serializable {
     super();
     this.refugeeHH = new Bag();
     this.refugee = new Bag();
-    this.mosquito = new Bag();
+    this.mosquitoes = new Bag();
     this.eggs = new Bag();
     this.timeOfMaturation = 0;
     this.matureEggs = false;
@@ -41,12 +42,22 @@ public class FieldUnit implements Valuable, Serializable {
   public FieldUnit(int x, int y) {
     this.refugee = new Bag();
     this.refugeeHH = new Bag();
-    this.mosquito = new Bag();
+    this.mosquitoes = new Bag();
     this.eggs = new Bag();
     this.timeOfMaturation = 0;
     this.matureEggs = false;
     this.locationX = x;
     this.locationY = y;
+  }
+
+  public boolean containsHumansInfected() {
+    for (Object object : refugee) {
+      Human human = (Human) object;
+      if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void defineTimeOfMaturation(double temperature) {
@@ -125,11 +136,15 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public void addMosquito(Mosquito mosquito) {
-    this.mosquito.add(mosquito);
+    this.mosquitoes.add(mosquito);
   }
 
   public void removeMosquito(Mosquito mosquito) {
-    this.mosquito.remove(mosquito);
+    this.mosquitoes.remove(mosquito);
+  }
+  
+  public Bag getMosquitoes() {
+    return mosquitoes;
   }
 
   public void setFieldID(int id) {
@@ -228,14 +243,6 @@ public class FieldUnit implements Valuable, Serializable {
   // TODO:
   public boolean containsWater() {
     return water != 0;
-  }
-
-  public Bag getMosquito() {
-    return mosquito;
-  }
-
-  public void setMosquito(Bag mosquito) {
-    this.mosquito = mosquito;
   }
 
   public boolean containsHumans() {

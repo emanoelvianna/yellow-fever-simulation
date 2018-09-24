@@ -118,7 +118,6 @@ public class Activity {
       break;
     case RELIGION_ACTIVITY:
       // time at maximum unti 2 hours
-      System.out.println("RELIGION_ACTIVITY");
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:

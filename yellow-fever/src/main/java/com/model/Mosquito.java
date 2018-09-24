@@ -54,24 +54,17 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.time = this.dadaab.getTime();
     this.currentStep = (int) dadaab.schedule.getSteps();
     if (this.isNewDay()) {
-      if (this.hungry == false) {
+      if (this.hungry == true) {
         this.daysWithoutFood++;
       }
-      this.hungry = false; // reset the power
+      this.hungry = true; // reset the power
       this.daysOfLife--;
       this.probabilityOfDying();
       this.setTemperature();
-
-      System.out.println("tempo de maturação: " + timeOfMaturation);
-      this.timeOfMaturation--;
-      System.out.println("tempo de maturação--: " + timeOfMaturation);
-      if (this.timeOfMaturation <= 0) {
-        this.setMatureEggs(true);
-      }
+      this.checkCurrentStateOfMaturation();
+      this.checkCurrentStateOfInfection();
     }
-    this.checkCurrentStateOfInfection();
     this.isActive(currentStep);
-
   }
 
   public void stop() {
@@ -124,8 +117,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     if (this.currentPosition.containsHumans()) {
       int size = currentPosition.getRefugee().size();
       this.dadaab.random.nextInt(size);
-      // TODO: Considerar uma probabilidade do mosquito conseguir
       this.toBite((Human) currentPosition.getRefugee().get(this.dadaab.random.nextInt(size)));
+      // TODO: Considerar uma probabilidade do mosquito conseguir
       this.hungry = false;
     } else {
       this.hungry = true;
@@ -134,19 +127,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void normalFood() {
     if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
+      // TODO: Considerar uma probabilidade do mosquito conseguir
       this.hungry = false;
     } else {
       this.hungry = true;
-    }
-  }
-
-  private void probabilityOfDying() {
-    if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
-      this.dadaab.killmosquito(this);
-    } else if (this.daysOfLife <= 0) {
-      this.dadaab.killmosquito(this);
-    } else if (this.daysWithoutFood > 1) {
-      this.dadaab.killmosquito(this);
     }
   }
 
@@ -155,6 +139,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
       if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
         // TODO: Adicionar as probabilidades
+        // TODO: Relacionada a conseguir realizar a picada
+        // TODO: Relacionada a acabar morrendo durante a tentativa
         if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
           human.infected();
         }
@@ -170,7 +156,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void checkCurrentStateOfInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       this.setCurrentHealthStatus(HealthStatus.INFECTED);
-    } else if (this.incubationPeriod > 0 && this.isNewDay() && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+    } else if (this.incubationPeriod > 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       this.incubationPeriod--;
     }
   }
@@ -182,6 +168,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void defineIncubationPeriod() {
     this.incubationPeriod = 3 + this.dadaab.random.nextInt(4);
+  }
+
+  private void checkCurrentStateOfMaturation() {
+    this.timeOfMaturation--;
+    if (this.timeOfMaturation <= 0) {
+      this.setMatureEggs(true);
+    }
   }
 
   private boolean isNewDay() {
@@ -199,6 +192,16 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       this.temperature = temperatures.get(currentDay);
     } else {
       // TODO:
+    }
+  }
+  
+  private void probabilityOfDying() {
+    if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
+      this.dadaab.killmosquito(this);
+    } else if (this.daysOfLife <= 0) {
+      this.dadaab.killmosquito(this);
+    } else if (this.daysWithoutFood > 1) {
+      this.dadaab.killmosquito(this);
     }
   }
 

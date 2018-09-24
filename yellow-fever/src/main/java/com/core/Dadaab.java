@@ -1,6 +1,5 @@
 package com.core;
 
-import java.io.File;
 import java.util.List;
 
 import org.jfree.data.category.DefaultCategoryDataset;
@@ -69,6 +68,7 @@ public class Dadaab extends SimState {
   private double totalBacterialLoad = 0;
   private int currentDay;
   private double temperature;
+
   /**
    * charts and graphs
    */
@@ -141,6 +141,7 @@ public class Dadaab extends SimState {
   public int totalgridHeight = 10;
 
   public Bag allFamilies; // holding all families
+  private Bag allMosquitoes;
   public Bag familyHousing;
   public Bag boreHoles; // holds borehols
   public Bag rainfallWater; // water points from rain
@@ -168,6 +169,7 @@ public class Dadaab extends SimState {
     rainfall = new Rainfall();
     fac = new Facility();//
     allFamilies = new Bag();
+    allMosquitoes = new Bag();
     familyHousing = new Bag();
     boreHoles = new Bag();
     rainfallWater = new Bag();
@@ -365,12 +367,7 @@ public class Dadaab extends SimState {
           defineInfectionNumbersInHumans(human);
         }
 
-        for (Object object : familyHousing) {
-          FieldUnit fieldUnit = (FieldUnit) object;
-          for (Object object2 : fieldUnit.getMosquito()) {
-            defineInfectionNumbersInMosquitoes((Mosquito) object2);
-          }
-        }
+        defineInfectionNumbersInMosquitoes();
 
         setNumberOfSuscipitableNewly(totalSusNewly);
         setNumberOfExposedNewly(totalExpNewly);
@@ -474,6 +471,7 @@ public class Dadaab extends SimState {
         }
       }
 
+      // TODO: remover os ovos que acabaram de nascer dos ambientes
       private void eggsIsReadyToHatch() {
         for (Object object : familyHousing) {
           FieldUnit fieldUnit = (FieldUnit) object;
@@ -492,7 +490,10 @@ public class Dadaab extends SimState {
               if (random.nextDouble() > 0.5) { // 50% chance of female
                 int daysOfLife = 30 + random.nextInt(16);
                 Mosquito mosquito = new Mosquito(daysOfLife, fieldUnit);
+                mosquito.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
+                mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
                 fieldUnit.addMosquito(mosquito);
+                allMosquitoes.add(mosquito);
               }
             }
           }
@@ -512,9 +513,15 @@ public class Dadaab extends SimState {
     }
   }
 
-  private void defineInfectionNumbersInMosquitoes(Mosquito mosquito) {
-    if (HealthStatus.INFECTED.equals(mosquito.getCurrentHealthStatus())) {
-      this.totalOfMosquitoWithInfection++;
+  private void defineInfectionNumbersInMosquitoes() {
+    for (Object housing : familyHousing) {
+      FieldUnit fieldUnit = (FieldUnit) housing;
+      for (Object mosquito : fieldUnit.getMosquitoes()) {
+        Mosquito m = (Mosquito) mosquito;
+        if (HealthStatus.INFECTED.equals(m.getCurrentHealthStatus())) {
+          this.totalOfMosquitoWithInfection++;
+        }
+      }
     }
   }
 
@@ -536,14 +543,9 @@ public class Dadaab extends SimState {
     return a;
   }
 
-  /*
-   * parameters getter and setter methods
-   */
-  // initial number of agent
-
   public void killrefugee(Human human) {
     human.getFamily().removeMembers(human);
-
+    // remova a família quando o tamanho for zero
     if (human.getFamily().getMembers().numObjs == 0) {
       allFamilies.remove(human.getFamily());
     }
@@ -553,6 +555,7 @@ public class Dadaab extends SimState {
   // TODO: O que deve ser considerado para remover o mosquito?
   public void killmosquito(Mosquito mosquito) {
     mosquito.getCurrentPosition().removeMosquito(mosquito);
+    allMosquitoes.remove(mosquito);
   }
 
   int PrevPop = 0;
@@ -582,6 +585,14 @@ public class Dadaab extends SimState {
     if (dObserver != null) {
       this.dObserver.finish();
     }
+  }
+
+  public void addMosquitoes(Mosquito mosquito) {
+    this.allMosquitoes.add(mosquito);
+  }
+
+  public Bag getAllMosquitoes() {
+    return allMosquitoes;
   }
 
   public void setNumberOfSuscipitable(int expo) {

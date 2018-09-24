@@ -140,7 +140,7 @@ public class Parameters {
 
   public class GlobalParamters {
 
-    public int amountOfInfectedHumans = 1;
+    public int amountOfInfectedHumans = 10;
     public int initialRefugeeNumber = 4000;// min-1000
     public double PercentageOfAsymptomatic = 70; // how many of the total
                                                  // refugee are asymtototic
