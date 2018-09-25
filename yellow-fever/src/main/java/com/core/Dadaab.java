@@ -68,6 +68,7 @@ public class Dadaab extends SimState {
   private double totalBacterialLoad = 0;
   private int currentDay;
   private double temperature;
+  private int mortos; // TODO: Refatorar
 
   /**
    * charts and graphs
@@ -154,7 +155,7 @@ public class Dadaab extends SimState {
   public Bag other;
   // WaterContamination fm = new WaterContamination();
   Rainfall rainfall; // scheduling rainfall
-  Facility fac;// schduling borehole refill
+  Facility facility;// schduling borehole refill
   private Climate climate;
 
   private TimeManager time = new TimeManager();
@@ -165,19 +166,23 @@ public class Dadaab extends SimState {
 
   public Dadaab(long seed, String[] args) {
     super(seed);
-    params = new Parameters(args);
-    rainfall = new Rainfall();
-    fac = new Facility();//
-    allFamilies = new Bag();
-    allMosquitoes = new Bag();
-    familyHousing = new Bag();
-    boreHoles = new Bag();
-    rainfallWater = new Bag();
-    allFacilities = new Bag();
-    allCampGeoGrid = new GeomGridField();
+    this.params = new Parameters(args);
+    this.rainfall = new Rainfall();
+    this.facility = new Facility();//
+    this.allFamilies = new Bag();
+    this.allMosquitoes = new Bag();
+    this.familyHousing = new Bag();
+    this.boreHoles = new Bag();
+    this.rainfallWater = new Bag();
+    this.allFacilities = new Bag();
+    this.allCampGeoGrid = new GeomGridField();
     this.climate = new Climate();
     this.currentDay = 0;
-    this.temperature = 21; // TODO: Refatorar
+    this.mortos = 0;
+
+    // TODO: Refatorar
+    // TODO: Deve ser setado no nomento que estou lendo o arquivo!
+    this.temperature = 21;
 
     schooles = new Bag();
     healthCenters = new Bag();
@@ -201,7 +206,7 @@ public class Dadaab extends SimState {
     builder.create("data/d_camp_a.txt", "data/d_faci_a.txt", "data/d_costp_a.txt", this, this.random);
 
     schedule.scheduleRepeating(rainfall, rainfall.ORDERING, 1);
-    schedule.scheduleRepeating(fac, fac.ORDERING, 1);
+    schedule.scheduleRepeating(facility, facility.ORDERING, 1);
 
     // if (getOutputStats ==true){
     dObserver = new DadaabObserver(this);
@@ -216,6 +221,22 @@ public class Dadaab extends SimState {
         if (this.isNewDay()) {
           this.setTemperature();
           this.eggsIsReadyToHatch();
+          this.precipitacao(); // TODO: Refatorar
+
+          System.out.println("---");
+          int quantidadeMosquitos = 0;
+          int quantidadeOvos = 0;
+          for (Object object : familyHousing) {
+            FieldUnit housing = (FieldUnit) object;
+            quantidadeMosquitos += housing.getMosquitoes().size();
+            quantidadeOvos += housing.getEggs().size();
+          }
+
+          System.out.println("Quantidade de mosquitos nas residenicas: " + quantidadeMosquitos);
+          System.out.println("Quantidade de ovos nas residenicas: " + quantidadeOvos);
+          System.out.println("Quantidade de mosquitos mortos: " + mortos);
+          System.out.println("Quantidade de pessoas infectadas: " + totalInfected);
+          System.out.println("---");
         }
 
         Bag humans = allHumans.getAllObjects(); // getting all refugees
@@ -463,11 +484,24 @@ public class Dadaab extends SimState {
       }
 
       private void setTemperature() {
-        List<Double> temperatures = getClimate().getTemperature();
+        List<Double> temperatures = climate.getTemperature();
         if (currentDay < temperatures.size()) {
           temperature = temperatures.get(currentDay);
         } else {
           // TODO:
+        }
+      }
+
+      // TODO: Quem sabe isso deve ficar lá no esquema de chuva!
+      private void precipitacao() {
+        List<Double> rainfall = climate.getPrecipitation();
+        if (currentDay < rainfall.size()) {
+          // TODO: Para todo os lugares com água parada
+          // TODO: Como vou considerar a diminuição da água?
+          for (Object object : familyHousing) {
+            FieldUnit housing = (FieldUnit) object;
+            housing.addWater(rainfall.get(currentDay));
+          }
         }
       }
 
@@ -556,6 +590,7 @@ public class Dadaab extends SimState {
   public void killmosquito(Mosquito mosquito) {
     mosquito.getCurrentPosition().removeMosquito(mosquito);
     allMosquitoes.remove(mosquito);
+    mortos++;
   }
 
   int PrevPop = 0;

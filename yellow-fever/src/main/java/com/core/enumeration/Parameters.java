@@ -53,10 +53,13 @@ public class Parameters {
   }
 
   private void loadParameters(ParameterDatabase parameterDB) {
-    int returnIntParameter = 0;
+    int parameter = 0;
 
-    returnIntParameter = returnIntParameter(parameterDB, "AmountOfInfectedHumans", global.amountOfInfectedHumans);
-    global.setAmountOfInfectedHumans(returnIntParameter);
+    parameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
+    global.setInitialHumansNumberInfected(parameter);
+
+    parameter = returnIntParameter(parameterDB, "InitialMosquitoesNumber", global.getInitialMosquitoesNumber());
+    global.setInitialMosquitoesNumber(parameter);
 
     global.setInitialHumansNumber(
         returnIntParameter(parameterDB, "InitialHumansNumber", global.getInitialHumansNumber()));
@@ -140,7 +143,8 @@ public class Parameters {
 
   public class GlobalParamters {
 
-    public int amountOfInfectedHumans = 10;
+    public int initialHumansNumberInfected = 10;
+    private int initialMosquitoesNumber = 1000;
     public int initialRefugeeNumber = 4000;// min-1000
     public double PercentageOfAsymptomatic = 70; // how many of the total
                                                  // refugee are asymtototic
@@ -486,12 +490,20 @@ public class Parameters {
       return rainDuration;
     }
 
-    public int getAmountOfInfectedHumans() {
-      return amountOfInfectedHumans;
+    public int getInitialHumansNumberInfected() {
+      return initialHumansNumberInfected;
     }
 
-    public void setAmountOfInfectedHumans(int amountOfInfectedHumans) {
-      this.amountOfInfectedHumans = amountOfInfectedHumans;
+    public void setInitialHumansNumberInfected(int initialHumansNumberInfected) {
+      this.initialHumansNumberInfected = initialHumansNumberInfected;
+    }
+
+    public int getInitialMosquitoesNumber() {
+      return initialMosquitoesNumber;
+    }
+
+    public void setInitialMosquitoesNumber(int initialMosquitoesNumber) {
+      this.initialMosquitoesNumber = initialMosquitoesNumber;
     }
   }
 }

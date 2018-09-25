@@ -109,15 +109,15 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void ovipositionProcess() {
-    this.currentPosition.addEggs(new Bag(100));
+    this.currentPosition.addEggs(100);
     this.carryingEggs = false;
   }
 
   private void bloodFood() {
     if (this.currentPosition.containsHumans()) {
-      int size = currentPosition.getRefugee().size();
+      int size = currentPosition.getHumans().size();
       this.dadaab.random.nextInt(size);
-      this.toBite((Human) currentPosition.getRefugee().get(this.dadaab.random.nextInt(size)));
+      this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
       // TODO: Considerar uma probabilidade do mosquito conseguir
       this.hungry = false;
     } else {
@@ -194,7 +194,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       // TODO:
     }
   }
-  
+
   private void probabilityOfDying() {
     if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
       this.dadaab.killmosquito(this);

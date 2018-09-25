@@ -1,6 +1,7 @@
 package com.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import com.core.Dadaab;
 import com.model.enumeration.HealthStatus;
@@ -24,26 +25,26 @@ public class FieldUnit implements Valuable, Serializable {
   private int locationX;
   private int locationY;
   private Bag refugeeHH; // camp location for household
-  private Bag refugee; // who are on the field right now
-  private Bag mosquitoes;
-  private Bag eggs;
+  private ArrayList<Human> humans; // who are on the field right now
+  private ArrayList<Mosquito> mosquitoes;
+  private ArrayList<Integer> eggs;
 
   // getter and setter
   public FieldUnit() {
     super();
     this.refugeeHH = new Bag();
-    this.refugee = new Bag();
-    this.mosquitoes = new Bag();
-    this.eggs = new Bag();
+    this.humans = new ArrayList<Human>();
+    this.mosquitoes = new ArrayList<Mosquito>();
+    this.eggs = new ArrayList<Integer>();
     this.timeOfMaturation = 0;
     this.matureEggs = false;
   }
 
   public FieldUnit(int x, int y) {
-    this.refugee = new Bag();
+    this.humans = new ArrayList<Human>();
+    this.mosquitoes = new ArrayList<Mosquito>();
     this.refugeeHH = new Bag();
-    this.mosquitoes = new Bag();
-    this.eggs = new Bag();
+    this.eggs = new ArrayList<Integer>();
     this.timeOfMaturation = 0;
     this.matureEggs = false;
     this.locationX = x;
@@ -51,7 +52,7 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public boolean containsHumansInfected() {
-    for (Object object : refugee) {
+    for (Object object : humans) {
       Human human = (Human) object;
       if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
         return true;
@@ -119,20 +120,20 @@ public class FieldUnit implements Valuable, Serializable {
     this.refugeeHH.remove(r);
   }
 
-  public void setRefugee(Bag refugeeMoving) {
-    this.refugee = refugeeMoving;
+  public void setRefugee(ArrayList<Human> humans) {
+    this.humans = humans;
   }
 
-  public Bag getRefugee() {
-    return refugee;
+  public ArrayList<Human> getHumans() {
+    return humans;
   }
 
   public void addRefugee(Human r) {
-    this.refugee.add(r);
+    this.humans.add(r);
   }
 
   public void removeRefugee(Human r) {
-    this.refugee.remove(r);
+    this.humans.remove(r);
   }
 
   public void addMosquito(Mosquito mosquito) {
@@ -142,8 +143,8 @@ public class FieldUnit implements Valuable, Serializable {
   public void removeMosquito(Mosquito mosquito) {
     this.mosquitoes.remove(mosquito);
   }
-  
-  public Bag getMosquitoes() {
+
+  public ArrayList<Mosquito> getMosquitoes() {
     return mosquitoes;
   }
 
@@ -186,6 +187,10 @@ public class FieldUnit implements Valuable, Serializable {
 
   public double getWater() {
     return water;
+  }
+
+  public void addWater(double flow) {
+    this.water += flow;
   }
 
   public void setPatientCounter(int c) {
@@ -246,19 +251,23 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public boolean containsHumans() {
-    return !refugee.isEmpty();
+    return !this.humans.isEmpty();
   }
 
   public boolean containsEggs() {
-    return !eggs.isEmpty();
+    return !this.eggs.isEmpty();
   }
 
-  public void addEggs(Bag eggs) {
-    this.eggs = eggs;
+  public void addEggs(int eggs) {
+    this.eggs.add(eggs);
   }
 
-  public Bag getEggs() {
+  public ArrayList<Integer> getEggs() {
     return this.eggs;
+  }
+
+  public boolean containsMosquitoes() {
+    return !this.mosquitoes.isEmpty();
   }
 
   public double getTimeOfMaturation() {

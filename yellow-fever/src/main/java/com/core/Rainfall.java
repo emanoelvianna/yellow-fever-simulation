@@ -34,36 +34,25 @@ public class Rainfall implements Steppable {
   TimeManager tm = new TimeManager();
   // when the next rain day will be
 
-  public void setRainDay(int r) {
-    this.rainDay = r;
-  }
-
-  public int getRainDay() {
-    return rainDay;
-  }
-
-  public void setCurrentRain(double r) {
-    this.currentRain = r;
-  }
-
-  public double getCurrentRain() {
-    return currentRain;
-  }
-
-  public void setTotalBacterialLoad(double r) {
-    this.totalBacterialLoad = r;
-  }
-
-  public double getTotalBacterialLoad() {
-    return totalBacterialLoad;
-  }
-
   int rainDuration = 20;
   int rainMinute = 0; // updated every day randomly
   // jan,feb,mar,apr,may ,jun ,jul, aug, sep, oct,nov ,dec
   // private int[] juleanCalanderRegular = {1, 32, 60, 91, 121, 152, 182, 213,
   // 244, 274, 305, 335};
 
+  //
+  public void step(SimState state) {
+    Dadaab d = (Dadaab) state;
+    if ((int) d.schedule.getTime() % 1440 == 1) {
+      int interval = 1440 - (2 * rainDuration);
+      rainMinute = 2 + d.random.nextInt(interval);
+    }
+    recieveRain(d);
+    waterAbsorbtion(d);
+    drain(d);
+    drawRiver(d);
+  }
+  
   public void recieveRain(Dadaab d) {
     // rain will fall in all fields except fields that are occupied by camps
     //
@@ -122,25 +111,18 @@ public class Rainfall implements Steppable {
    * flows from te center cell to its neighbors based on elevation gradient
    */
   public void drain(Dadaab d) {
-
     for (int x = 0; x < d.allCamps.getWidth(); x++) {
       for (int y = 0; y < d.allCamps.getHeight(); y++) {
-
         // ceter cell
         FieldUnit field = (FieldUnit) d.allCamps.field[x][y];
-
         // avoid camps
         if (field.getFieldID() == 11 || field.getFieldID() == 12 || field.getFieldID() == 21 || field.getFieldID() == 22
             || field.getFieldID() == 31 || field.getFieldID() == 32) {
           continue;
         }
-
         fieldDrainageSimple(field, d);
-
       }
-
     }
-
   }
 
   public void fieldDrainageSimple(FieldUnit field, Dadaab d) {
@@ -286,20 +268,28 @@ public class Rainfall implements Steppable {
     }
     setTotalBacterialLoad(totBac);
   }
+  
+  public void setRainDay(int r) {
+    this.rainDay = r;
+  }
 
-  //
-  public void step(SimState state) {
-    Dadaab d = (Dadaab) state;
+  public int getRainDay() {
+    return rainDay;
+  }
 
-    if ((int) d.schedule.getTime() % 1440 == 1) {
-      int interval = 1440 - (2 * rainDuration);
-      rainMinute = 2 + d.random.nextInt(interval);
-    }
+  public void setCurrentRain(double r) {
+    this.currentRain = r;
+  }
 
-    recieveRain(d);
-    waterAbsorbtion(d);
-    drain(d);
-    drawRiver(d);
+  public double getCurrentRain() {
+    return currentRain;
+  }
 
+  public void setTotalBacterialLoad(double r) {
+    this.totalBacterialLoad = r;
+  }
+
+  public double getTotalBacterialLoad() {
+    return totalBacterialLoad;
   }
 }
