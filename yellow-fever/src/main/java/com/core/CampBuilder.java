@@ -220,15 +220,6 @@ public class CampBuilder {
         }
       }
 
-      BufferedReader dailyRainfall = new BufferedReader(new FileReader("data/dadaabDailyRain.csv"));
-
-      for (int curr_row = 0; curr_row < height; ++curr_row) {
-        line = dailyRainfall.readLine();
-        tokens = line.split("\\s+");
-        int rain = Integer.parseInt(tokens[0]);
-        dadaab.dailyRain[curr_row] = rain;
-      }
-
       // now read elev file and store in bag
       BufferedReader elev = new BufferedReader(new FileReader("data/d_dem_n.txt"));
 
@@ -375,9 +366,8 @@ public class CampBuilder {
 
   private void generateRandomHumansInfected(Dadaab dadaab, int amount) {
     int index = 0;
-    System.out.println("Quantidade esperada: " + amount);
     while (amount > 0) {
-      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumberInfected());
+      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
       human.setIncubationPeriod(3 + dadaab.random.nextInt(4));
       human.setCurrentHealthStatus(HealthStatus.EXPOSED);
@@ -602,18 +592,16 @@ public class CampBuilder {
       int index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
       FieldUnit housing = (FieldUnit) dadaab.familyHousing.objs[index];
       if (housing.containsMosquitoes()) {
-        if (dadaab.random.nextDouble() > 0.5) {
-          Mosquito mosquito = new Mosquito(30 + dadaab.random.nextInt(16), housing);
+        if (dadaab.random.nextDouble() > 0.5) { // 50% chance of has more mosquitoes
+          Mosquito mosquito = new Mosquito(housing);
           mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-          mosquito.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
           housing.addMosquito(mosquito);
           dadaab.addMosquitoes(mosquito);
           initialMosquitoesNumber--;
         }
       } else {
-        Mosquito mosquito = new Mosquito(30 + dadaab.random.nextInt(16), housing);
+        Mosquito mosquito = new Mosquito(housing);
         mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-        mosquito.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
         housing.addMosquito(mosquito);
         dadaab.addMosquitoes(mosquito);
         initialMosquitoesNumber--;

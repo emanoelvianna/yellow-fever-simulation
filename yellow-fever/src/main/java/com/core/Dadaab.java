@@ -220,22 +220,25 @@ public class Dadaab extends SimState {
 
         if (this.isNewDay()) {
           this.setTemperature();
+          this.probabilityOfEggsDying();
           this.eggsIsReadyToHatch();
           this.precipitacao(); // TODO: Refatorar
 
           System.out.println("---");
           int quantidadeMosquitos = 0;
           int quantidadeOvos = 0;
+          double quantidadeAgua = 0;
           for (Object object : familyHousing) {
             FieldUnit housing = (FieldUnit) object;
             quantidadeMosquitos += housing.getMosquitoes().size();
-            quantidadeOvos += housing.getEggs().size();
+            quantidadeOvos += housing.getEggs();
+            quantidadeAgua += housing.getWater();
           }
-
           System.out.println("Quantidade de mosquitos nas residenicas: " + quantidadeMosquitos);
           System.out.println("Quantidade de ovos nas residenicas: " + quantidadeOvos);
           System.out.println("Quantidade de mosquitos mortos: " + mortos);
           System.out.println("Quantidade de pessoas infectadas: " + totalInfected);
+          System.out.println("Quantidade de água nas residencias: " + quantidadeAgua);
           System.out.println("---");
         }
 
@@ -505,34 +508,42 @@ public class Dadaab extends SimState {
         }
       }
 
-      // TODO: remover os ovos que acabaram de nascer dos ambientes
+      private void probabilityOfEggsDying() {
+        for (Object object : familyHousing) {
+          FieldUnit housing = (FieldUnit) object;
+          if (housing.containsEggs()) {
+            int amount = housing.getEggs();
+            for (int i = 0; i < amount; i++) {
+              if (random.nextDouble() <= 0.05) // 5% chance
+                housing.removeEgg();
+            }
+          }
+        }
+      }
+
       private void eggsIsReadyToHatch() {
         for (Object object : familyHousing) {
-          FieldUnit fieldUnit = (FieldUnit) object;
-          if (fieldUnit.getTimeOfMaturation() == 0 && fieldUnit.containsEggs() && !fieldUnit.isMatureEggs()) {
-            fieldUnit.defineTimeOfMaturation(temperature);
-          } else if (fieldUnit.getTimeOfMaturation() > 0 && fieldUnit.containsEggs() && !fieldUnit.isMatureEggs()) {
-            double timeOfMaturation = fieldUnit.getTimeOfMaturation();
-            timeOfMaturation--;
-            fieldUnit.setTimeOfMaturation(timeOfMaturation);
-            if (timeOfMaturation == 0) {
-              fieldUnit.setMatureEggs(true);
-            }
-          } else if (fieldUnit.getTimeOfMaturation() == 0 && fieldUnit.isMatureEggs()) {
-            int amount = fieldUnit.getEggs().size();
+          FieldUnit housing = (FieldUnit) object;
+          if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
+            double timeOfMaturation = housing.getTimeOfMaturation();
+            housing.setTimeOfMaturation(timeOfMaturation--);
+          } else if (housing.getTimeOfMaturation() == 0 && housing.containsEggs()) {
+            int amount = housing.getEggs();
             for (int i = 0; i < amount; i++) {
               if (random.nextDouble() > 0.5) { // 50% chance of female
-                int daysOfLife = 30 + random.nextInt(16);
-                Mosquito mosquito = new Mosquito(daysOfLife, fieldUnit);
-                mosquito.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
+                Mosquito mosquito = new Mosquito(housing);
                 mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-                fieldUnit.addMosquito(mosquito);
+                housing.addMosquito(mosquito);
+                housing.removeEgg();
                 allMosquitoes.add(mosquito);
+              } else {
+                housing.removeEgg();
               }
             }
           }
         }
       }
+
     };
 
     schedule.scheduleRepeating(chartUpdater);

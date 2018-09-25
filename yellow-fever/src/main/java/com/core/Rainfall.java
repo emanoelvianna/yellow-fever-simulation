@@ -11,8 +11,8 @@ public class Rainfall implements Steppable {
   /**
    * rainfall modeling considers rainfall-intensity-frequency-duration (IDF)
    * intensity = amount of rainfall frequency - gaps between days - rain can be
-   * happening every day or once in a week ... duration- how many minute the rain
-   * stays water in a given field is accumulated in liters there is some
+   * happening every day or once in a week ... duration- how many minute the
+   * rain stays water in a given field is accumulated in liters there is some
    * conversion of water based on cell resolution and amount of rain
    *
    */
@@ -22,16 +22,19 @@ public class Rainfall implements Steppable {
   // model
   // 1 m3 = 1000 litre; vol= area * height
   // height (m) = vol/area * 1000
-  final double areaUsed = 0.6; // 60% of area of the cell used for calculating volume
+  final double areaUsed = 0.6; // 60% of area of the cell used for calculating
+                               // volume
   final double coversionFactor = areaUsed * 90 * 90 * 1000.0; // area * litre
   private double currentRain;
-  private final double MAXVIBROFLOWWAtER = 50; // mm of rain in a field. if it is greater than this, all virbo will
+  private final double MAXVIBROFLOWWAtER = 50; // mm of rain in a field. if it
+                                               // is greater than this, all
+                                               // virbo will
                                                // flood to next cell
   private int rainDay = 0;
   // private final double waterFlowRate = 0.8; // 80% of water flow at a given
   // time from one parcel to other
   private double totalBacterialLoad = 0;
-  TimeManager tm = new TimeManager();
+  TimeManager time = new TimeManager();
   // when the next rain day will be
 
   int rainDuration = 20;
@@ -52,7 +55,7 @@ public class Rainfall implements Steppable {
     drain(d);
     drawRiver(d);
   }
-  
+
   public void recieveRain(Dadaab d) {
     // rain will fall in all fields except fields that are occupied by camps
     //
@@ -67,11 +70,13 @@ public class Rainfall implements Steppable {
     if ((int) d.schedule.getTime() % 1440 > rainMinute
         && (int) d.schedule.getTime() % 1440 <= (rainMinute + rainDuration)) {
 
-      int indexA = tm.dayCount((int) d.schedule.getTime()) % 365;
+      int indexA = time.dayCount((int) d.schedule.getTime()) % 365;
       int indexSep = (indexA + startmonth) % 365;
 
       currentRain = d.dailyRain[indexSep] / (1.0 * rainDuration);
-      rain_liter = currentRain * 0.001 * coversionFactor; // 1m3 = 1000 litre, change rainf from mm to meter and
+      rain_liter = currentRain * 0.001 * coversionFactor; // 1m3 = 1000 litre,
+                                                          // change rainf from
+                                                          // mm to meter and
                                                           // multiply 1000
 
     } else {
@@ -102,35 +107,34 @@ public class Rainfall implements Steppable {
 
       }
     }
-
   }
 
   /*
-   * water flow is based on simple hydrology water flows from high to low gradient
-   * here moore neighborhood is considered each cell cchek its neighbores - water
-   * flows from te center cell to its neighbors based on elevation gradient
+   * water flow is based on simple hydrology water flows from high to low
+   * gradient here moore neighborhood is considered each cell cchek its
+   * neighbores - water flows from te center cell to its neighbors based on
+   * elevation gradient
    */
-  public void drain(Dadaab d) {
-    for (int x = 0; x < d.allCamps.getWidth(); x++) {
-      for (int y = 0; y < d.allCamps.getHeight(); y++) {
+  public void drain(Dadaab dadaab) {
+    for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
+      for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
         // ceter cell
-        FieldUnit field = (FieldUnit) d.allCamps.field[x][y];
+        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
         // avoid camps
         if (field.getFieldID() == 11 || field.getFieldID() == 12 || field.getFieldID() == 21 || field.getFieldID() == 22
             || field.getFieldID() == 31 || field.getFieldID() == 32) {
           continue;
         }
-        fieldDrainageSimple(field, d);
+        fieldDrainageSimple(field, dadaab);
       }
     }
   }
 
-  public void fieldDrainageSimple(FieldUnit field, Dadaab d) {
+  public void fieldDrainageSimple(FieldUnit field, Dadaab dadaab) {
     Bag n = new Bag();
     n.clear();
     // get moore neighborhood
-
-    d.allCamps.getNeighborsMaxDistance(field.getLocationX(), field.getLocationY(), 1, false, n, null, null);
+    dadaab.allCamps.getNeighborsMaxDistance(field.getLocationX(), field.getLocationY(), 1, false, n, null, null);
 
     if (n.isEmpty() == true) {
       return;
@@ -138,12 +142,11 @@ public class Rainfall implements Steppable {
 
     // if field holds borehole avoid it,
     // no miz of water on borehole
-    if (d.boreHoles.contains(field) == true) {
+    if (dadaab.boreHoles.contains(field) == true) {
       return;
     }
 
     for (Object obj : n) {
-
       FieldUnit nf = (FieldUnit) obj;
 
       // water can not flow to itself
@@ -161,13 +164,13 @@ public class Rainfall implements Steppable {
       }
 
       // avoid borehole points
-
-      if (d.boreHoles.contains(nf) == true) {
+      if (dadaab.boreHoles.contains(nf) == true) {
         continue;
       }
 
       double avoidW = 0;
-      if (field.getLocationX() == 0 || field.getLocationY() == 0 || field.getLocationX() >= 144 || field.getLocationY() >= 268) {
+      if (field.getLocationX() == 0 || field.getLocationY() == 0 || field.getLocationX() >= 144
+          || field.getLocationY() >= 268) {
         avoidW = 0;
       } else {
         avoidW = 1.0;
@@ -208,67 +211,49 @@ public class Rainfall implements Steppable {
 
         nf.setVibrioCholerae(virbroRemain);
         field.setVibrioCholerae((field.getVibrioCholerae() + vibroflow) * avoidW);
-
       }
-
     }
   }
 
   // only happens if there is water- if not seepage is 0
-  public void waterAbsorbtion(Dadaab d) {
-
-    for (int x = 0; x < d.allCamps.getWidth(); x++) {
-      for (int y = 0; y < d.allCamps.getHeight(); y++) {
-
-        FieldUnit field = (FieldUnit) d.allCamps.field[x][y];
+  public void waterAbsorbtion(Dadaab dadaab) {
+    for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
+      for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
+        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
 
         double w = 0;
-
-        w = field.getWater() - (d.getParams().getGlobal().getAbsorbtionRatePerMinute() * coversionFactor * 0.001);
+        w = field.getWater() - (dadaab.getParams().getGlobal().getAbsorbtionRatePerMinute() * coversionFactor * 0.001);
         if (w <= 0) {
           field.setWater(0);
         } else {
           field.setWater(w);
-
         }
 
         if (x == 0 || y == 0 || x == 145 || y == 269) {
           field.setWater(0);
           field.setVibrioCholerae(0);
         }
-
       }
     }
-
   }
 
   // visualization of rain flows
-  public void drawRiver(Dadaab d) {
-    d.rainfallWater.clear();
+  public void drawRiver(Dadaab dadaab) {
+    dadaab.rainfallWater.clear();
     double totBac = 0;
-    for (int x = 0; x < d.allCamps.getWidth(); x++) {
-      for (int y = 0; y < d.allCamps.getHeight(); y++) {
-
-        FieldUnit field = (FieldUnit) d.allCamps.field[x][y];
-        d.rainfallGrid.field[field.getLocationX()][field.getLocationY()] = field.getWater();
-//                
+    for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
+      for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
+        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
+        dadaab.rainfallGrid.field[field.getLocationX()][field.getLocationY()] = field.getWater();
         totBac = totBac + field.getVibrioCholerae();
-        // elevation
-//                d.rainfallGrid.field[field.getX()][field.getY()] = field.getElevation();
-//              
-
-        // feces
-        // d.rainfallGrid.field[field.getX()][field.getY()] = field.getVibrioCholerae();
-//              
-
-        if (field.getWater() > d.getParams().getGlobal().getMaximumWaterRequirement()) {
-          d.rainfallWater.add(field);
+        if (field.getWater() > dadaab.getParams().getGlobal().getMaximumWaterRequirement()) {
+          dadaab.rainfallWater.add(field);
         }
       }
     }
     setTotalBacterialLoad(totBac);
   }
-  
+
   public void setRainDay(int r) {
     this.rainDay = r;
   }

@@ -7,16 +7,17 @@ import com.core.Dadaab;
 import com.core.TimeManager;
 import com.model.enumeration.HealthStatus;
 
+import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
-import sim.util.Bag;
 import sim.util.Valuable;
 
 public class Mosquito implements Steppable, Valuable, Serializable {
 
   public static final int ORDERING = 2;
   protected Stoppable stopper;
+  private MersenneTwisterFast random;
   private Dadaab dadaab;
   private FieldUnit currentPosition;
   private TimeManager time;
@@ -35,8 +36,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private int currentDay;
   private double temperature;
 
-  public Mosquito(int daysOfLife, FieldUnit position) {
-    this.daysOfLife = daysOfLife;
+  public Mosquito(FieldUnit position) {
+    this.random = new MersenneTwisterFast();
+    this.daysOfLife = 30 + random.nextInt(16);
+    this.currentHealthStatus = HealthStatus.SUSCEPTIBLE;
     this.speed = 1.0;
     this.hungry = true;
     this.sensoryAmplitude = 3;
@@ -109,7 +112,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void ovipositionProcess() {
-    this.currentPosition.addEggs(100);
+    this.currentPosition.addEgg(100);
+    this.currentPosition.defineTheMaturationTimeOfTheEggs(this.temperature);
     this.carryingEggs = false;
   }
 

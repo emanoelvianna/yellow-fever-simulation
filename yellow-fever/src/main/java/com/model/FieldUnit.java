@@ -16,7 +16,6 @@ public class FieldUnit implements Valuable, Serializable {
   private double water; // hold water amount
   private boolean sap;
   private boolean nectar;
-  private boolean matureEggs;
   private double elevation; // elevation
   private double vibrioCholerae = 0; // contamination level
   private double timeOfMaturation;
@@ -25,28 +24,26 @@ public class FieldUnit implements Valuable, Serializable {
   private int locationX;
   private int locationY;
   private Bag refugeeHH; // camp location for household
-  private ArrayList<Human> humans; // who are on the field right now
-  private ArrayList<Mosquito> mosquitoes;
-  private ArrayList<Integer> eggs;
+  private Bag humans; // who are on the field right now
+  private Bag mosquitoes;
+  private int eggs;
 
   // getter and setter
   public FieldUnit() {
     super();
     this.refugeeHH = new Bag();
-    this.humans = new ArrayList<Human>();
-    this.mosquitoes = new ArrayList<Mosquito>();
-    this.eggs = new ArrayList<Integer>();
+    this.humans = new Bag();
+    this.mosquitoes = new Bag();
+    this.eggs = 0;
     this.timeOfMaturation = 0;
-    this.matureEggs = false;
   }
 
   public FieldUnit(int x, int y) {
-    this.humans = new ArrayList<Human>();
-    this.mosquitoes = new ArrayList<Mosquito>();
+    this.humans = new Bag();
+    this.mosquitoes = new Bag();
     this.refugeeHH = new Bag();
-    this.eggs = new ArrayList<Integer>();
+    this.eggs = 0;
     this.timeOfMaturation = 0;
-    this.matureEggs = false;
     this.locationX = x;
     this.locationY = y;
   }
@@ -61,7 +58,7 @@ public class FieldUnit implements Valuable, Serializable {
     return false;
   }
 
-  public void defineTimeOfMaturation(double temperature) {
+  public void defineTheMaturationTimeOfTheEggs(double temperature) {
     this.timeOfMaturation = 8 + Math.abs(temperature - 25);
   }
 
@@ -120,11 +117,11 @@ public class FieldUnit implements Valuable, Serializable {
     this.refugeeHH.remove(r);
   }
 
-  public void setRefugee(ArrayList<Human> humans) {
+  public void setRefugee(Bag humans) {
     this.humans = humans;
   }
 
-  public ArrayList<Human> getHumans() {
+  public Bag getHumans() {
     return humans;
   }
 
@@ -144,7 +141,7 @@ public class FieldUnit implements Valuable, Serializable {
     this.mosquitoes.remove(mosquito);
   }
 
-  public ArrayList<Mosquito> getMosquitoes() {
+  public Bag getMosquitoes() {
     return mosquitoes;
   }
 
@@ -255,14 +252,18 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   public boolean containsEggs() {
-    return !this.eggs.isEmpty();
+    return this.eggs > 0;
   }
 
-  public void addEggs(int eggs) {
-    this.eggs.add(eggs);
+  public void addEgg(int eggs) {
+    this.eggs += eggs;
   }
 
-  public ArrayList<Integer> getEggs() {
+  public void removeEgg() {
+    this.eggs--;
+  }
+
+  public int getEggs() {
     return this.eggs;
   }
 
@@ -276,14 +277,6 @@ public class FieldUnit implements Valuable, Serializable {
 
   public void setTimeOfMaturation(double timeOfMaturation) {
     this.timeOfMaturation = timeOfMaturation;
-  }
-
-  public boolean isMatureEggs() {
-    return matureEggs;
-  }
-
-  public void setMatureEggs(boolean matureEggs) {
-    this.matureEggs = matureEggs;
   }
 
 }

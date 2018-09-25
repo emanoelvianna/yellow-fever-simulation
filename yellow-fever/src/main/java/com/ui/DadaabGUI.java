@@ -76,7 +76,6 @@ public class DadaabGUI extends GUIState {
   ScatterPlotGenerator chartSeriesPopulation2;
 
   public static void main(String[] args) {
-
     DadaabGUI dadaabGUI = new DadaabGUI(args);
     Console console = new Console(dadaabGUI);
     console.setVisible(true);
