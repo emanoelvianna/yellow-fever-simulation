@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.model.FieldUnit;
+import com.model.Building;
 import com.model.Human;
 import com.model.enumeration.HealthStatus;
 
@@ -248,7 +248,7 @@ public class DadaabObserver implements Steppable {
     for (int i = 0; i < d.allCamps.getWidth(); i++) {
       for (int j = 0; j < d.allCamps.getHeight(); j++) {
 
-        FieldUnit faci = (FieldUnit) d.allCamps.get(i, j);
+        Building faci = (Building) d.allCamps.get(i, j);
         if (faci.getCampID() > 0) {
           grid.field[i][j] = 0;
         }

@@ -10,7 +10,7 @@ import com.core.enumeration.Parameters;
 import com.model.Climate;
 import com.model.Facility;
 import com.model.Family;
-import com.model.FieldUnit;
+import com.model.Building;
 import com.model.Human;
 import com.model.Mosquito;
 import com.model.enumeration.HealthStatus;
@@ -68,7 +68,8 @@ public class Dadaab extends SimState {
   private double totalBacterialLoad = 0;
   private int currentDay;
   private double temperature;
-  private int mortos; // TODO: Refatorar
+  private int mosquitosMortos; // TODO: Refatorar
+  private int humanosMortos;
 
   /**
    * charts and graphs
@@ -178,7 +179,8 @@ public class Dadaab extends SimState {
     this.allCampGeoGrid = new GeomGridField();
     this.climate = new Climate();
     this.currentDay = 0;
-    this.mortos = 0;
+    this.mosquitosMortos = 0;
+    this.humanosMortos = 0;
 
     // TODO: Refatorar
     // TODO: Deve ser setado no nomento que estou lendo o arquivo!
@@ -220,24 +222,26 @@ public class Dadaab extends SimState {
 
         if (this.isNewDay()) {
           this.setTemperature();
+          this.setPrecipitacao();
           this.probabilityOfEggsDying();
-          this.eggsIsReadyToHatch();
-          this.precipitacao(); // TODO: Refatorar
+          this.probabilityOfEggsHatching();
+          this.probabilityOfEggsAppearInHouses();
 
           System.out.println("---");
           int quantidadeMosquitos = 0;
           int quantidadeOvos = 0;
           double quantidadeAgua = 0;
           for (Object object : familyHousing) {
-            FieldUnit housing = (FieldUnit) object;
+            Building housing = (Building) object;
             quantidadeMosquitos += housing.getMosquitoes().size();
             quantidadeOvos += housing.getEggs();
             quantidadeAgua += housing.getWater();
           }
           System.out.println("Quantidade de mosquitos nas residenicas: " + quantidadeMosquitos);
           System.out.println("Quantidade de ovos nas residenicas: " + quantidadeOvos);
-          System.out.println("Quantidade de mosquitos mortos: " + mortos);
+          System.out.println("Quantidade de mosquitos mortos: " + mosquitosMortos);
           System.out.println("Quantidade de pessoas infectadas: " + totalInfected);
+          System.out.println("Quantidade de pessoas mortas: " + humanosMortos);
           System.out.println("Quantidade de água nas residencias: " + quantidadeAgua);
           System.out.println("---");
         }
@@ -495,14 +499,13 @@ public class Dadaab extends SimState {
         }
       }
 
-      // TODO: Quem sabe isso deve ficar lá no esquema de chuva!
-      private void precipitacao() {
+      private void setPrecipitacao() {
         List<Double> rainfall = climate.getPrecipitation();
-        if (currentDay < rainfall.size()) {
-          // TODO: Para todo os lugares com água parada
-          // TODO: Como vou considerar a diminuição da água?
-          for (Object object : familyHousing) {
-            FieldUnit housing = (FieldUnit) object;
+        double mm = params.getGlobal().getWaterAbsorption();
+        for (Object object : familyHousing) {
+          Building housing = (Building) object;
+          if (random.nextDouble() <= 0.5) { // 50% chance
+            housing.waterAbsorption(mm);
             housing.addWater(rainfall.get(currentDay));
           }
         }
@@ -510,7 +513,7 @@ public class Dadaab extends SimState {
 
       private void probabilityOfEggsDying() {
         for (Object object : familyHousing) {
-          FieldUnit housing = (FieldUnit) object;
+          Building housing = (Building) object;
           if (housing.containsEggs()) {
             int amount = housing.getEggs();
             for (int i = 0; i < amount; i++) {
@@ -521,9 +524,9 @@ public class Dadaab extends SimState {
         }
       }
 
-      private void eggsIsReadyToHatch() {
+      private void probabilityOfEggsHatching() {
         for (Object object : familyHousing) {
-          FieldUnit housing = (FieldUnit) object;
+          Building housing = (Building) object;
           if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
             double timeOfMaturation = housing.getTimeOfMaturation();
             housing.setTimeOfMaturation(timeOfMaturation--);
@@ -544,10 +547,19 @@ public class Dadaab extends SimState {
         }
       }
 
+      private void probabilityOfEggsAppearInHouses() {
+        int probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
+        for (Object object : familyHousing) {
+          Building housing = (Building) object;
+          if (random.nextInt(101) <= probability) {
+            housing.addEgg(random.nextInt(101));
+          }
+        }
+      }
+
     };
 
     schedule.scheduleRepeating(chartUpdater);
-    // System.out.println("total:- "+ allRefugees.getAllObjects().numObjs);
   }
 
   private void defineInfectionNumbersInHumans(Human human) {
@@ -560,7 +572,7 @@ public class Dadaab extends SimState {
 
   private void defineInfectionNumbersInMosquitoes() {
     for (Object housing : familyHousing) {
-      FieldUnit fieldUnit = (FieldUnit) housing;
+      Building fieldUnit = (Building) housing;
       for (Object mosquito : fieldUnit.getMosquitoes()) {
         Mosquito m = (Mosquito) mosquito;
         if (HealthStatus.INFECTED.equals(m.getCurrentHealthStatus())) {
@@ -590,18 +602,17 @@ public class Dadaab extends SimState {
 
   public void killrefugee(Human human) {
     human.getFamily().removeMembers(human);
-    // remova a família quando o tamanho for zero
     if (human.getFamily().getMembers().numObjs == 0) {
       allFamilies.remove(human.getFamily());
     }
     allHumans.remove(human);
+    this.humanosMortos++;
   }
 
-  // TODO: O que deve ser considerado para remover o mosquito?
   public void killmosquito(Mosquito mosquito) {
     mosquito.getCurrentPosition().removeMosquito(mosquito);
     allMosquitoes.remove(mosquito);
-    mortos++;
+    this.mosquitosMortos++;
   }
 
   int PrevPop = 0;

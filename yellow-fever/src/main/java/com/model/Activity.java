@@ -73,7 +73,7 @@ public class Activity {
   }
 
   // best location is mainly determine by distance
-  public FieldUnit bestActivityLocation(Human ref, FieldUnit position, ActivityMapping activityMapping, Dadaab d) {
+  public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, Dadaab d) {
     switch (activityMapping) {
     case STAY_HOME:
       return ref.getHome();
@@ -131,7 +131,7 @@ public class Activity {
   // TODO: Verificar a necessidade de realizar alguma operação na atividade
   // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao
   // médico
-  public void doActivity(FieldUnit f, ActivityMapping activityMapping, Dadaab dadaab) {
+  public void doActivity(Building f, ActivityMapping activityMapping, Dadaab dadaab) {
     switch (activityMapping) {
     case STAY_HOME:
       break;
@@ -147,11 +147,11 @@ public class Activity {
     }
   }
 
-  private FieldUnit betstLoc(FieldUnit fLoc, Bag fieldBag, Dadaab d) {
+  private Building betstLoc(Building fLoc, Bag fieldBag, Dadaab d) {
     Bag newLoc = new Bag();
     double bestScoreSoFar = Double.POSITIVE_INFINITY;
     for (int i = 0; i < fieldBag.numObjs; i++) {
-      FieldUnit potLoc = ((FieldUnit) fieldBag.objs[i]);
+      Building potLoc = ((Building) fieldBag.objs[i]);
       double fScore = fLoc.distanceTo(potLoc);
       if (fScore > bestScoreSoFar) {
         continue;
@@ -162,19 +162,19 @@ public class Activity {
       }
       newLoc.add(potLoc);
     }
-    FieldUnit f = null;
+    Building f = null;
     if (newLoc != null) {
       int winningIndex = 0;
       if (newLoc.numObjs >= 1) {
         winningIndex = d.random.nextInt(newLoc.numObjs);
       }
       // System.out.println("other" + newLoc.numObjs);
-      f = (FieldUnit) newLoc.objs[winningIndex];
+      f = (Building) newLoc.objs[winningIndex];
     }
     return f;
   }
 
-  public FieldUnit getNextTile(Dadaab dadaab, FieldUnit subgoal, FieldUnit position) {
+  public Building getNextTile(Dadaab dadaab, Building subgoal, Building position) {
     // move in which direction?
     int moveX = 0, moveY = 0;
     int dx = subgoal.getLocationX() - position.getLocationX();
@@ -190,8 +190,8 @@ public class Activity {
       moveY = 1;
     }
     // can either move in Y direction or X direction: see which is better
-    FieldUnit xmove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
-    FieldUnit ymove = ((FieldUnit) dadaab.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
+    Building xmove = ((Building) dadaab.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
+    Building ymove = ((Building) dadaab.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
 
     boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
     boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
@@ -228,9 +228,9 @@ public class Activity {
 
   // three camp sites in the model
   // agent select one camp which is not their camp randomly
-  private FieldUnit socialize(Human ref, Dadaab d) {
+  private Building socialize(Human ref, Dadaab d) {
     Bag potential = new Bag();
-    FieldUnit newLoc = null;
+    Building newLoc = null;
     potential.clear();
 
     // socialize - visit friend or any place in
@@ -240,7 +240,7 @@ public class Activity {
 
     // select any camp site but not the camp that belong to the agent
     for (Object campsite : d.familyHousing) {
-      FieldUnit cmp = ((FieldUnit) campsite);
+      Building cmp = ((Building) campsite);
       if (cmp.getCampID() == camp && cmp.equals(ref.getHome()) != true && cmp.getRefugeeHH().numObjs > 0) {
         potential.add(cmp); // potential locations to visit
       }
@@ -250,31 +250,31 @@ public class Activity {
     // System.out.println("empty");
     // }
     if (potential.numObjs == 1) {
-      newLoc = (FieldUnit) potential.objs[0];
+      newLoc = (Building) potential.objs[0];
     } else {
-      newLoc = (FieldUnit) potential.objs[d.random.nextInt(potential.numObjs)];
+      newLoc = (Building) potential.objs[d.random.nextInt(potential.numObjs)];
     }
 
     return newLoc;
   }
 
   // find the nearest water points
-  public FieldUnit nearestWaterPoint(FieldUnit f, Dadaab d) {
+  public Building nearestWaterPoint(Building f, Dadaab d) {
     return betstLoc(f, d.rainfallWater, d);
   }
 
   // search nearest borehold
   // this is useful if one of the borehole is empty
   // agent will selct another borehole nearest from the current
-  private FieldUnit nearestBorehole(FieldUnit f, Dadaab d) {
+  private Building nearestBorehole(Building f, Dadaab d) {
     return betstLoc(f, d.boreHoles, d);
   }
 
   // select water source either from borehole or rainfall water points
   // agent preference weight and distance affect the choice
 
-  public FieldUnit nearestWaterSource(FieldUnit f, Dadaab d) {
-    FieldUnit fieldP = null;
+  public Building nearestWaterSource(Building f, Dadaab d) {
+    Building fieldP = null;
 
     double preference_river = 0.0;
     double preference_borehole = 0.0;

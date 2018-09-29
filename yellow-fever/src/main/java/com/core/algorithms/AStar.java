@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import com.core.Dadaab;
 import com.core.Node;
-import com.model.FieldUnit;
+import com.model.Building;
 
 import sim.field.network.Edge;
 
@@ -21,7 +21,7 @@ public class AStar {
    * @param goal
    * @return
    */
-  static public ArrayList<FieldUnit> astarPath(Dadaab world, Node start, Node goal) {
+  static public ArrayList<Building> astarPath(Dadaab world, Node start, Node goal) {
     if (start == null || goal == null) {
       System.out.println("Error: invalid node provided to AStar");
     }
@@ -101,8 +101,8 @@ public class AStar {
    * @return an ArrayList of nodes that lead from the given Node to the Node from
    *         which the search began
    */
-  static ArrayList<FieldUnit> reconstructPath(AStarNodeWrapper n) {
-    ArrayList<FieldUnit> result = new ArrayList<FieldUnit>();
+  static ArrayList<Building> reconstructPath(AStarNodeWrapper n) {
+    ArrayList<Building> result = new ArrayList<Building>();
     AStarNodeWrapper x = n;
     while (x.cameFrom != null) {
       result.add(0, x.node.getLocation()); // add this edge to the front of the list

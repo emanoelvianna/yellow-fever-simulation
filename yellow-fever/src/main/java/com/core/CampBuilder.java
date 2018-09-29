@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import com.model.Facility;
 import com.model.Family;
-import com.model.FieldUnit;
+import com.model.Building;
 import com.model.Human;
 import com.model.Mosquito;
 import com.model.enumeration.ActivityMapping;
@@ -84,8 +84,8 @@ public class CampBuilder {
         for (int curr_col = 0; curr_col < width; ++curr_col) {
           int camptype = Integer.parseInt(tokens[curr_col]);
 
-          FieldUnit fieldUnit = null;
-          fieldUnit = new FieldUnit();
+          Building fieldUnit = null;
+          fieldUnit = new Building();
 
           if (camptype > 0) {
             fieldUnit.setFieldID(camptype);
@@ -143,7 +143,7 @@ public class CampBuilder {
           if (facilitytype > 0 && facilitytype < 11) {
 
             Facility facility = new Facility();
-            FieldUnit facilityField = (FieldUnit) dadaab.allCamps.get(curr_col, curr_row);
+            Building facilityField = (Building) dadaab.allCamps.get(curr_col, curr_row);
             facility.setLoc(facilityField);
             facilityField.setFacility(facility);
             dadaab.allFacilities.add(facilityField);
@@ -238,7 +238,7 @@ public class CampBuilder {
 
           if (elevation > 0) {
 
-            FieldUnit elevationField = (FieldUnit) dadaab.allCamps.get(curr_col, curr_row);
+            Building elevationField = (Building) dadaab.allCamps.get(curr_col, curr_row);
             elevationField.setElevation(elevation);
 
           }
@@ -302,7 +302,7 @@ public class CampBuilder {
 
       for (int jj = 0; jj < numOfRel; jj++) {
         if (f.equals((Family) dadaab.allFamilies.objs[numberOfFamilies[jj]]) != true) {
-          FieldUnit l = ((Family) dadaab.allFamilies.objs[numberOfFamilies[jj]]).getCampLocation();
+          Building l = ((Family) dadaab.allFamilies.objs[numberOfFamilies[jj]]).getCampLocation();
           f.addRelative(l);
         }
       }
@@ -347,7 +347,7 @@ public class CampBuilder {
     System.out.println("Quantidade de mosquitos adicionadas: " + quantidadeInicialDeMosquitos);
     int quantidadeInicialDeMosquitosNasCasa = 0;
     for (Object object : dadaab.familyHousing) {
-      FieldUnit fieldUnit = (FieldUnit) object;
+      Building fieldUnit = (Building) object;
       quantidadeInicialDeMosquitosNasCasa += fieldUnit.getMosquitoes().size();
     }
     System.out.println("Quantidade de mosquitos nas residencias: " + quantidadeInicialDeMosquitosNasCasa);
@@ -424,17 +424,17 @@ public class CampBuilder {
   }
 
   // random searching of next parcel to populate houses
-  public static FieldUnit nextAvailCamp(Dadaab dadaab) {
+  public static Building nextAvailCamp(Dadaab dadaab) {
     // for now random
     int index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
-    while (((FieldUnit) dadaab.familyHousing.objs[index]).isCampOccupied(dadaab) == true
-        || dadaab.allFacilities.contains((FieldUnit) dadaab.familyHousing.objs[index]) == true) {
+    while (((Building) dadaab.familyHousing.objs[index]).isCampOccupied(dadaab) == true
+        || dadaab.allFacilities.contains((Building) dadaab.familyHousing.objs[index]) == true) {
       // try another spot
       index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
     }
 
     //
-    return (FieldUnit) dadaab.familyHousing.objs[index];
+    return (Building) dadaab.familyHousing.objs[index];
 
   }
 
@@ -536,7 +536,7 @@ public class CampBuilder {
       int tot = sizeDist[a];
       counter = counter + tot;
       if (tot != 0 && counter <= totalRef) {
-        FieldUnit fieldUnit = nextAvailCamp(dadaab);
+        Building fieldUnit = nextAvailCamp(dadaab);
         Family hh = new Family(fieldUnit);
         dadaab.allFamilies.add(hh);
         hh.setRationDate(1 + a % 9);
@@ -590,7 +590,7 @@ public class CampBuilder {
 
     while (initialMosquitoesNumber > 0) {
       int index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
-      FieldUnit housing = (FieldUnit) dadaab.familyHousing.objs[index];
+      Building housing = (Building) dadaab.familyHousing.objs[index];
       if (housing.containsMosquitoes()) {
         if (dadaab.random.nextDouble() > 0.5) { // 50% chance of has more mosquitoes
           Mosquito mosquito = new Mosquito(housing);
@@ -688,7 +688,7 @@ public class CampBuilder {
       Bag ns = dadaab.nodes.getObjectsAtLocation(xint, yint);
       Node n;
       if (ns == null) {
-        n = new Node(new FieldUnit(xint, yint));
+        n = new Node(new Building(xint, yint));
         dadaab.nodes.setObjectLocation(n, xint, yint);
       } else {
         n = (Node) ns.get(0);
@@ -729,9 +729,9 @@ public class CampBuilder {
   static class Crawler {
 
     Node node;
-    FieldUnit location;
+    Building location;
 
-    public Crawler(Node n, FieldUnit l) {
+    public Crawler(Node n, Building l) {
       node = n;
       location = l;
     }
@@ -782,7 +782,7 @@ public class CampBuilder {
               false, neighbors, null, null);
 
           for (Object o : neighbors) {
-            FieldUnit l = (FieldUnit) o;
+            Building l = (Building) o;
             // Location l = (Location) o;
             if (l == c.location) {
               continue;

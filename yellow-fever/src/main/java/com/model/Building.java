@@ -9,7 +9,7 @@ import com.model.enumeration.HealthStatus;
 import sim.util.Bag;
 import sim.util.Valuable;
 
-public class FieldUnit implements Valuable, Serializable {
+public class Building implements Valuable, Serializable {
 
   private int fieldID; // identify the type pf the field
   private int campID; // holds id of the three camps
@@ -29,7 +29,7 @@ public class FieldUnit implements Valuable, Serializable {
   private int eggs;
 
   // getter and setter
-  public FieldUnit() {
+  public Building() {
     super();
     this.refugeeHH = new Bag();
     this.humans = new Bag();
@@ -38,7 +38,7 @@ public class FieldUnit implements Valuable, Serializable {
     this.timeOfMaturation = 0;
   }
 
-  public FieldUnit(int x, int y) {
+  public Building(int x, int y) {
     this.humans = new Bag();
     this.mosquitoes = new Bag();
     this.refugeeHH = new Bag();
@@ -71,7 +71,7 @@ public class FieldUnit implements Valuable, Serializable {
     }
   }
 
-  public boolean equals(FieldUnit b) {
+  public boolean equals(Building b) {
     if (b.getLocationX() == this.getLocationX() && b.getLocationY() == this.getLocationY()) {
       return true;
     } else {
@@ -87,7 +87,7 @@ public class FieldUnit implements Valuable, Serializable {
   }
 
   // calaculate distance
-  public double distanceTo(FieldUnit b) {
+  public double distanceTo(Building b) {
     return Math.sqrt(
         Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
   }
@@ -96,8 +96,8 @@ public class FieldUnit implements Valuable, Serializable {
     return Math.sqrt(Math.pow(xCoord - this.getLocationX(), 2) + Math.pow(yCoord - this.getLocationY(), 2));
   }
 
-  public FieldUnit copy() {
-    FieldUnit fieldUnit = new FieldUnit(this.getLocationX(), this.getLocationY());
+  public Building copy() {
+    Building fieldUnit = new Building(this.getLocationX(), this.getLocationY());
     return fieldUnit;
   }
 
@@ -186,8 +186,12 @@ public class FieldUnit implements Valuable, Serializable {
     return water;
   }
 
-  public void addWater(double flow) {
-    this.water += flow;
+  public void addWater(double water) {
+    this.water = this.water + water;
+  }
+
+  public void waterAbsorption(double absorption) {
+    this.water = this.water - absorption;
   }
 
   public void setPatientCounter(int c) {

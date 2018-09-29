@@ -2,25 +2,25 @@ package com.core;
 
 import java.util.ArrayList;
 
-import com.model.FieldUnit;
+import com.model.Building;
 
 import sim.field.network.Edge;
 
 public class Node {
 
-  private FieldUnit location;
+  private Building location;
   private ArrayList<Edge> links;
 
-  public Node(FieldUnit l) {
+  public Node(Building l) {
     setLocation(l);
     setLinks(new ArrayList<Edge>());
   }
 
-  public FieldUnit getLocation() {
+  public Building getLocation() {
     return location;
   }
 
-  public void setLocation(FieldUnit location) {
+  public void setLocation(Building location) {
     this.location = location;
   }
 

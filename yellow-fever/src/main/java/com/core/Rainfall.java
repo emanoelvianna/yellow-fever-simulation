@@ -1,6 +1,6 @@
 package com.core;
 
-import com.model.FieldUnit;
+import com.model.Building;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -88,7 +88,7 @@ public class Rainfall implements Steppable {
     for (int x = 0; x < d.allCamps.getWidth(); x++) {
       for (int y = 0; y < d.allCamps.getHeight(); y++) {
 
-        FieldUnit field = (FieldUnit) d.allCamps.get(x, y);
+        Building field = (Building) d.allCamps.get(x, y);
 
         // avoud camps - agent houses
         if (field.getFieldID() == 11 || field.getFieldID() == 12 || field.getFieldID() == 21 || field.getFieldID() == 22
@@ -119,7 +119,7 @@ public class Rainfall implements Steppable {
     for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
       for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
         // ceter cell
-        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
+        Building field = (Building) dadaab.allCamps.field[x][y];
         // avoid camps
         if (field.getFieldID() == 11 || field.getFieldID() == 12 || field.getFieldID() == 21 || field.getFieldID() == 22
             || field.getFieldID() == 31 || field.getFieldID() == 32) {
@@ -130,7 +130,7 @@ public class Rainfall implements Steppable {
     }
   }
 
-  public void fieldDrainageSimple(FieldUnit field, Dadaab dadaab) {
+  public void fieldDrainageSimple(Building field, Dadaab dadaab) {
     Bag n = new Bag();
     n.clear();
     // get moore neighborhood
@@ -147,7 +147,7 @@ public class Rainfall implements Steppable {
     }
 
     for (Object obj : n) {
-      FieldUnit nf = (FieldUnit) obj;
+      Building nf = (Building) obj;
 
       // water can not flow to itself
       if (nf.equals(field) == true) {
@@ -219,7 +219,7 @@ public class Rainfall implements Steppable {
   public void waterAbsorbtion(Dadaab dadaab) {
     for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
       for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
-        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
+        Building field = (Building) dadaab.allCamps.field[x][y];
 
         double w = 0;
         w = field.getWater() - (dadaab.getParams().getGlobal().getAbsorbtionRatePerMinute() * coversionFactor * 0.001);
@@ -243,7 +243,7 @@ public class Rainfall implements Steppable {
     double totBac = 0;
     for (int x = 0; x < dadaab.allCamps.getWidth(); x++) {
       for (int y = 0; y < dadaab.allCamps.getHeight(); y++) {
-        FieldUnit field = (FieldUnit) dadaab.allCamps.field[x][y];
+        Building field = (Building) dadaab.allCamps.field[x][y];
         dadaab.rainfallGrid.field[field.getLocationX()][field.getLocationY()] = field.getWater();
         totBac = totBac + field.getVibrioCholerae();
         if (field.getWater() > dadaab.getParams().getGlobal().getMaximumWaterRequirement()) {

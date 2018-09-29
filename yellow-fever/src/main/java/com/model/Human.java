@@ -25,7 +25,7 @@ public class Human implements Steppable, Valuable, Serializable {
   protected Stoppable stopper;
   private Dadaab dadaab;
   // the agent's current path to its current goal
-  private ArrayList<FieldUnit> path = null;
+  private ArrayList<Building> path = null;
   private MersenneTwisterFast random;
   // time contorler-identify the hour, day, week
   private TimeManager time;
@@ -35,9 +35,9 @@ public class Human implements Steppable, Valuable, Serializable {
   private int sex;
   private boolean isWorker;
   private boolean isStudent;
-  private FieldUnit currentPosition;
-  private FieldUnit home;
-  private FieldUnit goal;
+  private Building currentPosition;
+  private Building home;
+  private Building goal;
   private int currentStep;
   private double jitterX;
   private double jitterY;
@@ -54,7 +54,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private boolean serious;
   private int currentDay;
 
-  public Human(int age, int sex, Family family, FieldUnit home, FieldUnit position, MersenneTwisterFast seed,
+  public Human(int age, int sex, Family family, Building home, Building position, MersenneTwisterFast seed,
       Continuous2D allRefugees) {
     this.setAge(age);
     this.setSex(sex);
@@ -112,7 +112,7 @@ public class Human implements Steppable, Valuable, Serializable {
           path.add(this.getGoal());
         }
       }
-      FieldUnit subgoal;
+      Building subgoal;
       if (path == null) {
         subgoal = this.getGoal();
       } // Otherwise we have a path and should continue to move along it
@@ -129,8 +129,8 @@ public class Human implements Steppable, Valuable, Serializable {
         }
       }
 
-      FieldUnit loc = activity.getNextTile(dadaab, subgoal, this.getCurrentPosition());
-      FieldUnit oldLoc = this.getCurrentPosition();
+      Building loc = activity.getNextTile(dadaab, subgoal, this.getCurrentPosition());
+      Building oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
       this.setCurrentPosition(loc);
       loc.addRefugee(this);
@@ -259,7 +259,7 @@ public class Human implements Steppable, Valuable, Serializable {
 
   // TODO: Como irá funcionar o tratamento?
   // TODO: O tempo de recuperação deve considerar o tempo?
-  public void receiveTreatment(FieldUnit f, Dadaab d) {
+  public void receiveTreatment(Building f, Dadaab d) {
     if (dadaab.random.nextDouble() > 0.5) {
       // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
@@ -355,31 +355,31 @@ public class Human implements Steppable, Valuable, Serializable {
     stopper.stop();
   }
 
-  private void setCurrentPosition(FieldUnit position) {
+  private void setCurrentPosition(Building position) {
     this.currentPosition = position;
   }
 
-  public FieldUnit getCurrentPosition() {
+  public Building getCurrentPosition() {
     return currentPosition;
   }
 
   // goal position - where to go
-  public void setGoal(FieldUnit position) {
+  public void setGoal(Building position) {
     this.goal = position;
 
   }
 
-  public FieldUnit getGoal() {
+  public Building getGoal() {
     return goal;
   }
 
   // home location
-  public void setHome(FieldUnit home) {
+  public void setHome(Building home) {
     this.home = home;
 
   }
 
-  public FieldUnit getHome() {
+  public Building getHome() {
     return home;
   }
 

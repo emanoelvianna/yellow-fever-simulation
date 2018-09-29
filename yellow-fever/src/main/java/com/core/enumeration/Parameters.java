@@ -53,16 +53,27 @@ public class Parameters {
   }
 
   private void loadParameters(ParameterDatabase parameterDB) {
-    int parameter = 0;
+    int intParameter = 0;
+    double doubleParameter = 0;
 
-    parameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
-    global.setInitialHumansNumberInfected(parameter);
+    intParameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
+    global.initialHumansNumberInfected = intParameter;
 
-    parameter = returnIntParameter(parameterDB, "InitialMosquitoesNumber", global.getInitialMosquitoesNumber());
-    global.setInitialMosquitoesNumber(parameter);
+    intParameter = returnIntParameter(parameterDB, "InitialMosquitoesNumber", global.initialMosquitoesNumber);
+    global.initialMosquitoesNumber = intParameter;
 
-    global.setInitialHumansNumber(
-        returnIntParameter(parameterDB, "InitialHumansNumber", global.getInitialHumansNumber()));
+    intParameter = returnIntParameter(parameterDB, "InitialHumansNumber", global.initialHumansNumber);
+    global.setInitialHumansNumber(intParameter);
+
+    intParameter = returnIntParameter(parameterDB, "probabilityOfEggsAppearInHouses",
+        global.probabilityOfEggsAppearInHouses);
+    global.probabilityOfEggsAppearInHouses = intParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "waterAbsorption(mm)", global.waterAbsorption);
+    global.waterAbsorption = doubleParameter;
+
+    intParameter = returnIntParameter(parameterDB, "quantityOfVaccinesApplied", global.quantityOfVaccinesApplied);
+    global.quantityOfVaccinesApplied = intParameter;
 
     getGlobal().setMaximumNumberRelative(
         returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
@@ -143,9 +154,13 @@ public class Parameters {
 
   public class GlobalParamters {
 
-    public int initialHumansNumberInfected = 10;
+    private int initialHumansNumberInfected = 10;
     private int initialMosquitoesNumber = 1000;
-    public int initialRefugeeNumber = 4000;// min-1000
+    private int initialHumansNumber = 4000;
+    private int probabilityOfEggsAppearInHouses = 30;
+    private double waterAbsorption = 0.1;
+    private int quantityOfVaccinesApplied = 0;
+
     public double PercentageOfAsymptomatic = 70; // how many of the total
                                                  // refugee are asymtototic
     public double recovery_To_Susceb_Rate = 0.000001; // prob of change from
@@ -213,11 +228,11 @@ public class Parameters {
                                                  // taking median 1750 =
 
     public void setInitialHumansNumber(int num) {
-      this.initialRefugeeNumber = num;
+      this.initialHumansNumber = num;
     }
 
     public int getInitialHumansNumber() {
-      return initialRefugeeNumber;
+      return initialHumansNumber;
 
     }
 
@@ -504,6 +519,30 @@ public class Parameters {
 
     public void setInitialMosquitoesNumber(int initialMosquitoesNumber) {
       this.initialMosquitoesNumber = initialMosquitoesNumber;
+    }
+
+    public int getProbabilityOfEggsAppearInHouses() {
+      return probabilityOfEggsAppearInHouses;
+    }
+
+    public void setProbabilityOfEggsAppearInHouses(int probabilityOfEggsAppearInHouses) {
+      this.probabilityOfEggsAppearInHouses = probabilityOfEggsAppearInHouses;
+    }
+
+    public double getWaterAbsorption() {
+      return waterAbsorption;
+    }
+
+    public void setWaterAbsorption(double waterAbsorption) {
+      this.waterAbsorption = waterAbsorption;
+    }
+
+    public int getQuantityOfVaccinesApplied() {
+      return quantityOfVaccinesApplied;
+    }
+
+    public void setQuantityOfVaccinesApplied(int quantityOfVaccinesApplied) {
+      this.quantityOfVaccinesApplied = quantityOfVaccinesApplied;
     }
   }
 }

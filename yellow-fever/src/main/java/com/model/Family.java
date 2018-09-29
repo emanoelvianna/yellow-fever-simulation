@@ -8,11 +8,11 @@ public class Family {
 
   private int rationDate; // food ration date;
   private Bag relatives; // hold relative location
-  private FieldUnit location; // location of the house
+  private Building location; // location of the house
   private Bag members; // holds the family members
   private boolean hasLaterine = false;
 
-  public Family(FieldUnit loc) {
+  public Family(Building loc) {
     this.setCampLocation(loc);
     members = new Bag();
     relatives = new Bag();
@@ -42,11 +42,11 @@ public class Family {
   }
 
   // location of house
-  final public void setCampLocation(FieldUnit location) {
+  final public void setCampLocation(Building location) {
     this.location = location;
   }
 
-  final public FieldUnit getCampLocation() {
+  final public Building getCampLocation() {
     return location;
   }
 
@@ -85,11 +85,11 @@ public class Family {
     return relatives;
   }
 
-  public void addRelative(FieldUnit relative) {
+  public void addRelative(Building relative) {
     relatives.add(relative);
   }
 
-  public void removeFriend(FieldUnit relative) {
+  public void removeFriend(Building relative) {
     relatives.remove(relative);
   }
 

@@ -11,7 +11,7 @@ public class Facility implements Steppable, Valuable {
   // private int capacity = 0; // if we need to limit the capacity of each
   // facility
   private int facilityID; // id
-  FieldUnit location; // location of the facility
+  Building location; // location of the facility
 
   public boolean isInfected = false; //
   public static final int ORDERING = 1; // schedule after rainfall
@@ -27,11 +27,11 @@ public class Facility implements Steppable, Valuable {
   }
 
   // location of the borehole
-  public void setLoc(FieldUnit loc) {
+  public void setLoc(Building loc) {
     this.location = loc;
   }
 
-  public FieldUnit getLoc() {
+  public Building getLoc() {
     return location;
   }
 
@@ -53,7 +53,7 @@ public class Facility implements Steppable, Valuable {
     return infectionLevel;
   }
 
-  public boolean isReachedCapacity(FieldUnit f, Dadaab d) {
+  public boolean isReachedCapacity(Building f, Dadaab d) {
     if (f.getPatientCounter() >= d.getParams().getGlobal().getHeaalthFacilityCapacity()) {
       return true;
     } else
@@ -66,7 +66,7 @@ public class Facility implements Steppable, Valuable {
     // only those borehole fields
 
     for (Object obj : d.boreHoles) {
-      FieldUnit f = (FieldUnit) obj;
+      Building f = (Building) obj;
 
       double water = f.getWater() + d.getParams().getGlobal().getBoreHoleDischareRatePerMinute();
 
@@ -86,7 +86,7 @@ public class Facility implements Steppable, Valuable {
   // daily health center capacity
   public void resetPatientNumber(Dadaab d) {
     for (Object obj : d.healthCenters) {
-      FieldUnit f = (FieldUnit) obj;
+      Building f = (Building) obj;
       f.setPatientCounter(0);
     }
   }

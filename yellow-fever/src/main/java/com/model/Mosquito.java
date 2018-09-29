@@ -19,7 +19,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   protected Stoppable stopper;
   private MersenneTwisterFast random;
   private Dadaab dadaab;
-  private FieldUnit currentPosition;
+  private Building currentPosition;
   private TimeManager time;
   private int daysOfLife;
   private double speed;
@@ -36,7 +36,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private int currentDay;
   private double temperature;
 
-  public Mosquito(FieldUnit position) {
+  public Mosquito(Building position) {
     this.random = new MersenneTwisterFast();
     this.daysOfLife = 30 + random.nextInt(16);
     this.currentHealthStatus = HealthStatus.SUSCEPTIBLE;
@@ -241,11 +241,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.sensoryAmplitude = sensoryAmplitude;
   }
 
-  public FieldUnit getCurrentPosition() {
+  public Building getCurrentPosition() {
     return currentPosition;
   }
 
-  public void setCurrentPosition(FieldUnit currentPosition) {
+  public void setCurrentPosition(Building currentPosition) {
     this.currentPosition = currentPosition;
   }
 
