@@ -354,6 +354,7 @@ public class YellowFever extends SimState {
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
           } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+            // TODO: Pessoas expostas também estão infectadas?
             totalInf = totalInf + 1;
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;

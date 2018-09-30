@@ -38,16 +38,13 @@ import sim.io.geo.ShapeFileImporter;
 import sim.util.Bag;
 import sim.util.geo.MasonGeometry;
 
-// all falimies in a bag and assign 
 public class SimulationBuilder {
 
   static int gridWidth = 0;
   static int gridHeight = 0;
-  private int index;
-  // Location locations;
 
-  // static MersenneTwisterFast random;
-  public void create(String campfile, String facilityfile, String roadfile, YellowFever dadaab, MersenneTwisterFast random) {
+  public void create(String campfile, String facilityfile, String roadfile, YellowFever dadaab,
+      MersenneTwisterFast random) {
     // CampBuilder.random = random;
     try {
 
@@ -341,7 +338,7 @@ public class SimulationBuilder {
         infectados++;
       }
     }
-    System.out.println("Quantidade de pessoas infectadas: " + infectados);
+    System.out.println("Quantidade de pessoas expostas: " + infectados);
     System.out.println("---");
 
   }
@@ -352,8 +349,10 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
-      human.applyVaccine();
-      amount--;
+      if(HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
+        human.applyVaccine();
+        amount--;
+      }
     }
   }
 
@@ -386,8 +385,6 @@ public class SimulationBuilder {
     Human human = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), dadaab.random, dadaab.allHumans);
     hh.addMembers(human);
     hh.getCampLocation().addRefugee(human);
-    // TODO: Verificar como deve ser considerado a resistencia sobre a doença
-    human.setBodyResistance(1.0);
     human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     human.setCurrentActivity(ActivityMapping.STAY_HOME);
     human.setStudent(this.isStudent(age));

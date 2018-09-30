@@ -381,7 +381,7 @@ public class YellowFeverGUI extends GUIState {
     plot.addLayer(dvi2);
 
     // TODO: Adicionar dia da semana
-    DialTextAnnotation annotation2 = new DialTextAnnotation(((YellowFever) this.state).getDayOfWeek());
+    DialTextAnnotation annotation2 = new DialTextAnnotation("Day");
     annotation2.setFont(new Font("Dialog", Font.BOLD, 18));
     annotation2.setRadius(0.4);
     plot.addLayer(annotation2);

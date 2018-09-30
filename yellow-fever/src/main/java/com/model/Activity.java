@@ -27,10 +27,11 @@ public class Activity {
 
   public ActivityMapping defineActivity(YellowFever dadaab) {
     ActivityMapping activity = ActivityMapping.STAY_HOME;
-    if (this.gettingMedicalHelp(dadaab)) {
+    if (this.gettingMedicalHelp()) { // 50% chance
       return ActivityMapping.HEALTH_CENTER;
+    } else if (this.human.hasSymptomsOfInfection()) {
+      return ActivityMapping.STAY_HOME;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      // TODO: A definição do dia da semana possui um problema!
       if (time.currentDayInWeek(currentStep) < 6) {
         if (this.human.isWorker()) {
           activity = ActivityMapping.WORK;
@@ -38,14 +39,14 @@ public class Activity {
           activity = ActivityMapping.SCHOOL;
         }
       } else {
-        int random = dadaab.random.nextInt(100);
+        int random = dadaab.random.nextInt(101);
         if (random <= 80) { // 80% chance of activity away from home
-          if (random <= 40) {
+          if (random <= 40) { // 40% chance of religious activity
             return ActivityMapping.RELIGION_ACTIVITY;
-          } else {
+          } else { // 60% chance of social visit activity
             return ActivityMapping.SOCIAL_VISIT;
           }
-        } else {
+        } else { // 20% chance of home activity
           return ActivityMapping.STAY_HOME;
         }
       }
@@ -53,25 +54,11 @@ public class Activity {
     return activity;
   }
 
-  // TODO: Bug sobre a busca de recursos médicos!
-  private boolean gettingMedicalHelp(YellowFever dadaab) {
-    if (this.human.hasSymptomsOfInfection()) {
-      if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
   public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, YellowFever d) {
     switch (activityMapping) {
     case STAY_HOME:
       return ref.getHome();
     case WORK:
-      // TODO: BoreHoles podem ser considerados os locais de trabalho?
       return betstLocation(ref.getHome(), d.getWorks(), d);
     case SCHOOL:
       return betstLocation(ref.getHome(), d.getSchooles(), d);
@@ -96,9 +83,6 @@ public class Activity {
     switch (activityMapping) {
     case STAY_HOME:
       period = maximumStay;
-      if (ActivityMapping.HEALTH_CENTER.equals(this.human.getCurrentActivity())) {
-        this.human.getCurrentPosition().removePatient();
-      }
       break;
     case SCHOOL:
       // time at school maximum until ~12:00 pm
@@ -117,30 +101,28 @@ public class Activity {
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
-      // TODO: Considerar os recursos médicos!
       // time at maximum unti 2 hours
       Building goal = this.human.getGoal();
       if (goal.getFacility().isReachedCapacity(goal, dadaab)) {
         period = minimumStay + random.nextInt(2 * MINUTE);
         this.human.getGoal().addPatient();
+      } else {
+        period = 0;
       }
       break;
     }
     return (period + this.minuteInDay);
   }
 
-  // TODO: Verificar a necessidade de realizar alguma operação na atividade
-  // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao
-  // médico
   public void doActivity(Building f, ActivityMapping activityMapping, YellowFever dadaab) {
     switch (activityMapping) {
     case STAY_HOME:
       break;
     case HEALTH_CENTER:
-      this.human.receiveTreatment(f, dadaab);
-      // TODO: Recebe orientação para remoção de focos do mosquito?
+      this.human.receiveTreatment();
       break;
     default:
+
     }
   }
 
@@ -244,6 +226,18 @@ public class Activity {
     }
 
     return newLocation;
+  }
+
+  private boolean gettingMedicalHelp() {
+    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment()) {
+      if (random.nextDouble() <= 0.5) { // 50% chance
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   public Human getRefugee() {

@@ -3,8 +3,8 @@ package com.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.core.YellowFever;
 import com.core.Node;
+import com.core.YellowFever;
 import com.core.algorithms.AStar;
 import com.core.algorithms.TimeManager;
 import com.model.enumeration.ActivityMapping;
@@ -15,7 +15,6 @@ import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
 import sim.field.continuous.Continuous2D;
-
 import sim.util.Double2D;
 import sim.util.Valuable;
 
@@ -24,15 +23,14 @@ public class Human implements Steppable, Valuable, Serializable {
   public static final int ORDERING = 2;
   protected Stoppable stopper;
   private YellowFever dadaab;
-  // the agent's current path to its current goal
-  private ArrayList<Building> path = null;
+  private ArrayList<Building> path;
   private MersenneTwisterFast random;
-  // time contorler-identify the hour, day, week
   private TimeManager time;
-  public int minuteInDay;
-
-  private int age;
-  private int sex;
+  private HealthStatus currentHealthStatus;
+  private HealthStatus previousHealthStatus;
+  private Family family;
+  private ActivityMapping currentActivity;
+  private int minuteInDay;
   private boolean isWorker;
   private boolean isStudent;
   private Building currentPosition;
@@ -41,16 +39,15 @@ public class Human implements Steppable, Valuable, Serializable {
   private int currentStep;
   private double jitterX;
   private double jitterY;
-  private HealthStatus currentHealthStatus;
-  private HealthStatus previousHealthStatus;
-  private Family family;
-  private ActivityMapping currentActivity;
-  public int stayingTime;
+  private int stayingTime;
+  private int age;
+  private int sex;
+  private boolean receivedTreatment;
   private boolean vaccinated;
-  private double bodyResistance;
   private int incubationPeriod;
   private int infectionPeriod;
   private int toxicPeriod;
+  private int vaccineEffectPeriod;
   private boolean serious;
   private int currentDay;
 
@@ -67,13 +64,16 @@ public class Human implements Steppable, Valuable, Serializable {
     this.previousHealthStatus = HealthStatus.SUSCEPTIBLE;
     this.time = new TimeManager();
     this.minuteInDay = 0;
+    this.path = null;
     this.random = seed;
     this.dadaab = null;
     this.currentStep = 0;
+    this.receivedTreatment = false;
     this.vaccinated = false;
     this.incubationPeriod = 0;
     this.infectionPeriod = 0;
     this.toxicPeriod = 0;
+    this.vaccineEffectPeriod = 0;
     this.currentDay = 0;
     this.setObjectLocation(allRefugees);
   }
@@ -84,21 +84,14 @@ public class Human implements Steppable, Valuable, Serializable {
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
       return;
-    } else if (this.getCurrentPosition().equals(this.getGoal()) == true && this.getGoal().equals(this.getHome()) != true
-        && this.isStay() == true) {
+    } else if (this.getCurrentPosition().equals(this.getGoal()) && !this.getGoal().equals(this.getHome())
+        && this.isStay()) {
       return;
     }
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       activity.doActivity(this.getGoal(), this.getCurrentActivity(), dadaab);
-      // TODO: Qual é a necessidade disto? Parece relacionado a hora
-      if (steps % 1440 < 17) {
-        if (random.nextDouble() > 0.3) { // TODO: Qual é a necessidade disto?
-          calculateGoal();
-        }
-      } else {
-        calculateGoal();
-      }
+      calculateGoal();
     }
     // else move to your goal
     else {
@@ -145,14 +138,17 @@ public class Human implements Steppable, Valuable, Serializable {
       Activity activity = new Activity(dadaab, this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity(dadaab);
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab));
+      // is leaving the hospital
+      if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {
+        this.currentPosition.removePatient();
+      }
       // your selected activity
-      this.setCurrentActivity(bestActivity); // track current activity - for the
-                                             // visualization
+      this.setCurrentActivity(bestActivity);
+      // track current activity - for the visualization
       this.setStayingTime(activity.stayingPeriod(this.getCurrentActivity()));
       return;
     } // from goal to home
-    else if (this.getCurrentPosition().equals(this.getGoal()) == true
-        && this.getGoal().equals(this.getHome()) != true) {
+    else if (this.getCurrentPosition().equals(this.getGoal()) && !this.getGoal().equals(this.getHome())) {
       this.setGoal(this.getHome());
       // this.setStayingTime(activity.stayingPeriod(ActivityMapping.STAY_HOME));
       this.setCurrentActivity(ActivityMapping.STAY_HOME);
@@ -183,6 +179,7 @@ public class Human implements Steppable, Valuable, Serializable {
     this.defineMildInfectionEvolution();
     this.defineSevereInfectionEvolution();
     this.defineToxicInfectionEvolution();
+    this.defineImmunity();
   }
 
   private void defineInfection() {
@@ -236,6 +233,14 @@ public class Human implements Steppable, Valuable, Serializable {
     }
   }
 
+  private void defineImmunity() {
+    if (this.vaccineEffectPeriod == 0) {
+      this.currentHealthStatus = HealthStatus.RECOVERED;
+    } else if (this.vaccineEffectPeriod > 0 && this.isNewDay()) {
+      this.vaccineEffectPeriod--;
+    }
+  }
+
   public boolean isPeriodOfInfection() {
     if (this.infectionPeriod > 0 || this.toxicPeriod > 0) {
       return true;
@@ -257,20 +262,19 @@ public class Human implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Como irá funcionar o tratamento?
-  // TODO: O tempo de recuperação deve considerar o tempo?
-  public void receiveTreatment(Building f, YellowFever d) {
-    if (dadaab.random.nextDouble() > 0.5) {
-      // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
-    }
+  public void receiveTreatment() {
+    this.receivedTreatment = true;
   }
 
   public void applyVaccine() {
     if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
       this.vaccinated = true;
-      // TODO: Existe algum tempo para acabar sendo imune?
-      this.currentHealthStatus = HealthStatus.RECOVERED;
+      this.definePeriodOfVaccineEffect();
     }
+  }
+
+  private void definePeriodOfVaccineEffect() {
+    this.vaccineEffectPeriod = 7; // one week
   }
 
   private void definePeriodOfInfection() {
@@ -312,15 +316,16 @@ public class Human implements Steppable, Valuable, Serializable {
     this.move(currentStep);
 
     // TODO: Remover, utilizado para realização de testes
-    if (HealthStatus.DEAD.equals(this.currentHealthStatus)) {
+    if (HealthStatus.isInfected(this.currentHealthStatus) && !this.currentHealthStatus.equals(HealthStatus.EXPOSED)) {
       System.out.println("---");
       System.out.println("Status da saúde: " + this.currentHealthStatus);
       System.out.println("Idade: " + this.age);
-      System.out.println("Perido de inbuvação: " + this.incubationPeriod);
+      System.out.println("Perido de incubação: " + this.incubationPeriod);
       System.out.println("Perido de infecção: " + this.infectionPeriod);
       System.out.println("Perido de tóxico: " + this.toxicPeriod);
-      System.out.println("Estou em casa:" + this.currentPosition.equals(this.home));
-      System.out.println("Meu objetivo:" + this.currentActivity);
+      System.out.println("Já recebi tratamento: " + this.receivedTreatment);
+      System.out.println("Estou em casa: " + this.currentPosition.equals(this.home));
+      System.out.println("Meu objetivo: " + this.currentActivity);
       System.out.println("---");
     }
   }
@@ -441,15 +446,6 @@ public class Human implements Steppable, Valuable, Serializable {
     return currentActivity;
   }
 
-  // resistance to show symptom after infection -
-  public void setBodyResistance(double r) {
-    this.bodyResistance = r;
-  }
-
-  public double getBodyResistance() {
-    return bodyResistance;
-  }
-
   // counts time after infection
   public void setIncubationPeriod(int inf) {
     this.incubationPeriod = inf;
@@ -506,6 +502,18 @@ public class Human implements Steppable, Valuable, Serializable {
 
   public void setSerious(boolean serious) {
     this.serious = serious;
+  }
+
+  public boolean getReceivedTreatment() {
+    return this.receivedTreatment;
+  }
+
+  public int getVaccineEffectPeriod() {
+    return vaccineEffectPeriod;
+  }
+
+  public void setVaccineEffectPeriod(int vaccineEffectPeriod) {
+    this.vaccineEffectPeriod = vaccineEffectPeriod;
   }
 
 }
