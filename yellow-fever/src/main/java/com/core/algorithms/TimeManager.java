@@ -1,4 +1,4 @@
-package com.core;
+package com.core.algorithms;
 
 public class TimeManager {
   final int HOURTIME = 60; // minute
@@ -30,7 +30,7 @@ public class TimeManager {
     return w;
   }
 
-  // continous day count
+  // continuous day count
   public int dayCount(int currentStep) {
     int h = this.currentHour(currentStep);
     int t = (int) currentStep % (HOURTIME * DURATION);

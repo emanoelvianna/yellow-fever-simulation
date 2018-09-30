@@ -1,6 +1,5 @@
 package com.ui;
 
-//import sim.util.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,14 +23,8 @@ import org.jfree.chart.plot.dial.DialValueIndicator;
 import org.jfree.chart.plot.dial.StandardDialFrame;
 import org.jfree.chart.plot.dial.StandardDialScale;
 
-import com.core.Dadaab;
+import com.core.YellowFever;
 
-/**
- *
- * @author gmu
- */
-//import java.awt.*;
-//import javax.swing.JFrame;
 import sim.display.Console;
 import sim.display.Controller;
 import sim.display.Display2D;
@@ -53,49 +46,36 @@ import sim.util.geo.MasonGeometry;
 import sim.util.media.chart.ScatterPlotGenerator;
 import sim.util.media.chart.TimeSeriesChartGenerator;
 
-public class DadaabGUI extends GUIState {
+public class YellowFeverGUI extends GUIState {
 
   private Display2D display;
   private JFrame displayFrame;
   private Display2D displayRainfall;
   private JFrame displayFrameRainfall;
+  private FastValueGridPortrayal2D rainfallPortrayal = new FastValueGridPortrayal2D();
+  private ContinuousPortrayal2D refugeePortrayal = new ContinuousPortrayal2D();
+  private SparseGridPortrayal2D facilPortrayal = new SparseGridPortrayal2D();
+  private GeomVectorFieldPortrayal roadShapeProtrayal = new GeomVectorFieldPortrayal();
+  private GeomVectorFieldPortrayal campShapeProtrayal = new GeomVectorFieldPortrayal();
 
-  // FastObjectGridPortrayal2D landPortrayal = new FastObjectGridPortrayal2D();
-  FastValueGridPortrayal2D rainfallPortrayal = new FastValueGridPortrayal2D();
-
-  ContinuousPortrayal2D refugeePortrayal = new ContinuousPortrayal2D();
-  SparseGridPortrayal2D facilPortrayal = new SparseGridPortrayal2D();
-
-  GeomVectorFieldPortrayal roadShapeProtrayal = new GeomVectorFieldPortrayal();
-  GeomVectorFieldPortrayal campShapeProtrayal = new GeomVectorFieldPortrayal();
-  // FastValueGridPortrayal2D roadPortrayal = new FastValueGridPortrayal2D();
-
-  TimeSeriesChartGenerator chartSeriesCholera;
-  TimeSeriesChartGenerator chartSeriesCholeraNewly;
-  TimeSeriesChartGenerator chartSeriesPopulation;
-  ScatterPlotGenerator chartSeriesPopulation2;
+  private TimeSeriesChartGenerator chartSeriesCholera;
+  private TimeSeriesChartGenerator chartSeriesCholeraNewly;
+  private TimeSeriesChartGenerator chartSeriesPopulation;
+  private ScatterPlotGenerator chartSeriesPopulation2;
 
   public static void main(String[] args) {
-    DadaabGUI dadaabGUI = new DadaabGUI(args);
+    YellowFeverGUI dadaabGUI = new YellowFeverGUI(args);
     Console console = new Console(dadaabGUI);
     console.setVisible(true);
   }
 
-  public DadaabGUI(String[] args) {
-    super(new Dadaab(System.currentTimeMillis(), args));
+  public YellowFeverGUI(String[] args) {
+    super(new YellowFever(System.currentTimeMillis(), args));
   }
 
-  public DadaabGUI(SimState state) {
+  public YellowFeverGUI(SimState state) {
     super(state);
   }
-
-  public static String getName() {
-    return "Yellow Fever";
-  }
-
-  public Object getSimulationInspectedObject() {
-    return state;
-  } // non-volatile
 
   public void start() {
     super.start();
@@ -110,10 +90,8 @@ public class DadaabGUI extends GUIState {
   }
 
   public void setupPortrayals() {
-    Dadaab dadaab = (Dadaab) state;
+    YellowFever dadaab = (YellowFever) state;
     rainfallPortrayal.setField(dadaab.rainfallGrid);
-    double rng = (dadaab.getParams().getGlobal().getRainfall_MM_Per_Minute() * 90 * 90 * 3); // 5 cell * area* amount of
-    rainfallPortrayal.setMap(new sim.util.gui.SimpleColorMap(0, rng, Color.WHITE, Color.BLUE));
     refugeePortrayal.setField(dadaab.allHumans);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
@@ -219,7 +197,8 @@ public class DadaabGUI extends GUIState {
     roadShapeProtrayal.setPortrayalForAll(new GeomPortrayal(Color.LIGHT_GRAY, false));
 
     // roadPortrayal.setField(dadaab.roadGrid);
-    // roadPortrayal.setPortrayalForAll(new RectanglePortrayal2D(Color.LIGHT_GRAY));
+    // roadPortrayal.setPortrayalForAll(new
+    // RectanglePortrayal2D(Color.LIGHT_GRAY));
 
     display.reset();
     display.setBackdrop(Color.white);
@@ -233,11 +212,8 @@ public class DadaabGUI extends GUIState {
   }
 
   public void init(Controller c) {
-
     super.init(c);
-
     display = new Display2D(380, 760, this);
-
     displayRainfall = new Display2D(380, 760, this);
 
     // display.attach(landPortrayal, "Camps");
@@ -260,7 +236,7 @@ public class DadaabGUI extends GUIState {
 
     // Portray activity chart
     JFreeChart chart = ChartFactory.createBarChart("Refugee's Activity", "Activity", "Percentage",
-        ((Dadaab) this.state).dataset, PlotOrientation.VERTICAL, false, false, false);
+        ((YellowFever) this.state).dataset, PlotOrientation.VERTICAL, false, false, false);
     chart.setBackgroundPaint(Color.WHITE);
     chart.getTitle().setPaint(Color.BLACK);
 
@@ -283,7 +259,7 @@ public class DadaabGUI extends GUIState {
 
     // Portray activity chart
     JFreeChart agechart = ChartFactory.createBarChart("Age Distribution", "Age  Group",
-        "Percentage of Total Population", ((Dadaab) this.state).agedataset, PlotOrientation.VERTICAL, false, false,
+        "Percentage of Total Population", ((YellowFever) this.state).agedataset, PlotOrientation.VERTICAL, false, false,
         false);
     agechart.setBackgroundPaint(Color.WHITE);
     agechart.getTitle().setPaint(Color.BLACK);
@@ -305,7 +281,7 @@ public class DadaabGUI extends GUIState {
 
     // Portray activity chart
     JFreeChart famchart = ChartFactory.createBarChart("Household Size", "Size", "Total",
-        ((Dadaab) this.state).familydataset, PlotOrientation.VERTICAL, false, false, false);
+        ((YellowFever) this.state).familydataset, PlotOrientation.VERTICAL, false, false, false);
     famchart.setBackgroundPaint(Color.WHITE);
     famchart.getTitle().setPaint(Color.BLACK);
 
@@ -336,12 +312,11 @@ public class DadaabGUI extends GUIState {
     chartSeriesCholera.setDomainAxisLabel("Minutes");
     chartSeriesCholera.setMaximumSize(dm);
     chartSeriesCholera.setMinimumSize(dmn);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).totalsusceptibleSeries, null);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).totalExposedSeries, null);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).totalInfectedSeries, null);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).totalRecoveredSeries, null);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).totalBacteriaLoadSeries, null);
-    chartSeriesCholera.addSeries(((Dadaab) this.state).rainfallSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalsusceptibleSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalExposedSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalInfectedSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalRecoveredSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).rainfallSeries, null);
 
     JFrame frameSeries = chartSeriesCholera.createFrame(this);
     frameSeries.pack();
@@ -356,10 +331,10 @@ public class DadaabGUI extends GUIState {
     chartSeriesCholeraNewly.setDomainAxisLabel("Minutes");
     chartSeriesCholeraNewly.setMaximumSize(dm);
     chartSeriesCholeraNewly.setMinimumSize(dmn);
-    chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalsusceptibleSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalExposedSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalInfectedSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((Dadaab) this.state).totalRecoveredSeriesNewly, null);
+    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalsusceptibleSeriesNewly, null);
+    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalExposedSeriesNewly, null);
+    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalInfectedSeriesNewly, null);
+    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalRecoveredSeriesNewly, null);
 
     JFrame frameSeriesNewly = chartSeriesCholeraNewly.createFrame(this);
     frameSeriesNewly.pack();
@@ -371,8 +346,8 @@ public class DadaabGUI extends GUIState {
     chartSeriesPopulation.setTitle("Refugee Population Dynamics");
     chartSeriesPopulation.setRangeAxisLabel(" Number of Refugees");
     chartSeriesPopulation.setDomainAxisLabel("Minutes");
-    chartSeriesPopulation.addSeries(((Dadaab) this.state).totalTotalPopSeries, null);
-    chartSeriesPopulation.addSeries(((Dadaab) this.state).totalDeathSeries, null);
+    chartSeriesPopulation.addSeries(((YellowFever) this.state).totalTotalPopSeries, null);
+    chartSeriesPopulation.addSeries(((YellowFever) this.state).totalDeathSeries, null);
 
     JFrame frameSeriesPop = chartSeriesPopulation.createFrame(this);
 
@@ -391,10 +366,10 @@ public class DadaabGUI extends GUIState {
     plot.setBackground(ddb);
     plot.setDialFrame(dialFrame);
 
-    plot.setDataset(0, ((Dadaab) this.state).hourDialer);
-    plot.setDataset(1, ((Dadaab) this.state).dayDialer);
+    plot.setDataset(0, ((YellowFever) this.state).hourDialer);
+    plot.setDataset(1, ((YellowFever) this.state).dayDialer);
 
-    DialTextAnnotation annotation1 = new DialTextAnnotation("Hour");
+    DialTextAnnotation annotation1 = new DialTextAnnotation("Day");
     annotation1.setFont(new Font("Dialog", Font.BOLD, 14));
     annotation1.setRadius(0.1);
     plot.addLayer(annotation1);
@@ -405,7 +380,8 @@ public class DadaabGUI extends GUIState {
     dvi2.setRadius(0.3);
     plot.addLayer(dvi2);
 
-    DialTextAnnotation annotation2 = new DialTextAnnotation("Day");
+    // TODO: Adicionar dia da semana
+    DialTextAnnotation annotation2 = new DialTextAnnotation(((YellowFever) this.state).getDayOfWeek());
     annotation2.setFont(new Font("Dialog", Font.BOLD, 18));
     annotation2.setRadius(0.4);
     plot.addLayer(annotation2);
@@ -452,7 +428,7 @@ public class DadaabGUI extends GUIState {
     super.getInspector();
     TabbedInspector i = new TabbedInspector();
 
-    i.addInspector(new SimpleInspector(((Dadaab) state).getParams().getGlobal(), this), "Paramters");
+    i.addInspector(new SimpleInspector(((YellowFever) state).getParams().getGlobal(), this), "Paramters");
     return i;
   }
 
@@ -469,5 +445,13 @@ public class DadaabGUI extends GUIState {
     displayFrameRainfall = null;
     displayRainfall = null;
   }
+
+  public static String getName() {
+    return "Yellow Fever";
+  }
+
+  public Object getSimulationInspectedObject() {
+    return state;
+  } // non-volatile
 
 }

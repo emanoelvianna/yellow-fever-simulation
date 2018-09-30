@@ -6,11 +6,9 @@ import sim.util.Bag;
 
 public class Family {
 
-  private int rationDate; // food ration date;
   private Bag relatives; // hold relative location
   private Building location; // location of the house
   private Bag members; // holds the family members
-  private boolean hasLaterine = false;
 
   public Family(Building loc) {
     this.setCampLocation(loc);
@@ -31,14 +29,6 @@ public class Family {
       }
     }
     return count;
-  }
-
-  public void setHasLaterine(boolean laterine) {
-    this.hasLaterine = laterine;
-  }
-
-  public boolean getHasLaterine() {
-    return hasLaterine;
   }
 
   // location of house
@@ -65,15 +55,6 @@ public class Family {
 
   public void removeMembers(Human r) {
     this.members.remove(r);
-  }
-
-  // when the family get food from food center
-  public void setRationDate(int ration) {
-    this.rationDate = ration;
-  }
-
-  public int getRationDate() {
-    return rationDate;
   }
 
   // location of the relative

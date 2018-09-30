@@ -3,7 +3,7 @@ package com.core.algorithms;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.core.Dadaab;
+import com.core.YellowFever;
 import com.core.Node;
 import com.model.Building;
 
@@ -21,7 +21,7 @@ public class AStar {
    * @param goal
    * @return
    */
-  static public ArrayList<Building> astarPath(Dadaab world, Node start, Node goal) {
+  static public ArrayList<Building> astarPath(YellowFever world, Node start, Node goal) {
     if (start == null || goal == null) {
       System.out.println("Error: invalid node provided to AStar");
     }

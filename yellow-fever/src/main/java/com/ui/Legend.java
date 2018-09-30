@@ -3,10 +3,6 @@ package com.ui;
 import java.awt.BasicStroke;
 import java.awt.Canvas;
 import java.awt.Color;
-/**
- *
- * @author gmu
- */
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;

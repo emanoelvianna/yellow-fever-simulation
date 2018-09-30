@@ -1,4 +1,4 @@
-package com.core;
+package com.core.observer;
 
 /**
  *
@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.core.YellowFever;
 import com.model.Building;
 import com.model.Human;
 import com.model.enumeration.HealthStatus;
@@ -29,27 +30,30 @@ public class DadaabObserver implements Steppable {
   private BufferedWriter dataFileBuffer_; // output file buffer for dataCSVFile_
   private CSVWriter dataCSVFile_; // CSV file that contains run data
 
-  private BufferedWriter dataFileBuffer_act; // output file buffer for dataCSVFile_
+  private BufferedWriter dataFileBuffer_act; // output file buffer for
+                                             // dataCSVFile_
   private CSVWriter dataCSVFile_act; // CSV file that contains run data
 
   // hold by camp
-  private BufferedWriter dataFileBuffer_camp; // output file buffer for dataCSVFile_
+  private BufferedWriter dataFileBuffer_camp; // output file buffer for
+                                              // dataCSVFile_
   private CSVWriter dataCSVFile_camp;
 
-  private BufferedWriter dataFileBuffer_cStatus; // output file buffer for dataCSVFile_
+  private BufferedWriter dataFileBuffer_cStatus; // output file buffer for
+                                                 // dataCSVFile_
   private CSVWriter dataCSVFile_cStatus;
 
   Bag choleraGridBag = new Bag();
 
-  Dadaab d;
+  YellowFever d;
 
   public final static int ORDERING = 3;
 
   private int step = 0;
   private boolean writeGrid = false;
 
-  DadaabObserver(Dadaab dadaab) {
-//    	setup(world);
+  public DadaabObserver(YellowFever dadaab) {
+    // setup(world);
     // <GCB>: you may want to adjust the number of columns based on these flags.
     // both in createLogFile, and step
     d = null;
@@ -86,14 +90,14 @@ public class DadaabObserver implements Steppable {
       dataCSVFile_camp.writeLine(header_camp);
 
     } catch (IOException ex) {
-      Logger.getLogger(Dadaab.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(YellowFever.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
   int count = 0;
 
   public void step(SimState state) {
-    d = (Dadaab) state;
+    d = (YellowFever) state;
 
     String job = Long.toString(state.job());
     String numSuscpitable = Integer.toString(d.getNumberOfSuscipitable());
@@ -101,9 +105,9 @@ public class DadaabObserver implements Steppable {
     String numInfected = Integer.toString(d.getNumberOfInfected());
     String numRecovered = Integer.toString(d.getNumberOfRecovered());
     String numDeath = Integer.toString(d.countDeath());
-    String totVibroCh = Double.toString(d.getTotalBacterialLoad());
 
-    // "At Home","School","Water", "Mosque","Market", "Food C.", "Health C.","Visit
+    // "At Home","School","Water", "Mosque","Market", "Food C.", "Health
+    // C.","Visit
     // R.", "Social","Hygiene"
     // TODO: Refatorar, existem atividades inexistentes
     String numTotAgent = Integer.toString(d.allHumans.getAllObjects().numObjs);
@@ -140,7 +144,7 @@ public class DadaabObserver implements Steppable {
     String numRecovered_cS = Integer.toString(d.getNumberOfRecoveredNewly());
 
     // when to export raster;- everyday at midnight
-//        // writeGrid =true;
+    // // writeGrid =true;
     if (d.schedule.getSteps() % 1440 == 5) {
       writeGrid = true;
     } else {
@@ -149,7 +153,7 @@ public class DadaabObserver implements Steppable {
     // writeGrid =false;
 
     String[] data = new String[] { job, Integer.toString(this.step), numSuscpitable, numExposed, numInfected,
-        numRecovered, numDeath, totVibroCh };
+        numRecovered, numDeath };
     String[] data_cS = new String[] { job, Integer.toString(this.step), numSuscpitable_cS, numExposed_cS,
         numInfected_cS, numRecovered_cS, numDeath };
 
@@ -191,7 +195,7 @@ public class DadaabObserver implements Steppable {
     this.step++;
   }
 
-  void finish() {
+  public void finish() {
     try {
       this.dataFileBuffer_.close();
       this.dataFileBuffer_act.close();
@@ -210,11 +214,11 @@ public class DadaabObserver implements Steppable {
 
   private void createLogFile() throws IOException {
     long now = System.currentTimeMillis();
-//
+    //
     String filename = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + "d_cholera.csv";
-//        // newly cholera cases
+    // // newly cholera cases
     String filename_cS = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + "d_cholera_newly.csv";
-//        
+    //
     String filename_act = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + "d_activity.csv";
 
     String filename_camp = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + "d_cholera_camp.csv";
@@ -239,7 +243,7 @@ public class DadaabObserver implements Steppable {
 
   }
 
-//  
+  //
   public void writeCholeraSpread() {
 
     DoubleGrid2D grid = new DoubleGrid2D(d.allCamps.getWidth(), d.allCamps.getHeight());

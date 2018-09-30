@@ -6,13 +6,16 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
 
+import com.core.algorithms.TimeManager;
 import com.core.enumeration.Parameters;
+import com.core.observer.DadaabObserver;
+import com.model.Building;
 import com.model.Climate;
 import com.model.Facility;
 import com.model.Family;
-import com.model.Building;
 import com.model.Human;
 import com.model.Mosquito;
+import com.model.enumeration.DayOfWeek;
 import com.model.enumeration.HealthStatus;
 
 import sim.engine.SimState;
@@ -25,13 +28,9 @@ import sim.field.grid.IntGrid2D;
 import sim.field.grid.ObjectGrid2D;
 import sim.field.grid.SparseGrid2D;
 import sim.field.network.Network;
-/**
- *
- * @author gmu
- */
 import sim.util.Bag;
 
-public class Dadaab extends SimState {
+public class YellowFever extends SimState {
 
   public ObjectGrid2D allCamps; // The model environment - holds fields (
                                 // parcels)
@@ -65,7 +64,8 @@ public class Dadaab extends SimState {
   public int[] campInfected;
   public int[] campRecovered;
   private int[] totalActivity;
-  private double totalBacterialLoad = 0;
+  private int PrevPop = 0;
+  private int curPop = 0;
   private int currentDay;
   private double temperature;
   private int mosquitosMortos; // TODO: Refatorar
@@ -118,11 +118,6 @@ public class Dadaab extends SimState {
   public XYSeries totalDeathSeries = new XYSeries(" Death"); // shows number of
                                                              // dead agents
 
-  public XYSeries totalBacteriaLoadSeries = new XYSeries(" Total vibrio Cholerae /million"); // shows
-                                                                                             // number
-                                                                                             // of
-                                                                                             // recovered
-                                                                                             // agents
   // private static final long serialVersionUID = -5966446373681187141L;
   public DefaultCategoryDataset dataset = new DefaultCategoryDataset(); //
   public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();// shows
@@ -133,29 +128,22 @@ public class Dadaab extends SimState {
   public DefaultCategoryDataset familydataset = new DefaultCategoryDataset(); // shows
                                                                               // family
                                                                               // size
-  // timer graphics
-  public DefaultValueDataset hourDialer = new DefaultValueDataset(); // shows
-                                                                     // the
-                                                                     // current
-                                                                     // hour
-  public DefaultValueDataset dayDialer = new DefaultValueDataset(); // counts
+  public DefaultValueDataset hourDialer = new DefaultValueDataset();
+  public DefaultValueDataset dayDialer = new DefaultValueDataset();
   public int totalgridWidth = 10;
   public int totalgridHeight = 10;
-
-  public Bag allFamilies; // holding all families
+  private Bag allFamilies; // holding all families
   private Bag allMosquitoes;
-  public Bag familyHousing;
-  public Bag boreHoles; // holds borehols
-  public Bag rainfallWater; // water points from rain
-  public Bag allFacilities;
-  public Bag schooles;
-  public Bag healthCenters;
-  public Bag mosques;
-  public Bag market;
-  public Bag foodCenter;
-  public Bag other;
+  private Bag familyHousing;
+  private Bag allFacilities;
+  private Bag works;
+  private Bag schooles;
+  private Bag healthCenters;
+  private Bag mosques;
+  private Bag market; // TODO: remover?
+  private Bag foodCenter;
+  private Bag other;
   // WaterContamination fm = new WaterContamination();
-  Rainfall rainfall; // scheduling rainfall
   Facility facility;// schduling borehole refill
   private Climate climate;
 
@@ -165,16 +153,14 @@ public class Dadaab extends SimState {
   int[] sumActivities = { 0, 0, 0, 0, 0, 0, 0, 0 }; //
   int[] dailyRain = new int[365];
 
-  public Dadaab(long seed, String[] args) {
+  public YellowFever(long seed, String[] args) {
     super(seed);
     this.params = new Parameters(args);
-    this.rainfall = new Rainfall();
     this.facility = new Facility();//
-    this.allFamilies = new Bag();
+    this.setAllFamilies(new Bag());
     this.allMosquitoes = new Bag();
     this.familyHousing = new Bag();
-    this.boreHoles = new Bag();
-    this.rainfallWater = new Bag();
+    this.works = new Bag();
     this.allFacilities = new Bag();
     this.allCampGeoGrid = new GeomGridField();
     this.climate = new Climate();
@@ -185,29 +171,26 @@ public class Dadaab extends SimState {
     // TODO: Refatorar
     // TODO: Deve ser setado no nomento que estou lendo o arquivo!
     this.temperature = 21;
-
-    schooles = new Bag();
-    healthCenters = new Bag();
-    mosques = new Bag();
-    market = new Bag();
-    foodCenter = new Bag();
-    other = new Bag();
-
-    totalActivity = new int[10];
-    campSuscpitable = new int[3];
-    campExposed = new int[3];
-    campInfected = new int[3];
-    campRecovered = new int[3];
+    this.schooles = new Bag();
+    this.healthCenters = new Bag();
+    this.mosques = new Bag();
+    this.market = new Bag();
+    this.foodCenter = new Bag();
+    this.other = new Bag();
+    this.totalActivity = new int[10];
+    this.campSuscpitable = new int[3];
+    this.campExposed = new int[3];
+    this.campInfected = new int[3];
+    this.campRecovered = new int[3];
   }
 
   // Boolean getOutputStats = true;
   public void start() {
     super.start();
     // accessing inpt files
-    CampBuilder builder = new CampBuilder();
+    SimulationBuilder builder = new SimulationBuilder();
     builder.create("data/d_camp_a.txt", "data/d_faci_a.txt", "data/d_costp_a.txt", this, this.random);
 
-    schedule.scheduleRepeating(rainfall, rainfall.ORDERING, 1);
     schedule.scheduleRepeating(facility, facility.ORDERING, 1);
 
     // if (getOutputStats ==true){
@@ -215,23 +198,23 @@ public class Dadaab extends SimState {
     schedule.scheduleRepeating(dObserver, DadaabObserver.ORDERING, 1.0);
     // }
     // updating chart information
-    Steppable chartUpdater = new Steppable() {
+    Steppable updater = new Steppable() {
 
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
 
-        if (this.isNewDay()) {
-          this.setTemperature();
-          this.setPrecipitacao();
-          this.probabilityOfEggsDying();
-          this.probabilityOfEggsHatching();
-          this.probabilityOfEggsAppearInHouses();
+        if (isNewDay()) {
+          setTemperature();
+          setPrecipitacao();
+          probabilityOfEggsDying();
+          probabilityOfEggsHatching();
+          probabilityOfEggsAppearInHouses();
 
           System.out.println("---");
           int quantidadeMosquitos = 0;
           int quantidadeOvos = 0;
           double quantidadeAgua = 0;
-          for (Object object : familyHousing) {
+          for (Object object : getFamilyHousing()) {
             Building housing = (Building) object;
             quantidadeMosquitos += housing.getMosquitoes().size();
             quantidadeOvos += housing.getEggs();
@@ -285,8 +268,8 @@ public class Dadaab extends SimState {
         int totRecHag = 0;
 
         // accessing all families and chatagorize them based on their size
-        for (int i = 0; i < allFamilies.numObjs; i++) {
-          Family f = (Family) allFamilies.objs[i];
+        for (int i = 0; i < getAllFamilies().numObjs; i++) {
+          Family f = (Family) getAllFamilies().objs[i];
           // killrefugee(f);
           int siz = 0;
           if (f.getMembers().numObjs > 6) { // aggregate all families of >6
@@ -466,100 +449,95 @@ public class Dadaab extends SimState {
         totalInfectedSeriesNewly.add((double) (state.schedule.time()), (totalInfNewly));
         totalRecoveredSeriesNewly.add((double) (state.schedule.time()), (totalRecNewly));
 
-        totalBacteriaLoadSeries.add((double) (state.schedule.time()), (getTotalBacterialLoad() / 1000000.0));
-
-        rainfallSeries.add((double) (state.schedule.time()), rainfall.getCurrentRain());
-
         int m = ((int) state.schedule.time()) % 60;
 
         double t = (getTime().currentHour((int) state.schedule.getTime())) + (m / 60.0);
-        int h = 1 + getTime().dayCount((int) state.schedule.getTime()); //
+        int h = getTime().dayCount((int) state.schedule.getTime());
         hourDialer.setValue(t);
         dayDialer.setValue(h);
-
-        setTotalBacterialLoad(rainfall.getTotalBacterialLoad());
-
       }
-
-      private boolean isNewDay() {
-        if (time.dayCount((int) schedule.getSteps()) > currentDay) {
-          currentDay = time.dayCount((int) schedule.getSteps());
-          return true;
-        } else {
-          return false;
-        }
-      }
-
-      private void setTemperature() {
-        List<Double> temperatures = climate.getTemperature();
-        if (currentDay < temperatures.size()) {
-          temperature = temperatures.get(currentDay);
-        } else {
-          // TODO:
-        }
-      }
-
-      private void setPrecipitacao() {
-        List<Double> rainfall = climate.getPrecipitation();
-        double mm = params.getGlobal().getWaterAbsorption();
-        for (Object object : familyHousing) {
-          Building housing = (Building) object;
-          if (random.nextDouble() <= 0.5) { // 50% chance
-            housing.waterAbsorption(mm);
-            housing.addWater(rainfall.get(currentDay));
-          }
-        }
-      }
-
-      private void probabilityOfEggsDying() {
-        for (Object object : familyHousing) {
-          Building housing = (Building) object;
-          if (housing.containsEggs()) {
-            int amount = housing.getEggs();
-            for (int i = 0; i < amount; i++) {
-              if (random.nextDouble() <= 0.05) // 5% chance
-                housing.removeEgg();
-            }
-          }
-        }
-      }
-
-      private void probabilityOfEggsHatching() {
-        for (Object object : familyHousing) {
-          Building housing = (Building) object;
-          if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
-            double timeOfMaturation = housing.getTimeOfMaturation();
-            housing.setTimeOfMaturation(timeOfMaturation--);
-          } else if (housing.getTimeOfMaturation() == 0 && housing.containsEggs()) {
-            int amount = housing.getEggs();
-            for (int i = 0; i < amount; i++) {
-              if (random.nextDouble() > 0.5) { // 50% chance of female
-                Mosquito mosquito = new Mosquito(housing);
-                mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-                housing.addMosquito(mosquito);
-                housing.removeEgg();
-                allMosquitoes.add(mosquito);
-              } else {
-                housing.removeEgg();
-              }
-            }
-          }
-        }
-      }
-
-      private void probabilityOfEggsAppearInHouses() {
-        int probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
-        for (Object object : familyHousing) {
-          Building housing = (Building) object;
-          if (random.nextInt(101) <= probability) {
-            housing.addEgg(random.nextInt(101));
-          }
-        }
-      }
-
     };
+    schedule.scheduleRepeating(updater);
+  }
 
-    schedule.scheduleRepeating(chartUpdater);
+  public boolean isNewDay() {
+    if (time.dayCount((int) schedule.getSteps()) > currentDay) {
+      currentDay = time.dayCount((int) schedule.getSteps());
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public String getDayOfWeek() {
+    int day = this.time.dayCount((int) schedule.getSteps());
+    return String.valueOf(DayOfWeek.getDayOfWeek(day));
+  }
+
+  public double setTemperature() {
+    List<Double> temperatures = climate.getTemperature();
+    if (currentDay < temperatures.size()) {
+      temperature = temperatures.get(currentDay);
+    }
+    return this.temperature;
+  }
+
+  private void setPrecipitacao() {
+    List<Double> rainfall = climate.getPrecipitation();
+    double mm = params.getGlobal().getWaterAbsorption();
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (random.nextDouble() <= 0.5) { // 50% chance
+        housing.waterAbsorption(mm);
+        housing.addWater(rainfall.get(currentDay));
+      }
+    }
+  }
+
+  private void probabilityOfEggsDying() {
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (housing.containsEggs()) {
+        int amount = housing.getEggs();
+        for (int i = 0; i < amount; i++) {
+          if (random.nextDouble() <= 0.05) // 5% chance
+            housing.removeEgg();
+        }
+      }
+    }
+  }
+
+  private void probabilityOfEggsHatching() {
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
+        double timeOfMaturation = housing.getTimeOfMaturation();
+        housing.setTimeOfMaturation(timeOfMaturation--);
+      } else if (housing.getTimeOfMaturation() == 0 && housing.containsEggs()) {
+        int amount = housing.getEggs();
+        for (int i = 0; i < amount; i++) {
+          if (random.nextDouble() > 0.5) { // 50% chance of female
+            Mosquito mosquito = new Mosquito(housing);
+            mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+            housing.addMosquito(mosquito);
+            housing.removeEgg();
+            allMosquitoes.add(mosquito);
+          } else {
+            housing.removeEgg();
+          }
+        }
+      }
+    }
+  }
+
+  private void probabilityOfEggsAppearInHouses() {
+    int probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (random.nextInt(101) <= probability) {
+        housing.addEgg(random.nextInt(101));
+      }
+    }
   }
 
   private void defineInfectionNumbersInHumans(Human human) {
@@ -571,7 +549,7 @@ public class Dadaab extends SimState {
   }
 
   private void defineInfectionNumbersInMosquitoes() {
-    for (Object housing : familyHousing) {
+    for (Object housing : getFamilyHousing()) {
       Building fieldUnit = (Building) housing;
       for (Object mosquito : fieldUnit.getMosquitoes()) {
         Mosquito m = (Mosquito) mosquito;
@@ -603,7 +581,7 @@ public class Dadaab extends SimState {
   public void killrefugee(Human human) {
     human.getFamily().removeMembers(human);
     if (human.getFamily().getMembers().numObjs == 0) {
-      allFamilies.remove(human.getFamily());
+      getAllFamilies().remove(human.getFamily());
     }
     allHumans.remove(human);
     this.humanosMortos++;
@@ -614,9 +592,6 @@ public class Dadaab extends SimState {
     allMosquitoes.remove(mosquito);
     this.mosquitosMortos++;
   }
-
-  int PrevPop = 0;
-  int curPop = 0;
 
   public int countDeath() {
     int death = 0;
@@ -632,13 +607,12 @@ public class Dadaab extends SimState {
   }
 
   public static void main(String[] args) {
-    doLoop(Dadaab.class, args);
+    doLoop(YellowFever.class, args);
     System.exit(0);
   }
 
   public void finish() {
     super.finish();
-
     if (dObserver != null) {
       this.dObserver.finish();
     }
@@ -724,14 +698,6 @@ public class Dadaab extends SimState {
     return totalActivity;
   }
 
-  public void setTotalBacterialLoad(double r) {
-    this.totalBacterialLoad = r;
-  }
-
-  public double getTotalBacterialLoad() {
-    return totalBacterialLoad;
-  }
-
   public Parameters getParams() {
     return params;
   }
@@ -794,6 +760,86 @@ public class Dadaab extends SimState {
 
   public void setTemperature(double temperature) {
     this.temperature = temperature;
+  }
+
+  public Bag getAllFamilies() {
+    return allFamilies;
+  }
+
+  public void setAllFamilies(Bag allFamilies) {
+    this.allFamilies = allFamilies;
+  }
+
+  public Bag getWorks() {
+    return works;
+  }
+
+  public void setWorks(Bag works) {
+    this.works = works;
+  }
+
+  public Bag getAllFacilities() {
+    return allFacilities;
+  }
+
+  public void setAllFacilities(Bag allFacilities) {
+    this.allFacilities = allFacilities;
+  }
+
+  public Bag getSchooles() {
+    return schooles;
+  }
+
+  public void setSchooles(Bag schooles) {
+    this.schooles = schooles;
+  }
+
+  public Bag getHealthCenters() {
+    return healthCenters;
+  }
+
+  public void setHealthCenters(Bag healthCenters) {
+    this.healthCenters = healthCenters;
+  }
+
+  public Bag getMosques() {
+    return mosques;
+  }
+
+  public void setMosques(Bag mosques) {
+    this.mosques = mosques;
+  }
+
+  public Bag getFoodCenter() {
+    return foodCenter;
+  }
+
+  public void setFoodCenter(Bag foodCenter) {
+    this.foodCenter = foodCenter;
+  }
+
+  public Bag getOther() {
+    return other;
+  }
+
+  public void setOther(Bag other) {
+    this.other = other;
+  }
+
+  public Bag getFamilyHousing() {
+    return familyHousing;
+  }
+
+  public void setFamilyHousing(Bag familyHousing) {
+    this.familyHousing = familyHousing;
+  }
+
+  public Bag getMarket() {
+    return market;
+  }
+
+  public void setMarket(Bag market) {
+    this.market = market;
   }
 
 }

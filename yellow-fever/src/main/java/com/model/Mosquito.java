@@ -3,8 +3,8 @@ package com.model;
 import java.io.Serializable;
 import java.util.List;
 
-import com.core.Dadaab;
-import com.core.TimeManager;
+import com.core.YellowFever;
+import com.core.algorithms.TimeManager;
 import com.model.enumeration.HealthStatus;
 
 import ec.util.MersenneTwisterFast;
@@ -18,7 +18,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   public static final int ORDERING = 2;
   protected Stoppable stopper;
   private MersenneTwisterFast random;
-  private Dadaab dadaab;
+  private YellowFever dadaab;
   private Building currentPosition;
   private TimeManager time;
   private int daysOfLife;
@@ -53,7 +53,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   public void step(SimState state) {
-    this.dadaab = (Dadaab) state;
+    this.dadaab = (YellowFever) state;
     this.time = this.dadaab.getTime();
     this.currentStep = (int) dadaab.schedule.getSteps();
     if (this.isNewDay()) {

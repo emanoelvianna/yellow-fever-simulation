@@ -3,10 +3,10 @@ package com.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import com.core.Dadaab;
+import com.core.YellowFever;
 import com.core.Node;
-import com.core.TimeManager;
 import com.core.algorithms.AStar;
+import com.core.algorithms.TimeManager;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
 
@@ -23,7 +23,7 @@ public class Human implements Steppable, Valuable, Serializable {
 
   public static final int ORDERING = 2;
   protected Stoppable stopper;
-  private Dadaab dadaab;
+  private YellowFever dadaab;
   // the agent's current path to its current goal
   private ArrayList<Building> path = null;
   private MersenneTwisterFast random;
@@ -79,7 +79,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void move(int steps) {
-    Activity activity = new Activity(this, time, currentStep, minuteInDay);
+    Activity activity = new Activity(dadaab, this, time, currentStep, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
@@ -142,7 +142,7 @@ public class Human implements Steppable, Valuable, Serializable {
   // assign the best goal
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
-      Activity activity = new Activity(this, time, currentStep, minuteInDay);
+      Activity activity = new Activity(dadaab, this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity(dadaab);
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab));
       // your selected activity
@@ -259,7 +259,7 @@ public class Human implements Steppable, Valuable, Serializable {
 
   // TODO: Como irá funcionar o tratamento?
   // TODO: O tempo de recuperação deve considerar o tempo?
-  public void receiveTreatment(Building f, Dadaab d) {
+  public void receiveTreatment(Building f, YellowFever d) {
     if (dadaab.random.nextDouble() > 0.5) {
       // this.setCurrentHealthStatus(HealthStatus.RECOVERED);
     }
@@ -295,7 +295,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void step(SimState state) {
-    this.dadaab = (Dadaab) state;
+    this.dadaab = (YellowFever) state;
     this.currentStep = (int) dadaab.schedule.getSteps();
 
     if (this.currentStep < 1440) {

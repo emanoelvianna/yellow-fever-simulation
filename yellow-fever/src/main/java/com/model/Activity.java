@@ -1,22 +1,23 @@
 package com.model;
 
-import com.core.Dadaab;
-import com.core.TimeManager;
+import com.core.YellowFever;
+import com.core.algorithms.TimeManager;
 import com.model.enumeration.ActivityMapping;
-import com.model.enumeration.HealthStatus;
 
 import ec.util.MersenneTwisterFast;
 import sim.util.Bag;
 
 public class Activity {
 
+  private YellowFever dadaab;
   private Human human;
   private TimeManager time;
   private int currentStep;
   private int minuteInDay;
   private MersenneTwisterFast random;
 
-  public Activity(Human human, TimeManager time, int currentStep, int minuteInDay) {
+  public Activity(YellowFever dadaab, Human human, TimeManager time, int currentStep, int minuteInDay) {
+    this.dadaab = dadaab;
     this.human = human;
     this.time = time;
     this.currentStep = currentStep;
@@ -24,20 +25,13 @@ public class Activity {
     this.minuteInDay = minuteInDay;
   }
 
-  // check the crowded level on the road or at your goal location
-  // this method is taken from Haiti project
-  /*
-   * activity selection currently is made by simple assumption that consider
-   * age, sex, need and time in most cases based on these each activity is given
-   * some weight and the best of all will e selected
-   */
-  public ActivityMapping defineActivity(Dadaab dadaab) {
+  public ActivityMapping defineActivity(YellowFever dadaab) {
     ActivityMapping activity = ActivityMapping.STAY_HOME;
     if (this.gettingMedicalHelp(dadaab)) {
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       // TODO: A definição do dia da semana possui um problema!
-      if (time.currentDayInWeek(currentStep) < 5) {
+      if (time.currentDayInWeek(currentStep) < 6) {
         if (this.human.isWorker()) {
           activity = ActivityMapping.WORK;
         } else if (this.human.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
@@ -60,7 +54,7 @@ public class Activity {
   }
 
   // TODO: Bug sobre a busca de recursos médicos!
-  private boolean gettingMedicalHelp(Dadaab dadaab) {
+  private boolean gettingMedicalHelp(YellowFever dadaab) {
     if (this.human.hasSymptomsOfInfection()) {
       if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
         return true;
@@ -72,20 +66,19 @@ public class Activity {
     }
   }
 
-  // best location is mainly determine by distance
-  public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, Dadaab d) {
+  public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, YellowFever d) {
     switch (activityMapping) {
     case STAY_HOME:
       return ref.getHome();
     case WORK:
       // TODO: BoreHoles podem ser considerados os locais de trabalho?
-      return betstLoc(ref.getHome(), d.boreHoles, d);
+      return betstLocation(ref.getHome(), d.getWorks(), d);
     case SCHOOL:
-      return betstLoc(ref.getHome(), d.schooles, d);
+      return betstLocation(ref.getHome(), d.getSchooles(), d);
     case RELIGION_ACTIVITY:
-      return betstLoc(ref.getHome(), d.mosques, d);
+      return betstLocation(ref.getHome(), d.getMosques(), d);
     case HEALTH_CENTER:
-      return betstLoc(ref.getHome(), d.healthCenters, d);
+      return betstLocation(ref.getHome(), d.getHealthCenters(), d);
     case SOCIAL_VISIT:
       return socialize(ref, d);
     default:
@@ -103,6 +96,9 @@ public class Activity {
     switch (activityMapping) {
     case STAY_HOME:
       period = maximumStay;
+      if (ActivityMapping.HEALTH_CENTER.equals(this.human.getCurrentActivity())) {
+        this.human.getCurrentPosition().removePatient();
+      }
       break;
     case SCHOOL:
       // time at school maximum until ~12:00 pm
@@ -121,8 +117,13 @@ public class Activity {
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
+      // TODO: Considerar os recursos médicos!
       // time at maximum unti 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
+      Building goal = this.human.getGoal();
+      if (goal.getFacility().isReachedCapacity(goal, dadaab)) {
+        period = minimumStay + random.nextInt(2 * MINUTE);
+        this.human.getGoal().addPatient();
+      }
       break;
     }
     return (period + this.minuteInDay);
@@ -131,7 +132,7 @@ public class Activity {
   // TODO: Verificar a necessidade de realizar alguma operação na atividade
   // TODO: Atualmente a que parece fazer sentido é somente a relacionada ao
   // médico
-  public void doActivity(Building f, ActivityMapping activityMapping, Dadaab dadaab) {
+  public void doActivity(Building f, ActivityMapping activityMapping, YellowFever dadaab) {
     switch (activityMapping) {
     case STAY_HOME:
       break;
@@ -139,15 +140,11 @@ public class Activity {
       this.human.receiveTreatment(f, dadaab);
       // TODO: Recebe orientação para remoção de focos do mosquito?
       break;
-    case SOCIAL_VISIT:
-      if (random.nextDouble() < dadaab.getParams().getGlobal().getProbabilityGuestContaminationRate()) {
-      }
-      break;
     default:
     }
   }
 
-  private Building betstLoc(Building fLoc, Bag fieldBag, Dadaab d) {
+  private Building betstLocation(Building fLoc, Bag fieldBag, YellowFever d) {
     Bag newLoc = new Bag();
     double bestScoreSoFar = Double.POSITIVE_INFINITY;
     for (int i = 0; i < fieldBag.numObjs; i++) {
@@ -174,7 +171,7 @@ public class Activity {
     return f;
   }
 
-  public Building getNextTile(Dadaab dadaab, Building subgoal, Building position) {
+  public Building getNextTile(YellowFever dadaab, Building subgoal, Building position) {
     // move in which direction?
     int moveX = 0, moveY = 0;
     int dx = subgoal.getLocationX() - position.getLocationX();
@@ -226,83 +223,27 @@ public class Activity {
     }
   }
 
-  // three camp sites in the model
-  // agent select one camp which is not their camp randomly
-  private Building socialize(Human ref, Dadaab d) {
+  private Building socialize(Human ref, YellowFever d) {
     Bag potential = new Bag();
-    Building newLoc = null;
+    Building newLocation = null;
     potential.clear();
 
-    // socialize - visit friend or any place in
-    // potential = d.campSites;
-
     int camp = ref.getHome().getCampID(); // get camp id
-
     // select any camp site but not the camp that belong to the agent
-    for (Object campsite : d.familyHousing) {
+    for (Object campsite : d.getFamilyHousing()) {
       Building cmp = ((Building) campsite);
       if (cmp.getCampID() == camp && cmp.equals(ref.getHome()) != true && cmp.getRefugeeHH().numObjs > 0) {
         potential.add(cmp); // potential locations to visit
       }
     }
 
-    // if(potential.isEmpty() ==true){
-    // System.out.println("empty");
-    // }
     if (potential.numObjs == 1) {
-      newLoc = (Building) potential.objs[0];
+      newLocation = (Building) potential.objs[0];
     } else {
-      newLoc = (Building) potential.objs[d.random.nextInt(potential.numObjs)];
+      newLocation = (Building) potential.objs[d.random.nextInt(potential.numObjs)];
     }
 
-    return newLoc;
-  }
-
-  // find the nearest water points
-  public Building nearestWaterPoint(Building f, Dadaab d) {
-    return betstLoc(f, d.rainfallWater, d);
-  }
-
-  // search nearest borehold
-  // this is useful if one of the borehole is empty
-  // agent will selct another borehole nearest from the current
-  private Building nearestBorehole(Building f, Dadaab d) {
-    return betstLoc(f, d.boreHoles, d);
-  }
-
-  // select water source either from borehole or rainfall water points
-  // agent preference weight and distance affect the choice
-
-  public Building nearestWaterSource(Building f, Dadaab d) {
-    Building fieldP = null;
-
-    double preference_river = 0.0;
-    double preference_borehole = 0.0;
-
-    // incase no water point field to select, preference is 0
-    if (nearestWaterPoint(f, d) == null) {
-      preference_river = 0.0;
-    }
-    // preference depend on inverse distance and preference weight
-    else {
-      preference_river = (1.0 / (1.0 + Math.log(1 + f.distanceTo(nearestWaterPoint(f, d)))))
-          * d.getParams().getGlobal().getWaterSourcePreference_River() + (0.2 * d.random.nextDouble());
-    }
-
-    if (nearestBorehole(f, d) == null) {
-      preference_borehole = 0.0;
-    } else {
-      preference_borehole = (1.0 / (1.0 + Math.log(1 + f.distanceTo(nearestBorehole(f, d)))))
-          * d.getParams().getGlobal().getWaterSourcePreference_Borehole() + (0.2 * d.random.nextDouble());
-    }
-
-    if (preference_river > preference_borehole) {
-      fieldP = nearestWaterPoint(f, d);
-    } else {
-      fieldP = nearestBorehole(f, d);
-    }
-
-    return fieldP;
+    return newLocation;
   }
 
   public Human getRefugee() {

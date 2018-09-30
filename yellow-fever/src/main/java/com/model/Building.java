@@ -1,9 +1,8 @@
 package com.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
-import com.core.Dadaab;
+import com.core.YellowFever;
 import com.model.enumeration.HealthStatus;
 
 import sim.util.Bag;
@@ -17,9 +16,10 @@ public class Building implements Valuable, Serializable {
   private boolean sap;
   private boolean nectar;
   private double elevation; // elevation
-  private double vibrioCholerae = 0; // contamination level
   private double timeOfMaturation;
-  private int patientCounter = 0;
+  private int amountOfResources;
+  private int quantityOfVaccines;
+  private int patientCounter;
   private Facility facility;
   private int locationX;
   private int locationY;
@@ -34,18 +34,24 @@ public class Building implements Valuable, Serializable {
     this.refugeeHH = new Bag();
     this.humans = new Bag();
     this.mosquitoes = new Bag();
-    this.eggs = 0;
     this.timeOfMaturation = 0;
+    this.amountOfResources = 0;
+    this.patientCounter = 0;
+    this.quantityOfVaccines = 0;
+    this.eggs = 0;
   }
 
   public Building(int x, int y) {
     this.humans = new Bag();
     this.mosquitoes = new Bag();
     this.refugeeHH = new Bag();
-    this.eggs = 0;
-    this.timeOfMaturation = 0;
     this.locationX = x;
     this.locationY = y;
+    this.timeOfMaturation = 0;
+    this.amountOfResources = 0;
+    this.patientCounter = 0;
+    this.quantityOfVaccines = 0;
+    this.eggs = 0;
   }
 
   public boolean containsHumansInfected() {
@@ -63,7 +69,7 @@ public class Building implements Valuable, Serializable {
   }
 
   // check how many familes can occupied in a field
-  public boolean isCampOccupied(Dadaab dadaab) {
+  public boolean isCampOccupied(YellowFever dadaab) {
     if (this.getRefugeeHH().size() >= dadaab.getParams().getGlobal().getMaximumHHOccumpancyPerField()) {
       return true;
     } else {
@@ -169,14 +175,6 @@ public class Building implements Valuable, Serializable {
     return facility;
   }
 
-  public void setVibrioCholerae(double vc) {
-    this.vibrioCholerae = vc;
-  }
-
-  public double getVibrioCholerae() {
-    return vibrioCholerae;
-  }
-
   // water - either from borehole or rainfall
   public void setWater(double flow) {
     this.water = flow;
@@ -192,6 +190,14 @@ public class Building implements Valuable, Serializable {
 
   public void waterAbsorption(double absorption) {
     this.water = this.water - absorption;
+  }
+
+  public void addPatient() {
+    this.patientCounter++;
+  }
+
+  public void removePatient() {
+    this.patientCounter--;
   }
 
   public void setPatientCounter(int c) {
@@ -281,6 +287,22 @@ public class Building implements Valuable, Serializable {
 
   public void setTimeOfMaturation(double timeOfMaturation) {
     this.timeOfMaturation = timeOfMaturation;
+  }
+
+  public int getAmountOfResources() {
+    return amountOfResources;
+  }
+
+  public void setAmountOfResources(int amountOfResources) {
+    this.amountOfResources = amountOfResources;
+  }
+
+  public int getQuantityOfVaccines() {
+    return quantityOfVaccines;
+  }
+
+  public void setQuantityOfVaccines(int quantityOfVaccines) {
+    this.quantityOfVaccines = quantityOfVaccines;
   }
 
 }

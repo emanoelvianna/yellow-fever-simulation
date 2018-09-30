@@ -39,7 +39,7 @@ import sim.util.Bag;
 import sim.util.geo.MasonGeometry;
 
 // all falimies in a bag and assign 
-public class CampBuilder {
+public class SimulationBuilder {
 
   static int gridWidth = 0;
   static int gridHeight = 0;
@@ -47,7 +47,7 @@ public class CampBuilder {
   // Location locations;
 
   // static MersenneTwisterFast random;
-  public void create(String campfile, String facilityfile, String roadfile, Dadaab dadaab, MersenneTwisterFast random) {
+  public void create(String campfile, String facilityfile, String roadfile, YellowFever dadaab, MersenneTwisterFast random) {
     // CampBuilder.random = random;
     try {
 
@@ -74,7 +74,7 @@ public class CampBuilder {
         line = camp.readLine();
       }
 
-      dadaab.familyHousing.clear();// clear the bag
+      dadaab.getFamilyHousing().clear();// clear the bag
 
       for (int curr_row = 0; curr_row < height; ++curr_row) {
         line = camp.readLine();
@@ -91,7 +91,7 @@ public class CampBuilder {
             fieldUnit.setFieldID(camptype);
 
             if (camptype == 11 || camptype == 21 || camptype == 31) {
-              dadaab.familyHousing.add(fieldUnit);
+              dadaab.getFamilyHousing().add(fieldUnit);
             }
 
             if (camptype >= 10 && camptype <= 12) {
@@ -144,54 +144,35 @@ public class CampBuilder {
 
             Facility facility = new Facility();
             Building facilityField = (Building) dadaab.allCamps.get(curr_col, curr_row);
-            facility.setLoc(facilityField);
+            facility.setLocation(facilityField);
             facilityField.setFacility(facility);
-            dadaab.allFacilities.add(facilityField);
-            // facility.setCapacity(0);
+            dadaab.getAllFacilities().add(facilityField);
 
             if (facilitytype == 1) {
-              facility.setInfectionLevel(0);
-              facilityField.setVibrioCholerae(0);
               facility.setFacilityID(2);
-
-              // TODO: add os locais de alimentação do mosquito (seiva/nectar)
-              facilityField.setWater(dadaab.getParams().getGlobal().getBoreholeWaterSupplyPerDay());
-
-              dadaab.boreHoles.add(facilityField);
-
+              dadaab.getWorks().add(facilityField);
             } else if (facilitytype == 2 || facilitytype == 3) {
-
+              facility.setCapacity(dadaab.getParams().getGlobal().getResourcesInMedicalCenters());
               facility.setFacilityID(6);
-              dadaab.healthCenters.add(facilityField);
-
+              dadaab.getHealthCenters().add(facilityField);
             } else if (facilitytype == 4) {
-
               facility.setFacilityID(5);
-              dadaab.foodCenter.add(facilityField);
-
+              dadaab.getFoodCenter().add(facilityField);
             } else if (facilitytype > 5 && facilitytype <= 8) {
-
               facility.setFacilityID(1);
-              dadaab.schooles.add(facilityField);
+              dadaab.getSchooles().add(facilityField);
             } else if (facilitytype == 9) {
-
               facility.setFacilityID(4);
-              dadaab.market.add(facilityField);
-
+              dadaab.getMarket().add(facilityField);
             } else if (facilitytype == 10) {
-
               facility.setFacilityID(3);
-              dadaab.mosques.add(facilityField);
-            }
-
-            else {
-
+              dadaab.getMosques().add(facilityField);
+            } else {
               facility.setFacilityID(8);
-              dadaab.other.add(facilityField);
+              dadaab.getOther().add(facilityField);
             }
 
             dadaab.facilityGrid.setObjectLocation(facility, curr_col, curr_row);
-
           }
         }
       }
@@ -270,25 +251,25 @@ public class CampBuilder {
       dadaab.closestNodes = setupNearestNodes(dadaab);
 
     } catch (IOException ex) {
-      Logger.getLogger(CampBuilder.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(SimulationBuilder.class.getName()).log(Level.SEVERE, null, ex);
     }
 
     this.populateRefugee(dadaab);
     this.populateMosquito(dadaab);
     // random
     int max = dadaab.getParams().getGlobal().getMaximumNumberRelative();
-    int[] numberOfFamilies = new int[dadaab.allFamilies.numObjs];
+    int[] numberOfFamilies = new int[dadaab.getAllFamilies().numObjs];
 
-    for (int i = 0; i < dadaab.allFamilies.numObjs; i++) {
+    for (int i = 0; i < dadaab.getAllFamilies().numObjs; i++) {
 
-      Family f = (Family) dadaab.allFamilies.objs[i];
+      Family f = (Family) dadaab.getAllFamilies().objs[i];
       int tot = 0;
-      if (dadaab.allFamilies.numObjs > max) {
+      if (dadaab.getAllFamilies().numObjs > max) {
         tot = max;
       }
 
       else
-        tot = dadaab.allFamilies.numObjs;
+        tot = dadaab.getAllFamilies().numObjs;
 
       int numOfRel = 1 + dadaab.random.nextInt(tot - 1);
 
@@ -301,8 +282,8 @@ public class CampBuilder {
       }
 
       for (int jj = 0; jj < numOfRel; jj++) {
-        if (f.equals((Family) dadaab.allFamilies.objs[numberOfFamilies[jj]]) != true) {
-          Building l = ((Family) dadaab.allFamilies.objs[numberOfFamilies[jj]]).getCampLocation();
+        if (f.equals((Family) dadaab.getAllFamilies().objs[numberOfFamilies[jj]]) != true) {
+          Building l = ((Family) dadaab.getAllFamilies().objs[numberOfFamilies[jj]]).getCampLocation();
           f.addRelative(l);
         }
       }
@@ -341,12 +322,13 @@ public class CampBuilder {
 
     int amountOfInfectedHumans = dadaab.getParams().getGlobal().getInitialHumansNumberInfected();
     this.generateRandomHumansInfected(dadaab, amountOfInfectedHumans);
+    this.administerRandomVaccines(dadaab);
 
     System.out.println("---");
     int quantidadeInicialDeMosquitos = dadaab.getParams().getGlobal().getInitialMosquitoesNumber();
     System.out.println("Quantidade de mosquitos adicionadas: " + quantidadeInicialDeMosquitos);
     int quantidadeInicialDeMosquitosNasCasa = 0;
-    for (Object object : dadaab.familyHousing) {
+    for (Object object : dadaab.getFamilyHousing()) {
       Building fieldUnit = (Building) object;
       quantidadeInicialDeMosquitosNasCasa += fieldUnit.getMosquitoes().size();
     }
@@ -364,7 +346,18 @@ public class CampBuilder {
 
   }
 
-  private void generateRandomHumansInfected(Dadaab dadaab, int amount) {
+  private void administerRandomVaccines(YellowFever dadaab) {
+    int amount = dadaab.getParams().getGlobal().getQuantityOfVaccinesApplied();
+    int index = 0;
+    while (amount > 0) {
+      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
+      Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
+      human.applyVaccine();
+      amount--;
+    }
+  }
+
+  private void generateRandomHumansInfected(YellowFever dadaab, int amount) {
     int index = 0;
     while (amount > 0) {
       index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
@@ -375,23 +368,21 @@ public class CampBuilder {
     }
   }
 
-  private static void createGrids(int width, int height, Dadaab dadaab) {
+  private static void createGrids(int width, int height, YellowFever dadaab) {
     dadaab.allCamps = new ObjectGrid2D(width, height);
     dadaab.rainfallGrid = new DoubleGrid2D(width, height, 0);
     dadaab.allHumans = new Continuous2D(0.1, width, height);
     dadaab.facilityGrid = new SparseGrid2D(width, height);
-
     dadaab.roadGrid = new IntGrid2D(width, height);
     dadaab.nodes = new SparseGrid2D(width, height);
     dadaab.closestNodes = new ObjectGrid2D(width, height);
     dadaab.roadLinks = new GeomVectorField(width, height);
     dadaab.campShape = new GeomVectorField(width, height);
-
     dadaab.allCampGeoGrid = new GeomGridField();
   }
 
   //// add households
-  private void addAllRefugees(int age, int sex, Family hh, Dadaab dadaab) {
+  private void addAllRefugees(int age, int sex, Family hh, YellowFever dadaab) {
     Human human = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), dadaab.random, dadaab.allHumans);
     hh.addMembers(human);
     hh.getCampLocation().addRefugee(human);
@@ -424,22 +415,19 @@ public class CampBuilder {
   }
 
   // random searching of next parcel to populate houses
-  public static Building nextAvailCamp(Dadaab dadaab) {
+  public static Building nextAvailCamp(YellowFever dadaab) {
     // for now random
-    int index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
-    while (((Building) dadaab.familyHousing.objs[index]).isCampOccupied(dadaab) == true
-        || dadaab.allFacilities.contains((Building) dadaab.familyHousing.objs[index]) == true) {
+    int index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
+    while (((Building) dadaab.getFamilyHousing().objs[index]).isCampOccupied(dadaab) == true
+        || dadaab.getAllFacilities().contains((Building) dadaab.getFamilyHousing().objs[index]) == true) {
       // try another spot
-      index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
+      index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
     }
-
-    //
-    return (Building) dadaab.familyHousing.objs[index];
-
+    return (Building) dadaab.getFamilyHousing().objs[index];
   }
 
   // create refugees - first hh
-  private void populateRefugee(Dadaab dadaab) {
+  private void populateRefugee(YellowFever dadaab) {
 
     // UNHCR stat
     // age distibution
@@ -538,12 +526,7 @@ public class CampBuilder {
       if (tot != 0 && counter <= totalRef) {
         Building fieldUnit = nextAvailCamp(dadaab);
         Family hh = new Family(fieldUnit);
-        dadaab.allFamilies.add(hh);
-        hh.setRationDate(1 + a % 9);
-        if (dadaab.random.nextDouble() > dadaab.getParams().getGlobal().getLaterineCoverage()) {
-          hh.setHasLaterine(true);
-        }
-
+        dadaab.getAllFamilies().add(hh);
         fieldUnit.addRefugeeHH(hh);
 
         // TODO: Justificativa está considerando a arborização
@@ -585,14 +568,15 @@ public class CampBuilder {
     }
   }
 
-  public void populateMosquito(Dadaab dadaab) {
+  public void populateMosquito(YellowFever dadaab) {
     int initialMosquitoesNumber = dadaab.getParams().getGlobal().getInitialMosquitoesNumber();
 
     while (initialMosquitoesNumber > 0) {
-      int index = dadaab.random.nextInt(dadaab.familyHousing.numObjs);
-      Building housing = (Building) dadaab.familyHousing.objs[index];
+      int index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
+      Building housing = (Building) dadaab.getFamilyHousing().objs[index];
       if (housing.containsMosquitoes()) {
-        if (dadaab.random.nextDouble() > 0.5) { // 50% chance of has more mosquitoes
+        if (dadaab.random.nextDouble() > 0.5) { // 50% chance of has more
+                                                // mosquitoes
           Mosquito mosquito = new Mosquito(housing);
           mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
           housing.addMosquito(mosquito);
@@ -609,7 +593,7 @@ public class CampBuilder {
     }
   }
 
-  public int defineSex(Dadaab dadaab) {
+  public int defineSex(YellowFever dadaab) {
     // sex 50-50 chance
     if (dadaab.random.nextDouble() > 0.5) {
       return 1;
@@ -619,7 +603,7 @@ public class CampBuilder {
   }
 
   /// raod network methods from haiti project
-  static void extractFromRoadLinks(GeomVectorField roadLinks, Dadaab dadaab) {
+  static void extractFromRoadLinks(GeomVectorField roadLinks, YellowFever dadaab) {
     Bag geoms = roadLinks.getGeometries();
     Envelope e = roadLinks.getMBR();
     double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
@@ -659,7 +643,7 @@ public class CampBuilder {
    *          - maximum y value in shapefile
    */
   static void readLineString(LineString geometry, int xcols, int ycols, double xmin, double ymin, double xmax,
-      double ymax, Dadaab dadaab) {
+      double ymax, YellowFever dadaab) {
 
     CoordinateSequence cs = geometry.getCoordinateSequence();
 
@@ -743,7 +727,7 @@ public class CampBuilder {
    * @param closestNodes
    *          - the field to populate
    */
-  static ObjectGrid2D setupNearestNodes(Dadaab dadaab) {
+  static ObjectGrid2D setupNearestNodes(YellowFever dadaab) {
 
     ObjectGrid2D closestNodes = new ObjectGrid2D(gridWidth, gridHeight);
     ArrayList<Crawler> crawlers = new ArrayList<Crawler>();
