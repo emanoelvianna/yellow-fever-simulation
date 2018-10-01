@@ -258,7 +258,7 @@ public class Building implements Valuable, Serializable {
   }
 
   public boolean containsHumans() {
-    return !this.humans.isEmpty();
+    return this.humans.size() > 0;
   }
 
   public boolean containsEggs() {

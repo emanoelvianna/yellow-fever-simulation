@@ -88,6 +88,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
         if (this.isMatureEggs()) {
           this.timeOfMaturation = 0; // reset time
           if (this.currentPosition.containsWater()) {
+            // TODO: Considerar a simplificação de ovoposição junto ao modelo
             this.ovipositionProcess();
           }
         } else if (timeOfMaturation == 0) {
@@ -118,15 +119,20 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void bloodFood() {
-    if (this.currentPosition.containsHumans()) {
-      int size = currentPosition.getHumans().size();
+    if (this.currentPosition.getHumans().size() > 0) {
+      int size = this.currentPosition.getHumans().size();
       this.dadaab.random.nextInt(size);
-      this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
       // TODO: Considerar uma probabilidade do mosquito conseguir
+      this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
       this.hungry = false;
     } else {
       this.hungry = true;
     }
+    
+    // TODO: remover
+    if(!this.hungry && this.currentPosition.getHumans().size() > 0)
+      System.out.println(hungry);
+  
   }
 
   private void normalFood() {

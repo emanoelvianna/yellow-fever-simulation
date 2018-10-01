@@ -46,6 +46,7 @@ public class Activity {
           } else { // 60% chance of social visit activity
             return ActivityMapping.SOCIAL_VISIT;
           }
+          // TODO: Adicionar atividade de ir ao mercado
         } else { // 20% chance of home activity
           return ActivityMapping.STAY_HOME;
         }
@@ -229,15 +230,10 @@ public class Activity {
   }
 
   private boolean gettingMedicalHelp() {
-    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment()) {
-      if (random.nextDouble() <= 0.5) { // 50% chance
+    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
+      if (random.nextDouble() <= 0.5) // 50% chance
         return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
+    return false;
   }
 
   public Human getRefugee() {

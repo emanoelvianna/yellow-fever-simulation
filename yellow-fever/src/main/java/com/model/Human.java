@@ -22,9 +22,8 @@ public class Human implements Steppable, Valuable, Serializable {
 
   public static final int ORDERING = 2;
   protected Stoppable stopper;
-  private YellowFever dadaab;
+  private YellowFever yellowFever;
   private ArrayList<Building> path;
-  private MersenneTwisterFast random;
   private TimeManager time;
   private HealthStatus currentHealthStatus;
   private HealthStatus previousHealthStatus;
@@ -52,7 +51,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private int currentDay;
 
   public Human(int age, int sex, Family family, Building home, Building position, MersenneTwisterFast seed,
-      Continuous2D allRefugees) {
+      Continuous2D allHumans) {
     this.setAge(age);
     this.setSex(sex);
     this.setFamily(family);
@@ -65,8 +64,7 @@ public class Human implements Steppable, Valuable, Serializable {
     this.time = new TimeManager();
     this.minuteInDay = 0;
     this.path = null;
-    this.random = seed;
-    this.dadaab = null;
+    this.yellowFever = null;
     this.currentStep = 0;
     this.receivedTreatment = false;
     this.vaccinated = false;
@@ -75,11 +73,11 @@ public class Human implements Steppable, Valuable, Serializable {
     this.toxicPeriod = 0;
     this.vaccineEffectPeriod = 0;
     this.currentDay = 0;
-    this.setObjectLocation(allRefugees);
+    this.setObjectLocation(allHumans);
   }
 
   public void move(int steps) {
-    Activity activity = new Activity(dadaab, this, time, currentStep, minuteInDay);
+    Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
       // this.setGoal(this.getHome());
@@ -90,17 +88,17 @@ public class Human implements Steppable, Valuable, Serializable {
     }
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
-      activity.doActivity(this.getGoal(), this.getCurrentActivity(), dadaab);
+      activity.doActivity(this.getGoal(), this.getCurrentActivity(), yellowFever);
       calculateGoal();
     }
     // else move to your goal
     else {
       // make sure we have a path to the goal!
       if (path == null || path.size() == 0) {
-        path = AStar.astarPath(dadaab,
-            (Node) dadaab.closestNodes.get(this.getCurrentPosition().getLocationX(),
+        path = AStar.astarPath(yellowFever,
+            (Node) yellowFever.closestNodes.get(this.getCurrentPosition().getLocationX(),
                 this.getCurrentPosition().getLocationY()),
-            (Node) dadaab.closestNodes.get(this.getGoal().getLocationX(), this.getGoal().getLocationY()));
+            (Node) yellowFever.closestNodes.get(this.getGoal().getLocationX(), this.getGoal().getLocationY()));
         if (path != null) {
           path.add(this.getGoal());
         }
@@ -122,12 +120,12 @@ public class Human implements Steppable, Valuable, Serializable {
         }
       }
 
-      Building loc = activity.getNextTile(dadaab, subgoal, this.getCurrentPosition());
+      Building loc = activity.getNextTile(yellowFever, subgoal, this.getCurrentPosition());
       Building oldLoc = this.getCurrentPosition();
       oldLoc.removeRefugee(this);
       this.setCurrentPosition(loc);
       loc.addRefugee(this);
-      dadaab.allHumans.setObjectLocation(this,
+      yellowFever.allHumans.setObjectLocation(this,
           new Double2D(loc.getLocationX() + this.jitterX, loc.getLocationY() + jitterY));
     }
   }
@@ -135,9 +133,9 @@ public class Human implements Steppable, Valuable, Serializable {
   // assign the best goal
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
-      Activity activity = new Activity(dadaab, this, time, currentStep, minuteInDay);
-      ActivityMapping bestActivity = activity.defineActivity(dadaab);
-      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, dadaab));
+      Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
+      ActivityMapping bestActivity = activity.defineActivity(yellowFever);
+      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
       // is leaving the hospital
       if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {
         this.currentPosition.removePatient();
@@ -179,12 +177,14 @@ public class Human implements Steppable, Valuable, Serializable {
     this.defineMildInfectionEvolution();
     this.defineSevereInfectionEvolution();
     this.defineToxicInfectionEvolution();
-    this.defineImmunity();
+    if (this.vaccinated) {
+      this.defineImmunity();
+    }
   }
 
   private void defineInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
-      if (dadaab.random.nextInt(11) <= 9) { // 90% of cases are mild
+      if (yellowFever.random.nextInt(11) <= 9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
         this.definePeriodOfInfection();
       } else {
@@ -221,11 +221,11 @@ public class Human implements Steppable, Valuable, Serializable {
 
   private void defineToxicInfectionEvolution() {
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
-      if (dadaab.random.nextInt(11) < 5) { // 50-50 chance
+      if (yellowFever.random.nextInt(11) < 5) { // 50-50 chance
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
         this.currentHealthStatus = HealthStatus.DEAD;
-        dadaab.killrefugee(this);
+        yellowFever.killrefugee(this);
       }
     } else if (this.toxicPeriod > 0 && this.isNewDay()
         && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
@@ -278,7 +278,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void definePeriodOfInfection() {
-    this.infectionPeriod = 3 + this.dadaab.random.nextInt(2);
+    this.infectionPeriod = 3 + this.yellowFever.random.nextInt(2);
   }
 
   private void definePeriodOfToxicInfection() {
@@ -286,7 +286,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void defineIncubationPeriod() {
-    this.incubationPeriod = 3 + this.dadaab.random.nextInt(4);
+    this.incubationPeriod = 3 + this.yellowFever.random.nextInt(4);
   }
 
   private boolean isNewDay() {
@@ -299,8 +299,8 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void step(SimState state) {
-    this.dadaab = (YellowFever) state;
-    this.currentStep = (int) dadaab.schedule.getSteps();
+    this.yellowFever = (YellowFever) state;
+    this.currentStep = (int) yellowFever.schedule.getSteps();
 
     if (this.currentStep < 1440) {
       this.minuteInDay = this.currentStep;
@@ -316,17 +316,35 @@ public class Human implements Steppable, Valuable, Serializable {
     this.move(currentStep);
 
     // TODO: Remover, utilizado para realização de testes
-    if (HealthStatus.isInfected(this.currentHealthStatus) && !this.currentHealthStatus.equals(HealthStatus.EXPOSED)) {
-      System.out.println("---");
-      System.out.println("Status da saúde: " + this.currentHealthStatus);
-      System.out.println("Idade: " + this.age);
-      System.out.println("Perido de incubação: " + this.incubationPeriod);
-      System.out.println("Perido de infecção: " + this.infectionPeriod);
-      System.out.println("Perido de tóxico: " + this.toxicPeriod);
-      System.out.println("Já recebi tratamento: " + this.receivedTreatment);
-      System.out.println("Estou em casa: " + this.currentPosition.equals(this.home));
-      System.out.println("Meu objetivo: " + this.currentActivity);
-      System.out.println("---");
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18 && false) {
+      if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+        boolean carregandoovos = false;
+        boolean fome = false;
+        for (Object object : this.currentPosition.getMosquitoes()) {
+          Mosquito mosquito = (Mosquito) object;
+          if (mosquito.isHungry() && mosquito.isCarryingEggs()) {
+            carregandoovos = true;
+            fome = true;
+          }
+        }
+        if (fome) {
+          System.out.println("---");
+          System.out.println("Status da saúde: " + this.currentHealthStatus);
+          System.out.println("Idade: " + this.age);
+          System.out.println("Aqui tem mosquito? " + (this.currentPosition.getMosquitoes().size() > 0));
+          System.out.println("Quantidade de mosquitos: " + this.currentPosition.getMosquitoes().size());
+          System.out.println("Tem mosquito com fome? " + fome);
+          System.out.println("Tem mosquito carregando ovos? " + carregandoovos);
+          boolean humanos = false;
+          for (Object object : this.currentPosition.getMosquitoes()) {
+            Mosquito mosquito = (Mosquito) object;
+            if (mosquito.getCurrentPosition().containsHumans())
+              humanos = true;
+          }
+          System.out.println("Posicao do mosquito tem humanos? " + humanos);
+          System.out.println("---");
+        }
+      }
     }
   }
 

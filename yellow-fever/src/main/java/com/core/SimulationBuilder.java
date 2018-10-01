@@ -317,11 +317,12 @@ public class SimulationBuilder {
       }
     }
 
-    int amountOfInfectedHumans = dadaab.getParams().getGlobal().getInitialHumansNumberInfected();
-    this.generateRandomHumansInfected(dadaab, amountOfInfectedHumans);
+    this.generateRandomHumansInfected(dadaab);
     this.administerRandomVaccines(dadaab);
 
     System.out.println("---");
+    int quantidadeInicialDeHumanos = dadaab.getParams().getGlobal().getInitialHumansNumber();
+    System.out.println("Quantidade de humanos adicionadas: " + quantidadeInicialDeHumanos);
     int quantidadeInicialDeMosquitos = dadaab.getParams().getGlobal().getInitialMosquitoesNumber();
     System.out.println("Quantidade de mosquitos adicionadas: " + quantidadeInicialDeMosquitos);
     int quantidadeInicialDeMosquitosNasCasa = 0;
@@ -330,6 +331,13 @@ public class SimulationBuilder {
       quantidadeInicialDeMosquitosNasCasa += fieldUnit.getMosquitoes().size();
     }
     System.out.println("Quantidade de mosquitos nas residencias: " + quantidadeInicialDeMosquitosNasCasa);
+
+    int quantidadeInicialDeHumanosNasCasa = 0;
+    for (Object object : dadaab.getFamilyHousing()) {
+      Building fieldUnit = (Building) object;
+      quantidadeInicialDeHumanosNasCasa += fieldUnit.getHumans().size();
+    }
+    System.out.println("Quantidade de humanos nas residencias: " + quantidadeInicialDeHumanosNasCasa);
 
     int infectados = 0;
     for (Object object : dadaab.allHumans.getAllObjects()) {
@@ -349,19 +357,20 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
-      if(HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
+      if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
         human.applyVaccine();
         amount--;
       }
     }
   }
 
-  private void generateRandomHumansInfected(YellowFever dadaab, int amount) {
+  private void generateRandomHumansInfected(YellowFever yellowFever) {
+    int amount = yellowFever.getParams().getGlobal().getInitialHumansNumberInfected();
     int index = 0;
     while (amount > 0) {
-      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
-      Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
-      human.setIncubationPeriod(3 + dadaab.random.nextInt(4));
+      index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
+      Human human = (Human) yellowFever.allHumans.getAllObjects().get(index);
+      human.setIncubationPeriod(3 + yellowFever.random.nextInt(4));
       human.setCurrentHealthStatus(HealthStatus.EXPOSED);
       amount--;
     }
