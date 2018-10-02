@@ -78,6 +78,10 @@ public class Parameters {
     intParameter = returnIntParameter(parameterDB, "resourcesInMedicalCenters", global.resourcesInMedicalCenters);
     global.resourcesInMedicalCenters = intParameter;
 
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfGettingBloodFood",
+        global.probabilityOfGettingBloodFood);
+    global.probabilityOfGettingBloodFood = doubleParameter;
+
     getGlobal().setMaximumNumberRelative(
         returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
 
@@ -124,6 +128,7 @@ public class Parameters {
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;
     private int resourcesInMedicalCenters = 20;
+    private double probabilityOfGettingBloodFood = 0.8;
 
     // TODO: adicionar a primeira temperatura e precipitação como parametro!
 
@@ -241,6 +246,14 @@ public class Parameters {
 
     public void setResourcesInMedicalCenters(int resourcesInMedicalCenters) {
       this.resourcesInMedicalCenters = resourcesInMedicalCenters;
+    }
+
+    public double getProbabilityOfGettingBloodFood() {
+      return probabilityOfGettingBloodFood;
+    }
+
+    public void setProbabilityOfGettingBloodFood(double probabilityOfGettingBloodFood) {
+      this.probabilityOfGettingBloodFood = probabilityOfGettingBloodFood;
     }
   }
 }

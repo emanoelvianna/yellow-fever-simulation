@@ -43,7 +43,7 @@ public class SimulationBuilder {
   static int gridWidth = 0;
   static int gridHeight = 0;
 
-  public void create(String campfile, String facilityfile, String roadfile, YellowFever dadaab,
+  public void create(String campfile, String facilityfile, String roadfile, YellowFever yellowFever,
       MersenneTwisterFast random) {
     // CampBuilder.random = random;
     try {
@@ -63,7 +63,7 @@ public class SimulationBuilder {
       int height = Integer.parseInt(tokens[1]);
       gridHeight = height;
 
-      createGrids(width, height, dadaab);
+      createGrids(width, height, yellowFever);
 
       // skip the next four lines as they contain irrelevant metadata
 
@@ -71,7 +71,7 @@ public class SimulationBuilder {
         line = camp.readLine();
       }
 
-      dadaab.getFamilyHousing().clear();// clear the bag
+      yellowFever.getFamilyHousing().clear();// clear the bag
 
       for (int curr_row = 0; curr_row < height; ++curr_row) {
         line = camp.readLine();
@@ -88,7 +88,7 @@ public class SimulationBuilder {
             fieldUnit.setFieldID(camptype);
 
             if (camptype == 11 || camptype == 21 || camptype == 31) {
-              dadaab.getFamilyHousing().add(fieldUnit);
+              yellowFever.getFamilyHousing().add(fieldUnit);
             }
 
             if (camptype >= 10 && camptype <= 12) {
@@ -101,7 +101,6 @@ public class SimulationBuilder {
               fieldUnit.setCampID(3);
             } else {
               fieldUnit.setCampID(0);
-
             }
 
           } else {
@@ -112,7 +111,7 @@ public class SimulationBuilder {
           fieldUnit.setLocationY(curr_row);
           fieldUnit.setWater(0);
           // dadaab.allFields.add(fieldUnit);
-          dadaab.allCamps.field[curr_col][curr_row] = fieldUnit;
+          yellowFever.allCamps.field[curr_col][curr_row] = fieldUnit;
 
         }
 
@@ -120,7 +119,7 @@ public class SimulationBuilder {
 
       // read elev and change camp locations id to elev
       InputStream inputStream = new FileInputStream(new File("data/d_camp_a.txt"));
-      Importer.read(inputStream, GridDataType.INTEGER, dadaab.allCampGeoGrid);
+      Importer.read(inputStream, GridDataType.INTEGER, yellowFever.allCampGeoGrid);
       // overwrite the file and make 100
 
       // now read facility grid
@@ -140,36 +139,36 @@ public class SimulationBuilder {
           if (facilitytype > 0 && facilitytype < 11) {
 
             Facility facility = new Facility();
-            Building facilityField = (Building) dadaab.allCamps.get(curr_col, curr_row);
+            Building facilityField = (Building) yellowFever.allCamps.get(curr_col, curr_row);
             facility.setLocation(facilityField);
             facilityField.setFacility(facility);
-            dadaab.getAllFacilities().add(facilityField);
+            yellowFever.getAllFacilities().add(facilityField);
 
             if (facilitytype == 1) {
               facility.setFacilityID(2);
-              dadaab.getWorks().add(facilityField);
+              yellowFever.getWorks().add(facilityField);
             } else if (facilitytype == 2 || facilitytype == 3) {
-              facility.setCapacity(dadaab.getParams().getGlobal().getResourcesInMedicalCenters());
+              facility.setCapacity(yellowFever.getParams().getGlobal().getResourcesInMedicalCenters());
               facility.setFacilityID(6);
-              dadaab.getHealthCenters().add(facilityField);
+              yellowFever.getHealthCenters().add(facilityField);
             } else if (facilitytype == 4) {
               facility.setFacilityID(5);
-              dadaab.getFoodCenter().add(facilityField);
+              yellowFever.getFoodCenter().add(facilityField);
             } else if (facilitytype > 5 && facilitytype <= 8) {
               facility.setFacilityID(1);
-              dadaab.getSchooles().add(facilityField);
+              yellowFever.getSchooles().add(facilityField);
             } else if (facilitytype == 9) {
               facility.setFacilityID(4);
-              dadaab.getMarket().add(facilityField);
+              yellowFever.getMarket().add(facilityField);
             } else if (facilitytype == 10) {
               facility.setFacilityID(3);
-              dadaab.getMosques().add(facilityField);
+              yellowFever.getMosques().add(facilityField);
             } else {
               facility.setFacilityID(8);
-              dadaab.getOther().add(facilityField);
+              yellowFever.getOther().add(facilityField);
             }
 
-            dadaab.facilityGrid.setObjectLocation(facility, curr_col, curr_row);
+            yellowFever.facilityGrid.setObjectLocation(facility, curr_col, curr_row);
           }
         }
       }
@@ -192,7 +191,7 @@ public class SimulationBuilder {
           double r = Double.parseDouble(tokens[curr_col]); // no need
           int roadID = (int) r * 1000;
           if (roadID >= 0) {
-            dadaab.roadGrid.set(curr_col, curr_row, roadID);
+            yellowFever.roadGrid.set(curr_col, curr_row, roadID);
 
           }
         }
@@ -216,7 +215,7 @@ public class SimulationBuilder {
 
           if (elevation > 0) {
 
-            Building elevationField = (Building) dadaab.allCamps.get(curr_col, curr_row);
+            Building elevationField = (Building) yellowFever.allCamps.get(curr_col, curr_row);
             elevationField.setElevation(elevation);
 
           }
@@ -231,56 +230,57 @@ public class SimulationBuilder {
       File file = new File("data/Camp_n.shp");
       URL campShapUL = file.toURL();
 
-      ShapeFileImporter.read(campShapUL, dadaab.campShape, maskedCamp);
+      ShapeFileImporter.read(campShapUL, yellowFever.campShape, maskedCamp);
 
       Bag masked = new Bag();
 
       // ShapeFileImporter importer = new ShapeFileImporter();
       File file2 = new File("data/dadaab_road_f_node.shp");
       URL raodLinkUL = file2.toURL();
-      ShapeFileImporter.read(raodLinkUL, dadaab.roadLinks, masked);
+      ShapeFileImporter.read(raodLinkUL, yellowFever.roadLinks, masked);
 
-      extractFromRoadLinks(dadaab.roadLinks, dadaab); // construct a network of
-                                                      // roads
+      extractFromRoadLinks(yellowFever.roadLinks, yellowFever); // construct a
+                                                                // network of
+      // roads
 
       // set up the locations and nearest node capability
 
-      dadaab.closestNodes = setupNearestNodes(dadaab);
+      yellowFever.closestNodes = setupNearestNodes(yellowFever);
 
     } catch (IOException ex) {
       Logger.getLogger(SimulationBuilder.class.getName()).log(Level.SEVERE, null, ex);
     }
 
-    this.populateRefugee(dadaab);
-    this.populateMosquito(dadaab);
+    this.populateHuman(yellowFever);
+    this.populateMosquito(yellowFever);
     // random
-    int max = dadaab.getParams().getGlobal().getMaximumNumberRelative();
-    int[] numberOfFamilies = new int[dadaab.getAllFamilies().numObjs];
+    int max = yellowFever.getParams().getGlobal().getMaximumNumberRelative();
+    int[] numberOfFamilies = new int[yellowFever.getAllFamilies().numObjs];
 
-    for (int i = 0; i < dadaab.getAllFamilies().numObjs; i++) {
+    for (int i = 0; i < yellowFever.getAllFamilies().numObjs; i++) {
 
-      Family f = (Family) dadaab.getAllFamilies().objs[i];
+      Family f = (Family) yellowFever.getAllFamilies().objs[i];
       int tot = 0;
-      if (dadaab.getAllFamilies().numObjs > max) {
+      if (yellowFever.getAllFamilies().numObjs > max) {
         tot = max;
       }
 
       else
-        tot = dadaab.getAllFamilies().numObjs;
+        tot = yellowFever.getAllFamilies().numObjs;
 
-      int numOfRel = 1 + dadaab.random.nextInt(tot - 1);
+      int numOfRel = 1 + yellowFever.random.nextInt(tot - 1);
 
       // swap the array index
       for (int kk = 0; kk < numberOfFamilies.length; kk++) {
-        int idx = dadaab.random.nextInt(numberOfFamilies.length);
+        int idx = yellowFever.random.nextInt(numberOfFamilies.length);
         int temp = numberOfFamilies[idx];
         numberOfFamilies[idx] = numberOfFamilies[i];
         numberOfFamilies[i] = temp;
       }
 
       for (int jj = 0; jj < numOfRel; jj++) {
-        if (f.equals((Family) dadaab.getAllFamilies().objs[numberOfFamilies[jj]]) != true) {
-          Building l = ((Family) dadaab.getAllFamilies().objs[numberOfFamilies[jj]]).getCampLocation();
+        if (f.equals((Family) yellowFever.getAllFamilies().objs[numberOfFamilies[jj]]) != true) {
+          Building l = ((Family) yellowFever.getAllFamilies().objs[numberOfFamilies[jj]]).getCampLocation();
           f.addRelative(l);
         }
       }
@@ -297,9 +297,9 @@ public class SimulationBuilder {
       buffered.readLine();
       while ((line = buffered.readLine()) != null) {
         String[] info = line.split(divider);
-        dadaab.getClimate().addDate(info[0]);
-        dadaab.getClimate().addPrecipitation(Double.parseDouble(info[1]));
-        dadaab.getClimate().addTemperature(Double.parseDouble(info[2]));
+        yellowFever.getClimate().addDate(info[0]);
+        yellowFever.getClimate().addPrecipitation(Double.parseDouble(info[1]));
+        yellowFever.getClimate().addTemperature(Double.parseDouble(info[2]));
       }
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -317,30 +317,30 @@ public class SimulationBuilder {
       }
     }
 
-    this.generateRandomHumansInfected(dadaab);
-    this.administerRandomVaccines(dadaab);
+    this.generateRandomHumansInfected(yellowFever);
+    this.administerRandomVaccines(yellowFever);
 
     System.out.println("---");
-    int quantidadeInicialDeHumanos = dadaab.getParams().getGlobal().getInitialHumansNumber();
+    int quantidadeInicialDeHumanos = yellowFever.getParams().getGlobal().getInitialHumansNumber();
     System.out.println("Quantidade de humanos adicionadas: " + quantidadeInicialDeHumanos);
-    int quantidadeInicialDeMosquitos = dadaab.getParams().getGlobal().getInitialMosquitoesNumber();
+    int quantidadeInicialDeMosquitos = yellowFever.getParams().getGlobal().getInitialMosquitoesNumber();
     System.out.println("Quantidade de mosquitos adicionadas: " + quantidadeInicialDeMosquitos);
     int quantidadeInicialDeMosquitosNasCasa = 0;
-    for (Object object : dadaab.getFamilyHousing()) {
+    for (Object object : yellowFever.getFamilyHousing()) {
       Building fieldUnit = (Building) object;
       quantidadeInicialDeMosquitosNasCasa += fieldUnit.getMosquitoes().size();
     }
     System.out.println("Quantidade de mosquitos nas residencias: " + quantidadeInicialDeMosquitosNasCasa);
 
     int quantidadeInicialDeHumanosNasCasa = 0;
-    for (Object object : dadaab.getFamilyHousing()) {
+    for (Object object : yellowFever.getFamilyHousing()) {
       Building fieldUnit = (Building) object;
       quantidadeInicialDeHumanosNasCasa += fieldUnit.getHumans().size();
     }
     System.out.println("Quantidade de humanos nas residencias: " + quantidadeInicialDeHumanosNasCasa);
 
     int infectados = 0;
-    for (Object object : dadaab.allHumans.getAllObjects()) {
+    for (Object object : yellowFever.allHumans.getAllObjects()) {
       Human human = (Human) object;
       if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
         infectados++;
@@ -421,40 +421,31 @@ public class SimulationBuilder {
   }
 
   // random searching of next parcel to populate houses
-  public static Building nextAvailCamp(YellowFever dadaab) {
+  public static Building nextAvailCamp(YellowFever yellowFever) {
     // for now random
-    int index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
-    while (((Building) dadaab.getFamilyHousing().objs[index]).isCampOccupied(dadaab) == true
-        || dadaab.getAllFacilities().contains((Building) dadaab.getFamilyHousing().objs[index]) == true) {
+    int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
+    while (((Building) yellowFever.getFamilyHousing().objs[index]).isCampOccupied(yellowFever) == true
+        || yellowFever.getAllFacilities().contains((Building) yellowFever.getFamilyHousing().objs[index]) == true) {
       // try another spot
-      index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
+      index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
     }
-    return (Building) dadaab.getFamilyHousing().objs[index];
+    return (Building) yellowFever.getFamilyHousing().objs[index];
   }
 
   // create refugees - first hh
-  private void populateRefugee(YellowFever dadaab) {
+  private void populateHuman(YellowFever yellowFever) {
 
-    // UNHCR stat
-    // age distibution
-    // 1-4 = 0.20; 5-11 = 0.25; 12-17 = 0.12; 18-59 = 0.40;>= 60 = 0.;
-
+    // TODO: Considerar a densidade demografica de poa
     // family size
     // 1 = 30% , 2 =12% , 3 = 11%, 4=13%, 5 =12%, 6 = 10%, >6= 12%
-
     // proportion of teta = families/ total population = 8481/29772 ~ 0.3
 
     //
     double teta = 0.3;
-    int totalRef = dadaab.getParams().getGlobal().getInitialHumansNumber();
-    // prprtion of hh to total size
-    // System.out.println("s: " + totalRef);
+    int totalHumans = yellowFever.getParams().getGlobal().getInitialHumansNumber();
 
-    // int hhsize = (totalRef * teta /10 ) +
-
-    double[] prop = { 0.30, 0.12, 0.11, 0.13, 0.12, 0.10, 0.06, 0.03, 0.01, 0.01, 0.01 }; // proportion
-                                                                                          // of
-                                                                                          // household
+    // proportion of household
+    double[] prop = { 0.30, 0.12, 0.11, 0.13, 0.12, 0.10, 0.06, 0.03, 0.01, 0.01, 0.01 };
     int[] size = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // family size - all are
                                                       // zero
     // family size ranges from 1 to 11
@@ -464,19 +455,18 @@ public class SimulationBuilder {
     int curTot = 0;
 
     for (int i = 0; i < size.length; i++) {
-      double x = prop[i] * totalRef * teta;
+      double x = prop[i] * totalHumans * teta;
       int hh = (int) Math.round(x);
       size[i] = hh;
       curTot = curTot + ((i + 1) * hh);
-
     }
 
-    if (curTot > totalRef) {
-      size[0] = size[0] - (curTot - totalRef);
+    if (curTot > totalHumans) {
+      size[0] = size[0] - (curTot - totalHumans);
     }
 
-    if (curTot < totalRef) {
-      size[0] = size[0] + (totalRef - curTot);
+    if (curTot < totalHumans) {
+      size[0] = size[0] + (totalHumans - curTot);
     }
 
     /// creating aray of each family size ( disaggregate) and distibute randomly
@@ -484,9 +474,7 @@ public class SimulationBuilder {
     // calculate total hh size
     int ts = 0;
     for (int i = 0; i < size.length; i++) {
-
       ts = ts + size[i];
-
     }
     // initalize array based on hh size
     int[] sizeDist = new int[ts];
@@ -500,75 +488,65 @@ public class SimulationBuilder {
       for (int j = k; j < c; j++) {
         sizeDist[j] = t + 1;
       }
-
       k = c;
     }
 
-    // reshuffle position
-    // Collections.shuffle(Arrays.asList(sizeDist)); // does not work
-
     // swaping with random posiion
     for (int i = 0; i < sizeDist.length; i++) {
-
-      int change = i + dadaab.random.nextInt(sizeDist.length - i);
+      int change = i + yellowFever.random.nextInt(sizeDist.length - i);
       int holder = sizeDist[i];
       sizeDist[i] = sizeDist[change];
       sizeDist[change] = holder;
-
-      // System.out.println ("hh size: "+ sizeDist[i]);
     }
 
     // initialize household
-
-    // UNHCR stat
-    // age distibution
-    // 1-4 = 0.20; 5-11 = 0.25; 12-17 = 0.12; 18-59 = 0.40;>= 60 = 0.03;
-
     for (int a = 0; a < sizeDist.length; a++) {
       int counter = 0;
 
       int tot = sizeDist[a];
       counter = counter + tot;
-      if (tot != 0 && counter <= totalRef) {
-        Building fieldUnit = nextAvailCamp(dadaab);
+      if (tot != 0 && counter <= totalHumans) {
+        Building fieldUnit = nextAvailCamp(yellowFever);
         Family hh = new Family(fieldUnit);
-        dadaab.getAllFamilies().add(hh);
+        yellowFever.getAllFamilies().add(hh);
         fieldUnit.addRefugeeHH(hh);
 
         // TODO: Justificativa está considerando a arborização
-        if (dadaab.random.nextDouble() < 0.5) { // 50% chance to contains nectar
+        // 50% chance to contains nectar
+        if (yellowFever.random.nextDouble() < 0.5) {
           fieldUnit.setNectar(true);
         }
-        if (dadaab.random.nextDouble() < 0.5) { // 50% chance to contains sap
+        // 50% chance to contains sap
+        if (yellowFever.random.nextDouble() < 0.5) {
           fieldUnit.setSap(true);
         }
 
-        double rn = dadaab.random.nextDouble();
+        double rn = yellowFever.random.nextDouble();
         int age = 0;
         for (int i = 0; i < tot; i++) {
           if (i == 0) {
             // a household head need to be between 18-59;
-            age = 18 + dadaab.random.nextInt(42);
+            age = 18 + yellowFever.random.nextInt(42);
           } else {
             if (rn <= 0.1) {
-              age = 5 + dadaab.random.nextInt(14); // 20% chance the age between
-                                                   // 5-19
+              // 20% chance the age between 5-19
+              age = 5 + yellowFever.random.nextInt(14);
             } else if (rn > 0.57 && rn <= 0.97) {
-              age = 20 + dadaab.random.nextInt(14); // 40% chance the age
-                                                    // between 20-34
+              // 40% chance the age between 20-34
+              age = 20 + yellowFever.random.nextInt(14);
             } else if (rn > 0.1 && rn <= 0.40) {
-              age = 35 + dadaab.random.nextInt(14); // 25% chance the age
-                                                    // between 35-49
+              // 25% chance the age between 35-49
+              age = 35 + yellowFever.random.nextInt(14);
             } else if (rn > 0.40 && rn <= 0.57) {
-              age = 50 + dadaab.random.nextInt(14); // 12% chance the age
-                                                    // between 50-64
+              // 12% chance the age between 50-64
+              age = 50 + yellowFever.random.nextInt(14);
             } else {
-              age = 65 + dadaab.random.nextInt(25); // 3% chance the age between
-                                                    // 65-90
+              // 3% chance the age between 65-90
+              age = 65 + yellowFever.random.nextInt(25);
             }
           }
-          int sex = this.defineSex(dadaab);
-          addAllRefugees(age, sex, hh, dadaab);
+          int sex = this.defineSex(yellowFever);
+          addAllRefugees(age, sex, hh, yellowFever);
         }
       }
     }

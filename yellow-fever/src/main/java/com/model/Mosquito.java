@@ -120,24 +120,21 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void bloodFood() {
     if (this.currentPosition.getHumans().size() > 0) {
-      int size = this.currentPosition.getHumans().size();
-      this.dadaab.random.nextInt(size);
-      // TODO: Considerar uma probabilidade do mosquito conseguir
-      this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
-      this.hungry = false;
+      if (random.nextDouble() <= dadaab.getParams().getGlobal().getProbabilityOfGettingBloodFood()) {
+        int size = this.currentPosition.getHumans().size();
+        this.dadaab.random.nextInt(size);
+        this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
+        this.hungry = false;
+      } else {
+        this.hungry = true;
+      }
     } else {
       this.hungry = true;
     }
-    
-    // TODO: remover
-    if(!this.hungry && this.currentPosition.getHumans().size() > 0)
-      System.out.println(hungry);
-  
   }
 
   private void normalFood() {
     if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
-      // TODO: Considerar uma probabilidade do mosquito conseguir
       this.hungry = false;
     } else {
       this.hungry = true;
@@ -148,8 +145,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   public void toBite(Human human) {
     if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
       if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
-        // TODO: Adicionar as probabilidades
-        // TODO: Relacionada a conseguir realizar a picada
         // TODO: Relacionada a acabar morrendo durante a tentativa
         if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
           human.infected();

@@ -43,7 +43,6 @@ import sim.portrayal.simple.OvalPortrayal2D;
 import sim.portrayal.simple.RectanglePortrayal2D;
 import sim.util.Valuable;
 import sim.util.geo.MasonGeometry;
-import sim.util.media.chart.ScatterPlotGenerator;
 import sim.util.media.chart.TimeSeriesChartGenerator;
 
 public class YellowFeverGUI extends GUIState {
@@ -61,7 +60,6 @@ public class YellowFeverGUI extends GUIState {
   private TimeSeriesChartGenerator chartSeriesCholera;
   private TimeSeriesChartGenerator chartSeriesCholeraNewly;
   private TimeSeriesChartGenerator chartSeriesPopulation;
-  private ScatterPlotGenerator chartSeriesPopulation2;
 
   public static void main(String[] args) {
     YellowFeverGUI dadaabGUI = new YellowFeverGUI(args);

@@ -314,38 +314,6 @@ public class Human implements Steppable, Valuable, Serializable {
     }
 
     this.move(currentStep);
-
-    // TODO: Remover, utilizado para realização de testes
-    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18 && false) {
-      if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-        boolean carregandoovos = false;
-        boolean fome = false;
-        for (Object object : this.currentPosition.getMosquitoes()) {
-          Mosquito mosquito = (Mosquito) object;
-          if (mosquito.isHungry() && mosquito.isCarryingEggs()) {
-            carregandoovos = true;
-            fome = true;
-          }
-        }
-        if (fome) {
-          System.out.println("---");
-          System.out.println("Status da saúde: " + this.currentHealthStatus);
-          System.out.println("Idade: " + this.age);
-          System.out.println("Aqui tem mosquito? " + (this.currentPosition.getMosquitoes().size() > 0));
-          System.out.println("Quantidade de mosquitos: " + this.currentPosition.getMosquitoes().size());
-          System.out.println("Tem mosquito com fome? " + fome);
-          System.out.println("Tem mosquito carregando ovos? " + carregandoovos);
-          boolean humanos = false;
-          for (Object object : this.currentPosition.getMosquitoes()) {
-            Mosquito mosquito = (Mosquito) object;
-            if (mosquito.getCurrentPosition().containsHumans())
-              humanos = true;
-          }
-          System.out.println("Posicao do mosquito tem humanos? " + humanos);
-          System.out.println("---");
-        }
-      }
-    }
   }
 
   public double doubleValue() {
