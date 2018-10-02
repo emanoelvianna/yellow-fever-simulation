@@ -319,36 +319,6 @@ public class SimulationBuilder {
 
     this.generateRandomHumansInfected(yellowFever);
     this.administerRandomVaccines(yellowFever);
-
-    System.out.println("---");
-    int quantidadeInicialDeHumanos = yellowFever.getParams().getGlobal().getInitialHumansNumber();
-    System.out.println("Quantidade de humanos adicionadas: " + quantidadeInicialDeHumanos);
-    int quantidadeInicialDeMosquitos = yellowFever.getParams().getGlobal().getInitialMosquitoesNumber();
-    System.out.println("Quantidade de mosquitos adicionadas: " + quantidadeInicialDeMosquitos);
-    int quantidadeInicialDeMosquitosNasCasa = 0;
-    for (Object object : yellowFever.getFamilyHousing()) {
-      Building fieldUnit = (Building) object;
-      quantidadeInicialDeMosquitosNasCasa += fieldUnit.getMosquitoes().size();
-    }
-    System.out.println("Quantidade de mosquitos nas residencias: " + quantidadeInicialDeMosquitosNasCasa);
-
-    int quantidadeInicialDeHumanosNasCasa = 0;
-    for (Object object : yellowFever.getFamilyHousing()) {
-      Building fieldUnit = (Building) object;
-      quantidadeInicialDeHumanosNasCasa += fieldUnit.getHumans().size();
-    }
-    System.out.println("Quantidade de humanos nas residencias: " + quantidadeInicialDeHumanosNasCasa);
-
-    int infectados = 0;
-    for (Object object : yellowFever.allHumans.getAllObjects()) {
-      Human human = (Human) object;
-      if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
-        infectados++;
-      }
-    }
-    System.out.println("Quantidade de pessoas expostas: " + infectados);
-    System.out.println("---");
-
   }
 
   private void administerRandomVaccines(YellowFever dadaab) {
@@ -401,19 +371,16 @@ public class SimulationBuilder {
     human.setStoppable(dadaab.schedule.scheduleRepeating(human, Human.ORDERING, 1.0));
   }
 
-  // TODO: Rever a faixa de idade de estudante
-  // TODO: Considerar uma faixa como estudante universitário
   private boolean isStudent(int age) {
-    if (age < 25) {
+    if (age < 20) {
       return true;
     } else {
       return false;
     }
   }
 
-  // TODO: Está feixa de idade de trabalhador está no texto?
   private boolean isWorker(int age) {
-    if (age >= 25 && age <= 65) {
+    if (age >= 20 && age <= 65) {
       return true;
     } else {
       return false;
@@ -434,20 +401,14 @@ public class SimulationBuilder {
 
   // create refugees - first hh
   private void populateHuman(YellowFever yellowFever) {
-
-    // TODO: Considerar a densidade demografica de poa
-    // family size
-    // 1 = 30% , 2 =12% , 3 = 11%, 4=13%, 5 =12%, 6 = 10%, >6= 12%
+    // 1 = 15% , 2 =30% , 3 = 27%, 4 = 18%, 5 = 8%, 6 >= 2%
     // proportion of teta = families/ total population = 8481/29772 ~ 0.3
-
-    //
     double teta = 0.3;
     int totalHumans = yellowFever.getParams().getGlobal().getInitialHumansNumber();
-
     // proportion of household
-    double[] prop = { 0.30, 0.12, 0.11, 0.13, 0.12, 0.10, 0.06, 0.03, 0.01, 0.01, 0.01 };
-    int[] size = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // family size - all are
-                                                      // zero
+    double[] prop = { 0.15, 0.30, 0.27, 0.18, 0.08, 0.02, 0.01, 0.01 };
+    // family size - all are zero
+    int[] size = { 0, 0, 0, 0, 0, 0, 0, 0 };
     // family size ranges from 1 to 11
 
     int count = 0;
@@ -511,7 +472,6 @@ public class SimulationBuilder {
         yellowFever.getAllFamilies().add(hh);
         fieldUnit.addRefugeeHH(hh);
 
-        // TODO: Justificativa está considerando a arborização
         // 50% chance to contains nectar
         if (yellowFever.random.nextDouble() < 0.5) {
           fieldUnit.setNectar(true);

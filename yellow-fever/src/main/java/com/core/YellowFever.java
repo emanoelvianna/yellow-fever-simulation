@@ -202,33 +202,6 @@ public class YellowFever extends SimState {
 
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
-
-        if (isNewDay()) {
-          setTemperature();
-          setPrecipitacao();
-          probabilityOfEggsDying();
-          probabilityOfEggsHatching();
-          probabilityOfEggsAppearInHouses();
-
-          System.out.println("---");
-          int quantidadeMosquitos = 0;
-          int quantidadeOvos = 0;
-          double quantidadeAgua = 0;
-          for (Object object : getFamilyHousing()) {
-            Building housing = (Building) object;
-            quantidadeMosquitos += housing.getMosquitoes().size();
-            quantidadeOvos += housing.getEggs();
-            quantidadeAgua += housing.getWater();
-          }
-          System.out.println("Quantidade de mosquitos nas residenicas: " + quantidadeMosquitos);
-          System.out.println("Quantidade de ovos nas residenicas: " + quantidadeOvos);
-          System.out.println("Quantidade de mosquitos mortos: " + mosquitosMortos);
-          System.out.println("Quantidade de pessoas infectadas: " + totalInfected);
-          System.out.println("Quantidade de pessoas mortas: " + humanosMortos);
-          System.out.println("Quantidade de água nas residencias: " + quantidadeAgua);
-          System.out.println("---");
-        }
-
         Bag humans = allHumans.getAllObjects(); // getting all refugees
         //
         int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity
