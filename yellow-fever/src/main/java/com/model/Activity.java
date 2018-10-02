@@ -33,18 +33,22 @@ public class Activity {
       return ActivityMapping.STAY_HOME;
     } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       if (time.currentDayInWeek(currentStep) < 6) {
-        if (this.human.isWorker()) {
+        if (random.nextDouble() < 0.1) { // 1% chance stay home
+          return ActivityMapping.STAY_HOME;
+        } else if (this.human.isWorker()) {
           activity = ActivityMapping.WORK;
         } else if (this.human.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
           activity = ActivityMapping.SCHOOL;
         }
       } else {
-        int random = dadaab.random.nextInt(101);
-        if (random <= 80) { // 80% chance of activity away from home
-          if (random <= 40) { // 40% chance of religious activity
+        // TODO: Melhorias sobre as atividades entraria aqui!
+        if (dadaab.random.nextDouble() < 0.8) { // 80% chance
+          if (dadaab.random.nextDouble() < 0.4) { // 40% chance
             return ActivityMapping.RELIGION_ACTIVITY;
-          } else { // 60% chance of social visit activity
+          } else if (dadaab.random.nextDouble() < 0.7) { // 70% chance
             return ActivityMapping.SOCIAL_VISIT;
+          } else {
+            return ActivityMapping.MARKET;
           }
           // TODO: Adicionar atividade de ir ao mercado
         } else { // 20% chance of home activity
@@ -65,6 +69,8 @@ public class Activity {
       return betstLocation(ref.getHome(), d.getSchooles(), d);
     case RELIGION_ACTIVITY:
       return betstLocation(ref.getHome(), d.getMosques(), d);
+    case MARKET:
+      return betstLocation(ref.getHome(), d.getMarket(), d);
     case HEALTH_CENTER:
       return betstLocation(ref.getHome(), d.getHealthCenters(), d);
     case SOCIAL_VISIT:
@@ -98,6 +104,10 @@ public class Activity {
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case RELIGION_ACTIVITY:
+      // time at maximum unti 2 hours
+      period = minimumStay + random.nextInt(2 * MINUTE);
+      break;
+    case MARKET:
       // time at maximum unti 2 hours
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;

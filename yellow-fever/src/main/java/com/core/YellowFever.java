@@ -68,7 +68,8 @@ public class YellowFever extends SimState {
   private int curPop = 0;
   private int currentDay;
   private double temperature;
-  private int mosquitosMortos; // TODO: Refatorar
+  // TODO: Refatorar
+  private int mosquitosMortos;
   private int humanosMortos;
 
   /**
@@ -140,7 +141,7 @@ public class YellowFever extends SimState {
   private Bag schooles;
   private Bag healthCenters;
   private Bag mosques;
-  private Bag market; // TODO: remover?
+  private Bag market;
   private Bag foodCenter;
   private Bag other;
   // WaterContamination fm = new WaterContamination();
@@ -267,6 +268,9 @@ public class YellowFever extends SimState {
             break;
           case RELIGION_ACTIVITY:
             sumAct[2] += 1;
+            break;
+          case MARKET:
+            sumAct[3] += 1;
             break;
           case SOCIAL_VISIT:
             sumAct[6] += 1;

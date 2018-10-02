@@ -9,6 +9,7 @@ import com.core.algorithms.AStar;
 import com.core.algorithms.TimeManager;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
+import com.model.enumeration.Sex;
 
 import ec.util.MersenneTwisterFast;
 import sim.engine.SimState;
@@ -40,7 +41,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private double jitterY;
   private int stayingTime;
   private int age;
-  private int sex;
+  private Sex sex;
   private boolean receivedTreatment;
   private boolean vaccinated;
   private int incubationPeriod;
@@ -50,7 +51,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private boolean serious;
   private int currentDay;
 
-  public Human(int age, int sex, Family family, Building home, Building position, MersenneTwisterFast seed,
+  public Human(int age, Sex sex, Family family, Building home, Building position, MersenneTwisterFast seed,
       Continuous2D allHumans) {
     this.setAge(age);
     this.setSex(sex);
@@ -382,11 +383,11 @@ public class Human implements Steppable, Valuable, Serializable {
     return age;
   }
 
-  public void setSex(int sex) {
+  public void setSex(Sex sex) {
     this.sex = sex;
   }
 
-  public int getSex() {
+  public Sex getSex() {
     return sex;
   }
 

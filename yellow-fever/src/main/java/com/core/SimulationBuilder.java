@@ -12,13 +12,14 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.model.Building;
 import com.model.Facility;
 import com.model.Family;
-import com.model.Building;
 import com.model.Human;
 import com.model.Mosquito;
 import com.model.enumeration.ActivityMapping;
 import com.model.enumeration.HealthStatus;
+import com.model.enumeration.Sex;
 import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.LineString;
@@ -319,6 +320,15 @@ public class SimulationBuilder {
 
     this.generateRandomHumansInfected(yellowFever);
     this.administerRandomVaccines(yellowFever);
+
+    int total = 0;
+    for (Object object : yellowFever.allHumans.getAllObjects()) {
+      Human human = (Human) object;
+      if (human.getAge() >= 65) {
+
+      }
+    }
+
   }
 
   private void administerRandomVaccines(YellowFever dadaab) {
@@ -360,14 +370,14 @@ public class SimulationBuilder {
   }
 
   //// add households
-  private void addAllRefugees(int age, int sex, Family hh, YellowFever dadaab) {
+  private void addAllHumans(int age, Sex sex, Family hh, YellowFever dadaab) {
     Human human = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), dadaab.random, dadaab.allHumans);
     hh.addMembers(human);
     hh.getCampLocation().addRefugee(human);
     human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     human.setCurrentActivity(ActivityMapping.STAY_HOME);
     human.setStudent(this.isStudent(age));
-    human.setWorker(this.isWorker(age));
+    human.setWorker(this.isWorker(age, sex));
     human.setStoppable(dadaab.schedule.scheduleRepeating(human, Human.ORDERING, 1.0));
   }
 
@@ -379,12 +389,13 @@ public class SimulationBuilder {
     }
   }
 
-  private boolean isWorker(int age) {
-    if (age >= 20 && age <= 65) {
+  private boolean isWorker(int age, Sex sex) {
+    if (Sex.F.equals(sex) && (age >= 20 && age <= 60)) {
       return true;
-    } else {
-      return false;
+    } else if (Sex.M.equals(sex) && (age >= 20 && age <= 65)) {
+      return true;
     }
+    return false;
   }
 
   // random searching of next parcel to populate houses
@@ -481,32 +492,32 @@ public class SimulationBuilder {
           fieldUnit.setSap(true);
         }
 
-        double rn = yellowFever.random.nextDouble();
+        int random = yellowFever.random.nextInt(101);
         int age = 0;
         for (int i = 0; i < tot; i++) {
           if (i == 0) {
             // a household head need to be between 18-59;
             age = 18 + yellowFever.random.nextInt(42);
           } else {
-            if (rn <= 0.1) {
-              // 20% chance the age between 5-19
+            if (random <= 25) {
+              // 25% chance the age between 5-19
               age = 5 + yellowFever.random.nextInt(14);
-            } else if (rn > 0.57 && rn <= 0.97) {
+            } else if (random <= 45) {
               // 40% chance the age between 20-34
               age = 20 + yellowFever.random.nextInt(14);
-            } else if (rn > 0.1 && rn <= 0.40) {
+            } else if (random <= 70) {
               // 25% chance the age between 35-49
               age = 35 + yellowFever.random.nextInt(14);
-            } else if (rn > 0.40 && rn <= 0.57) {
-              // 12% chance the age between 50-64
+            } else if (random <= 90) {
+              // 20% chance the age between 50-64
               age = 50 + yellowFever.random.nextInt(14);
             } else {
-              // 3% chance the age between 65-90
+              // 10% chance the age between 65-90
               age = 65 + yellowFever.random.nextInt(25);
             }
           }
-          int sex = this.defineSex(yellowFever);
-          addAllRefugees(age, sex, hh, yellowFever);
+          Sex sex = this.defineSex(yellowFever);
+          addAllHumans(age, sex, hh, yellowFever);
         }
       }
     }
@@ -537,12 +548,12 @@ public class SimulationBuilder {
     }
   }
 
-  public int defineSex(YellowFever dadaab) {
+  public Sex defineSex(YellowFever dadaab) {
     // sex 50-50 chance
     if (dadaab.random.nextDouble() > 0.5) {
-      return 1;
+      return Sex.M;
     } else {
-      return 2;
+      return Sex.F;
     }
   }
 
