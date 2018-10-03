@@ -9,7 +9,7 @@ import sim.util.Bag;
 
 public class Activity {
 
-  private YellowFever dadaab;
+  private YellowFever yellowFever;
   private Human human;
   private TimeManager time;
   private int currentStep;
@@ -17,7 +17,7 @@ public class Activity {
   private MersenneTwisterFast random;
 
   public Activity(YellowFever dadaab, Human human, TimeManager time, int currentStep, int minuteInDay) {
-    this.dadaab = dadaab;
+    this.yellowFever = dadaab;
     this.human = human;
     this.time = time;
     this.currentStep = currentStep;
@@ -25,38 +25,61 @@ public class Activity {
     this.minuteInDay = minuteInDay;
   }
 
-  public ActivityMapping defineActivity(YellowFever dadaab) {
-    ActivityMapping activity = ActivityMapping.STAY_HOME;
-    if (this.gettingMedicalHelp()) { // 50% chance
+  public ActivityMapping defineActivity() {
+    if (this.gettingMedicalHelp()) {
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.human.hasSymptomsOfInfection()) {
+      // TODO: Tenho que garantir que ele fica em casa durante todo o dia!
       return ActivityMapping.STAY_HOME;
-    } else if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+    }
+    return defineActivitiesAccordingToSomeCriterion();
+  }
+
+  private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
+    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       if (time.currentDayInWeek(currentStep) < 6) {
         if (random.nextDouble() < 0.1) { // 1% chance stay home
           return ActivityMapping.STAY_HOME;
         } else if (this.human.isWorker()) {
-          activity = ActivityMapping.WORK;
-        } else if (this.human.isStudent() && this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
-          activity = ActivityMapping.SCHOOL;
+          return ActivityMapping.WORK;
+        } else if (this.human.isStudent()) {
+          return this.everydayActivitiesForStudents();
+        } else {
+          return this.differentActivities();
         }
       } else {
-        // TODO: Melhorias sobre as atividades entraria aqui!
-        if (dadaab.random.nextDouble() < 0.8) { // 80% chance
-          if (dadaab.random.nextDouble() < 0.4) { // 40% chance
-            return ActivityMapping.RELIGION_ACTIVITY;
-          } else if (dadaab.random.nextDouble() < 0.7) { // 70% chance
-            return ActivityMapping.SOCIAL_VISIT;
-          } else {
-            return ActivityMapping.MARKET;
-          }
-          // TODO: Adicionar atividade de ir ao mercado
-        } else { // 20% chance of home activity
-          return ActivityMapping.STAY_HOME;
-        }
+        return differentActivities();
       }
     }
-    return activity;
+    return ActivityMapping.STAY_HOME;
+  }
+
+  public ActivityMapping everydayActivitiesForStudents() {
+    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+      return ActivityMapping.SCHOOL;
+    } else if (this.yellowFever.random.nextDouble() < 0.5) { // 50% chance
+      if (this.yellowFever.random.nextDouble() < 0.4) // 40% chance
+        return ActivityMapping.SOCIAL_VISIT;
+      else if (this.yellowFever.random.nextDouble() < 0.3) // 30% chance
+        return ActivityMapping.RELIGION_ACTIVITY;
+      else
+        return ActivityMapping.MARKET;
+    }
+    return ActivityMapping.STAY_HOME;
+  }
+
+  public ActivityMapping differentActivities() {
+    if (this.yellowFever.random.nextDouble() < 0.8) { // 80% chance
+      if (this.yellowFever.random.nextDouble() < 0.4) { // 40% chance
+        return ActivityMapping.SOCIAL_VISIT;
+      } else if (this.yellowFever.random.nextDouble() < 0.3) { // 30% chance
+        return ActivityMapping.RELIGION_ACTIVITY;
+      } else {
+        return ActivityMapping.MARKET;
+      }
+    } else { // 20% chance of home activity
+      return ActivityMapping.STAY_HOME;
+    }
   }
 
   public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, YellowFever d) {
@@ -80,7 +103,6 @@ public class Activity {
     }
   }
 
-  // TODO: Importante rever as atividades e os tempos relacionados
   public int stayingPeriod(ActivityMapping activityMapping) {
     final int MINUTE = 60;
     int period = 0;
@@ -100,8 +122,8 @@ public class Activity {
       period = 10 * MINUTE;
       break;
     case SOCIAL_VISIT:
-      // the average visit time is 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
+      // the average visit time is 4 hours
+      period = minimumStay + random.nextInt(4 * MINUTE);
       break;
     case RELIGION_ACTIVITY:
       // time at maximum unti 2 hours
@@ -112,10 +134,13 @@ public class Activity {
       period = minimumStay + random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
-      // time at maximum unti 2 hours
+      // time at maximum unti 4 hours
+
       Building goal = this.human.getGoal();
-      if (goal.getFacility().isReachedCapacity(goal, dadaab)) {
-        period = minimumStay + random.nextInt(2 * MINUTE);
+      if (goal.getFacility().isReachedCapacity(goal, yellowFever)) {
+        period = minimumStay + random.nextInt(4 * MINUTE);
+        // TODO: Precisa garantir que está funcionando
+        // TODO: Está levando em consideração os recursos do hospital
         this.human.getGoal().addPatient();
       } else {
         period = 0;
@@ -133,7 +158,6 @@ public class Activity {
       this.human.receiveTreatment();
       break;
     default:
-
     }
   }
 
@@ -220,7 +244,6 @@ public class Activity {
     Bag potential = new Bag();
     Building newLocation = null;
     potential.clear();
-
     int camp = ref.getHome().getCampID(); // get camp id
     // select any camp site but not the camp that belong to the agent
     for (Object campsite : d.getFamilyHousing()) {

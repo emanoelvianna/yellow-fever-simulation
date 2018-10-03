@@ -135,7 +135,7 @@ public class Human implements Steppable, Valuable, Serializable {
   public void calculateGoal() {
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
-      ActivityMapping bestActivity = activity.defineActivity(yellowFever);
+      ActivityMapping bestActivity = activity.defineActivity();
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
       // is leaving the hospital
       if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {

@@ -17,10 +17,6 @@ import sim.io.geo.ArcInfoASCGridImporter;
 
 public class Importer {
 
-  public Importer() {
-
-  }
-
   public static void read(InputStream source, final GeomGridField.GridDataType type, GeomGridField field) {
     try {
       int width = 0;
@@ -89,7 +85,8 @@ public class Importer {
 
       scanner.close();
 
-    } catch (IOException ex) { // XXX Yes, but is this due to missing file or some other problem?
+    } catch (IOException ex) { // XXX Yes, but is this due to missing file or
+                               // some other problem?
       Logger.getLogger(ArcInfoASCGridImporter.class.getName()).log(Level.SEVERE, null, ex);
       throw new RuntimeException(ex);
     }

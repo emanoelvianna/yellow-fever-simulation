@@ -252,7 +252,7 @@ public class Building implements Valuable, Serializable {
     this.nectar = nectar;
   }
 
-  // TODO:
+  // TODO: Garantir que está funcionando!
   public boolean containsWater() {
     return water != 0;
   }

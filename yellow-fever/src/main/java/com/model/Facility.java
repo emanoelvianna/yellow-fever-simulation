@@ -46,7 +46,6 @@ public class Facility implements Steppable, Valuable {
     return facilityID;
   }
 
-  // location of the borehole
   public void setLocation(Building location) {
     this.location = location;
   }
