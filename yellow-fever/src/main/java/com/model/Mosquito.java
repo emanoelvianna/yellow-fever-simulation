@@ -150,10 +150,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
           human.infected();
         }
       }
-    }
-    if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
-      if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
-        this.infected();
+    } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+      if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+        if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
+          this.infected();
+        }
       }
     }
   }

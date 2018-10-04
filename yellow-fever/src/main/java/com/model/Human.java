@@ -47,7 +47,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private int incubationPeriod;
   private int infectionPeriod;
   private int toxicPeriod;
-  private int vaccineEffectPeriod;
+  private int delayForVaccineEffect;
   private boolean serious;
   private int currentDay;
 
@@ -72,7 +72,7 @@ public class Human implements Steppable, Valuable, Serializable {
     this.incubationPeriod = 0;
     this.infectionPeriod = 0;
     this.toxicPeriod = 0;
-    this.vaccineEffectPeriod = 0;
+    this.delayForVaccineEffect = 0;
     this.currentDay = 0;
     this.setObjectLocation(allHumans);
   }
@@ -178,14 +178,11 @@ public class Human implements Steppable, Valuable, Serializable {
     this.defineMildInfectionEvolution();
     this.defineSevereInfectionEvolution();
     this.defineToxicInfectionEvolution();
-    if (this.vaccinated) {
-      this.defineImmunity();
-    }
   }
 
   private void defineInfection() {
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
-      if (yellowFever.random.nextInt(11) <= 9) { // 90% of cases are mild
+      if (yellowFever.random.nextDouble() <= 0.9) { // 90% of cases are mild
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
         this.definePeriodOfInfection();
       } else {
@@ -222,7 +219,7 @@ public class Human implements Steppable, Valuable, Serializable {
 
   private void defineToxicInfectionEvolution() {
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
-      if (yellowFever.random.nextInt(11) < 5) { // 50-50 chance
+      if (yellowFever.random.nextDouble() < 0.5) { // 50-50 chance
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
         this.currentHealthStatus = HealthStatus.DEAD;
@@ -234,11 +231,12 @@ public class Human implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void defineImmunity() {
-    if (this.vaccineEffectPeriod == 0) {
+  private void defineImmunityEvolution() {
+    if (this.delayForVaccineEffect == 0 && HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.vaccineEffectPeriod > 0 && this.isNewDay()) {
-      this.vaccineEffectPeriod--;
+    } else if (this.delayForVaccineEffect > 0 && this.isNewDay()
+        && HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+      this.delayForVaccineEffect--;
     }
   }
 
@@ -275,7 +273,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void definePeriodOfVaccineEffect() {
-    this.vaccineEffectPeriod = 7; // one week
+    this.delayForVaccineEffect = 7; // one week
   }
 
   private void definePeriodOfInfection() {
@@ -310,8 +308,13 @@ public class Human implements Steppable, Valuable, Serializable {
     }
 
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
+
     if (HealthStatus.isInfected(this.currentHealthStatus)) {
       this.checkCurrentStateOfInfection();
+    }
+
+    if (this.vaccinated) {
+      this.defineImmunityEvolution();
     }
 
     this.move(currentStep);
@@ -495,12 +498,12 @@ public class Human implements Steppable, Valuable, Serializable {
     return this.receivedTreatment;
   }
 
-  public int getVaccineEffectPeriod() {
-    return vaccineEffectPeriod;
+  public int getDelayForVaccineEffect() {
+    return delayForVaccineEffect;
   }
 
-  public void setVaccineEffectPeriod(int vaccineEffectPeriod) {
-    this.vaccineEffectPeriod = vaccineEffectPeriod;
+  public void setDelayForVaccineEffect(int delayForVaccineEffect) {
+    this.delayForVaccineEffect = delayForVaccineEffect;
   }
 
 }
