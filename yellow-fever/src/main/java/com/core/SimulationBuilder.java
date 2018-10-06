@@ -318,17 +318,18 @@ public class SimulationBuilder {
       }
     }
 
+    this.defineInitialTemperature(yellowFever);
     this.generateRandomHumansInfected(yellowFever);
     this.administerRandomVaccines(yellowFever);
+  }
 
-    int total = 0;
-    for (Object object : yellowFever.allHumans.getAllObjects()) {
-      Human human = (Human) object;
-      if (human.getAge() >= 65) {
-
-      }
+  private void defineInitialTemperature(YellowFever yellowFever) {
+    Double initial = yellowFever.getClimate().getTemperature().get(0);
+    yellowFever.setInitialTemperature(initial);
+    for (Object object : yellowFever.getAllMosquitoes()) {
+      Mosquito mosquito = (Mosquito) object;
+      mosquito.setInitialTemperature(initial);
     }
-
   }
 
   private void administerRandomVaccines(YellowFever dadaab) {

@@ -18,7 +18,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   public static final int ORDERING = 2;
   protected Stoppable stopper;
   private MersenneTwisterFast random;
-  private YellowFever dadaab;
+  private YellowFever yellowFever;
   private Building currentPosition;
   private TimeManager time;
   private int daysOfLife;
@@ -38,7 +38,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public Mosquito(Building position) {
     this.random = new MersenneTwisterFast();
-    this.daysOfLife = 30 + random.nextInt(16);
+    this.daysOfLife = 4 + random.nextInt(32); // vector lifespan is 4-35 days
     this.currentHealthStatus = HealthStatus.SUSCEPTIBLE;
     this.speed = 1.0;
     this.hungry = true;
@@ -48,14 +48,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.incubationPeriod = 0;
     this.daysWithoutFood = 0;
     this.currentDay = 0;
-    this.temperature = 21; // TODO: Refatorar
+    this.temperature = 0;
     this.timeOfMaturation = 0;
   }
 
   public void step(SimState state) {
-    this.dadaab = (YellowFever) state;
-    this.time = this.dadaab.getTime();
-    this.currentStep = (int) dadaab.schedule.getSteps();
+    this.yellowFever = (YellowFever) state;
+    this.time = this.yellowFever.getTime();
+    this.currentStep = (int) yellowFever.schedule.getSteps();
     if (this.isNewDay()) {
       if (this.hungry == true) {
         this.daysWithoutFood++;
@@ -76,7 +76,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void isActive(int currentStep) {
     if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
-      // TODO: Considerar está mudança junto ao modelo do mosquito
       if (this.hungry) {
         if (this.isCarryingEggs()) {
           this.bloodFood();
@@ -88,7 +87,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
         if (this.isMatureEggs()) {
           this.timeOfMaturation = 0; // reset time
           if (this.currentPosition.containsWater()) {
-            // TODO: Considerar a simplificação de ovoposição junto ao modelo
             this.ovipositionProcess();
           }
         } else if (timeOfMaturation == 0) {
@@ -101,7 +99,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void probabilityOfCarryingEggs() {
-    if (this.dadaab.random.nextDouble() <= 0.2) { // 20% chance
+    if (this.yellowFever.random.nextDouble() <= 0.2) { // 20% chance
       this.setCarryingEggs(true);
     } else {
       this.setCarryingEggs(false);
@@ -120,10 +118,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void bloodFood() {
     if (this.currentPosition.getHumans().size() > 0) {
-      if (random.nextDouble() <= dadaab.getParams().getGlobal().getProbabilityOfGettingBloodFood()) {
+      if (random.nextDouble() <= yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood()) {
         int size = this.currentPosition.getHumans().size();
-        this.dadaab.random.nextInt(size);
-        this.toBite((Human) currentPosition.getHumans().get(this.dadaab.random.nextInt(size)));
+        this.yellowFever.random.nextInt(size);
+        this.toBite((Human) currentPosition.getHumans().get(this.yellowFever.random.nextInt(size)));
         this.hungry = false;
       } else {
         this.hungry = true;
@@ -141,21 +139,36 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Rever os valores em relação ao modelo bibliográfico
   public void toBite(Human human) {
-    if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
+    switch (human.getCurrentHealthStatus()) {
+    case SUSCEPTIBLE:
       if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
-        // TODO: Relacionada a acabar morrendo durante a tentativa
-        if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
+        int probability = yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
+        if (this.yellowFever.random.nextInt(101) <= probability) {
           human.infected();
         }
       }
-    } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+      break;
+    case MILD_INFECTION:
       if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-        if (this.dadaab.random.nextDouble() <= 0.7) { // 70% chance of infection
+        int probability = yellowFever.getParams().getGlobal()
+            .getTransmissionProbabilityFromHostWithMildInfectionToVector();
+        if (this.yellowFever.random.nextInt(101) <= probability) {
           this.infected();
         }
       }
+      break;
+    case SEVERE_INFECTION:
+      if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+        int probability = yellowFever.getParams().getGlobal()
+            .getTransmissionProbabilityFromHostWithSevereInfectionToVector();
+        if (this.yellowFever.random.nextInt(101) <= probability) {
+          this.infected();
+        }
+      }
+      break;
+    default:
+      break;
     }
   }
 
@@ -173,7 +186,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void defineIncubationPeriod() {
-    this.incubationPeriod = 3 + this.dadaab.random.nextInt(4);
+    this.incubationPeriod = 8 + this.yellowFever.random.nextInt(5); // 8-12 days
   }
 
   private void checkCurrentStateOfMaturation() {
@@ -192,23 +205,25 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void setTemperature() {
-    List<Double> temperatures = dadaab.getClimate().getTemperature();
-    if (currentDay < temperatures.size()) {
-      this.temperature = temperatures.get(currentDay);
-    } else {
-      // TODO:
+  private void probabilityOfDying() {
+    if (this.yellowFever.random.nextDouble() <= 0.05) { // 5% chance
+      this.yellowFever.killmosquito(this);
+    } else if (this.daysOfLife <= 0) {
+      this.yellowFever.killmosquito(this);
+    } else if (this.daysWithoutFood > 1) {
+      this.yellowFever.killmosquito(this);
     }
   }
 
-  private void probabilityOfDying() {
-    if (this.dadaab.random.nextDouble() <= 0.05) { // 5% chance
-      this.dadaab.killmosquito(this);
-    } else if (this.daysOfLife <= 0) {
-      this.dadaab.killmosquito(this);
-    } else if (this.daysWithoutFood > 1) {
-      this.dadaab.killmosquito(this);
+  private void setTemperature() {
+    List<Double> temperatures = yellowFever.getClimate().getTemperature();
+    if (currentDay < temperatures.size()) {
+      this.temperature = temperatures.get(currentDay);
     }
+  }
+
+  public void setInitialTemperature(Double initial) {
+    this.temperature = initial;
   }
 
   public void setStoppable(Stoppable stopp) {

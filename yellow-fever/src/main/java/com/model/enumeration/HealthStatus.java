@@ -20,7 +20,7 @@ public enum HealthStatus {
     }
   }
 
-  public static boolean isInfected(HealthStatus currentHealthStatus) {
+  public static boolean isHumanInfected(HealthStatus currentHealthStatus) {
     switch (currentHealthStatus) {
     case EXPOSED:
       return true;

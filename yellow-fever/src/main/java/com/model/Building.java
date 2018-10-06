@@ -57,7 +57,7 @@ public class Building implements Valuable, Serializable {
   public boolean containsHumansInfected() {
     for (Object object : humans) {
       Human human = (Human) object;
-      if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+      if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
         return true;
       }
     }
@@ -70,7 +70,7 @@ public class Building implements Valuable, Serializable {
 
   // check how many familes can occupied in a field
   public boolean isCampOccupied(YellowFever dadaab) {
-    if (this.getRefugeeHH().size() >= dadaab.getParams().getGlobal().getMaximumHHOccumpancyPerField()) {
+    if (this.getRefugeeHH().size() >= dadaab.getParams().getGlobal().getMaximumFamilyOccumpancyPerBuilding()) {
       return true;
     } else {
       return false;

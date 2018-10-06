@@ -65,9 +65,9 @@ public class Parameters {
     intParameter = returnIntParameter(parameterDB, "InitialHumansNumber", global.initialHumansNumber);
     global.initialHumansNumber = intParameter;
 
-    intParameter = returnIntParameter(parameterDB, "probabilityOfEggsAppearInHouses",
-        global.probabilityOfEggsAppearInHouses);
-    global.probabilityOfEggsAppearInHouses = intParameter;
+    intParameter = returnIntParameter(parameterDB, "maximumFamilyOccumpancyPerBuilding",
+        global.maximumFamilyOccumpancyPerBuilding);
+    global.maximumFamilyOccumpancyPerBuilding = intParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "waterAbsorption(mm)", global.waterAbsorption);
     global.waterAbsorption = doubleParameter;
@@ -78,25 +78,38 @@ public class Parameters {
     intParameter = returnIntParameter(parameterDB, "resourcesInMedicalCenters", global.resourcesInMedicalCenters);
     global.resourcesInMedicalCenters = intParameter;
 
+    intParameter = returnIntParameter(parameterDB, "probabilityOfEggsAppearInHouses",
+        global.probabilityOfEggsAppearInHouses);
+    global.probabilityOfEggsAppearInHouses = intParameter;
+
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfGettingBloodFood",
         global.probabilityOfGettingBloodFood);
     global.probabilityOfGettingBloodFood = doubleParameter;
 
+    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityFromVectorToHost",
+        global.transmissionProbabilityFromVectorToHost);
+    global.transmissionProbabilityFromVectorToHost = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityFromHostWithMildInfectionToVector",
+        global.transmissionProbabilityFromHostWithMildInfectionToVector);
+    global.transmissionProbabilityFromHostWithMildInfectionToVector = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityFromHostWithSevereInfectionToVector",
+        global.transmissionProbabilityFromHostWithSevereInfectionToVector);
+    global.transmissionProbabilityFromHostWithSevereInfectionToVector = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "probabilityOfMildInfection", global.probabilityOfMildInfection);
+    global.probabilityOfMildInfection = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "probabilityFromSevereInfectionTotoxicInfection",
+        global.probabilityFromSevereInfectionTotoxicInfection);
+    global.probabilityFromSevereInfectionTotoxicInfection = intParameter;
+
     getGlobal().setMaximumNumberRelative(
         returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
 
-    getGlobal().setProbRecoveryToSuscebtable(
-        returnDoubleParameter(parameterDB, "recovery_To_Susceb_Rate", getGlobal().getProbRecoveryToSuscebtable()));
-
     getGlobal().setHeaalthFacilityCapacity(
         returnIntParameter(parameterDB, "healthFacilityCapacity", getGlobal().getHeaalthFacilityCapacity()));
-
-    getGlobal().setMaximumCrowedLevel(
-        returnDoubleParameter(parameterDB, "CROWED_LEVEL_THRESHOLD", getGlobal().getMaximumCrowedLevel()));
-
-    getGlobal().setMaximumHHOccumpancyPerField(
-        returnIntParameter(parameterDB, "maximum_occupancy_Threshold", getGlobal().getMaximumHHOccumpancyPerField()));
-
   }
 
   public int returnIntParameter(ParameterDatabase paramDB, String parameterName, int defaultValue) {
@@ -129,20 +142,16 @@ public class Parameters {
     private int quantityOfVaccinesApplied = 0;
     private int resourcesInMedicalCenters = 20;
     private double probabilityOfGettingBloodFood = 0.8;
+    public int maximumFamilyOccumpancyPerBuilding = 1000; // arbitrary
+    private int probabilityOfMildInfection = 85;
+    private int probabilityFromSevereInfectionTotoxicInfection = 10;
+    private int transmissionProbabilityFromVectorToHost = 75;
+    private int transmissionProbabilityFromHostWithMildInfectionToVector = 30;
+    private int transmissionProbabilityFromHostWithSevereInfectionToVector = 75;
 
-    // TODO: adicionar a primeira temperatura e precipitação como parametro!
-
-    public double recovery_To_Susceb_Rate = 0.000001; // prob of change from
-                                                      // recovered to
-                                                      // suscebtible
-    public int maximum_occupancy_Threshold = 1000; // arbitrary
-                                                   // uses
+    // TODO: Rever
     public int MaximumNumberRelative = 15;
-    public double CROWED_LEVEL_THRESHOLD = 4000; // 50% of the cellsize
-                                                 // 90*90=8100
-
-    public int healthFacilityCapacity = 1000; // 500 person/day efficient to
-                                              // treat cholera victim
+    public int healthFacilityCapacity = 1000;
 
     public void setInitialHumansNumber(int num) {
       this.initialHumansNumber = num;
@@ -162,38 +171,19 @@ public class Parameters {
 
     }
 
-    // probability of recovered agent to be suscebtable again
-    public void setProbRecoveryToSuscebtable(double rec) {
-      this.recovery_To_Susceb_Rate = rec;
-    }
-
-    public double getProbRecoveryToSuscebtable() {
-      return recovery_To_Susceb_Rate;
-    }
-
     // determien the number of agent per field or parcel
 
-    public void setMaximumHHOccumpancyPerField(int num) {
-      this.maximum_occupancy_Threshold = num;
+    public void setMaximumFamilyOccumpancyPerBuilding(int number) {
+      this.maximumFamilyOccumpancyPerBuilding = number;
     }
 
-    public int getMaximumHHOccumpancyPerField() {
-      return maximum_occupancy_Threshold;
+    public int getMaximumFamilyOccumpancyPerBuilding() {
+      return maximumFamilyOccumpancyPerBuilding;
 
     }
 
-    // determine how many agent can be stay in a given field or road at the same
-    // time
-    public void setMaximumCrowedLevel(double c) {
-      this.CROWED_LEVEL_THRESHOLD = c;
-    }
-
-    public double getMaximumCrowedLevel() {
-      return CROWED_LEVEL_THRESHOLD;
-    }
-
-    public void setHeaalthFacilityCapacity(int ca) {
-      this.healthFacilityCapacity = ca;
+    public void setHeaalthFacilityCapacity(int capacity) {
+      this.healthFacilityCapacity = capacity;
     }
 
     public int getHeaalthFacilityCapacity() {
@@ -220,8 +210,8 @@ public class Parameters {
       return probabilityOfEggsAppearInHouses;
     }
 
-    public void setProbabilityOfEggsAppearInHouses(int probabilityOfEggsAppearInHouses) {
-      this.probabilityOfEggsAppearInHouses = probabilityOfEggsAppearInHouses;
+    public void setProbabilityOfEggsAppearInHouses(int probability) {
+      this.probabilityOfEggsAppearInHouses = probability;
     }
 
     public double getWaterAbsorption() {
@@ -252,8 +242,50 @@ public class Parameters {
       return probabilityOfGettingBloodFood;
     }
 
-    public void setProbabilityOfGettingBloodFood(double probabilityOfGettingBloodFood) {
-      this.probabilityOfGettingBloodFood = probabilityOfGettingBloodFood;
+    public void setProbabilityOfGettingBloodFood(double probability) {
+      this.probabilityOfGettingBloodFood = probability;
+    }
+
+    public int getProbabilityOfMildInfection() {
+      return probabilityOfMildInfection;
+    }
+
+    public void setProbabilityOfMildInfection(int probability) {
+      this.probabilityOfMildInfection = probability;
+    }
+
+    public int getProbabilityFromSevereInfectionTotoxicInfection() {
+      return probabilityFromSevereInfectionTotoxicInfection;
+    }
+
+    public void setProbabilityFromSevereInfectionTotoxicInfection(int probability) {
+      this.probabilityFromSevereInfectionTotoxicInfection = probability;
+    }
+
+    public int getTransmissionProbabilityFromVectorToHost() {
+      return transmissionProbabilityFromVectorToHost;
+    }
+
+    public void setTransmissionProbabilityFromVectorToHost(int transmissionProbabilityFromVectorToHost) {
+      this.transmissionProbabilityFromVectorToHost = transmissionProbabilityFromVectorToHost;
+    }
+
+    public int getTransmissionProbabilityFromHostWithMildInfectionToVector() {
+      return transmissionProbabilityFromHostWithMildInfectionToVector;
+    }
+
+    public void setTransmissionProbabilityFromHostWithMildInfectionToVector(
+        int transmissionProbabilityFromHostWithMildInfectionToVector) {
+      this.transmissionProbabilityFromHostWithMildInfectionToVector = transmissionProbabilityFromHostWithMildInfectionToVector;
+    }
+
+    public int getTransmissionProbabilityFromHostWithSevereInfectionToVector() {
+      return transmissionProbabilityFromHostWithSevereInfectionToVector;
+    }
+
+    public void setTransmissionProbabilityFromHostWithSevereInfectionToVector(
+        int transmissionProbabilityFromHostWithSevereInfectionToVector) {
+      this.transmissionProbabilityFromHostWithSevereInfectionToVector = transmissionProbabilityFromHostWithSevereInfectionToVector;
     }
   }
 }

@@ -68,9 +68,12 @@ public class YellowFever extends SimState {
   private int curPop = 0;
   private int currentDay;
   private double temperature;
-  // TODO: Refatorar
-  private int mosquitosMortos;
-  private int humanosMortos;
+  private int deadMosquitoes;
+  private int deadHumans;
+  // TODO:
+  private int quantityOfHumansWithMildInfection;
+  private int quantityOfHumansWithSevereInfection;
+  private int quantityOfHumansWithToxicInfection;
 
   /**
    * charts and graphs
@@ -166,12 +169,9 @@ public class YellowFever extends SimState {
     this.allCampGeoGrid = new GeomGridField();
     this.climate = new Climate();
     this.currentDay = 0;
-    this.mosquitosMortos = 0;
-    this.humanosMortos = 0;
-
-    // TODO: Refatorar
-    // TODO: Deve ser setado no nomento que estou lendo o arquivo!
-    this.temperature = 21;
+    this.deadMosquitoes = 0;
+    this.deadHumans = 0;
+    this.temperature = 0;
     this.schooles = new Bag();
     this.healthCenters = new Bag();
     this.mosques = new Bag();
@@ -203,6 +203,14 @@ public class YellowFever extends SimState {
 
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
+        if (isNewDay()) {
+          setTemperature();
+          setPrecipitacao();
+          probabilityOfEggsDying();
+          probabilityOfEggsHatching();
+          probabilityOfEggsAppearInHouses();
+        }
+
         Bag humans = allHumans.getAllObjects(); // getting all refugees
         //
         int[] sumAct = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // adding each activity
@@ -286,7 +294,7 @@ public class YellowFever extends SimState {
               totSusDag = totSusDag + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpDag = totExpDag + 1;
-            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfDag = totInfDag + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecDag = totRecDag + 1;
@@ -301,7 +309,7 @@ public class YellowFever extends SimState {
               totSusInfo = totSusInfo + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpInfo = totExpInfo + 1;
-            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfInfo = totInfInfo + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecInfo = totRecInfo + 1;
@@ -315,7 +323,7 @@ public class YellowFever extends SimState {
               totSusHag = totSusHag + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totExpHag = totExpHag + 1;
-            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfHag = totInfHag + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totRecHag = totRecHag + 1;
@@ -330,7 +338,7 @@ public class YellowFever extends SimState {
             totalSus = totalSus + 1;
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
             totalExp = totalExp + 1;
-          } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+          } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
             // TODO: Pessoas expostas também estão infectadas?
             totalInf = totalInf + 1;
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
@@ -344,7 +352,7 @@ public class YellowFever extends SimState {
               totalSusNewly = totalSusNewly + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
               totalExpNewly = totalExpNewly + 1;
-            } else if (HealthStatus.isInfected(human.getCurrentHealthStatus())) {
+            } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totalInfNewly = totalInfNewly + 1;
             } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
               totalRecNewly = totalRecNewly + 1;
@@ -460,6 +468,10 @@ public class YellowFever extends SimState {
     return this.temperature;
   }
 
+  public void setInitialTemperature(double initial) {
+    this.temperature = initial;
+  }
+
   private void setPrecipitacao() {
     List<Double> rainfall = climate.getPrecipitation();
     double mm = params.getGlobal().getWaterAbsorption();
@@ -562,13 +574,13 @@ public class YellowFever extends SimState {
       getAllFamilies().remove(human.getFamily());
     }
     allHumans.remove(human);
-    this.humanosMortos++;
+    this.deadHumans++;
   }
 
   public void killmosquito(Mosquito mosquito) {
     mosquito.getCurrentPosition().removeMosquito(mosquito);
     allMosquitoes.remove(mosquito);
-    this.mosquitosMortos++;
+    this.deadMosquitoes++;
   }
 
   public int countDeath() {
@@ -818,6 +830,14 @@ public class YellowFever extends SimState {
 
   public void setMarket(Bag market) {
     this.market = market;
+  }
+
+  public int getDeadMosquitoes() {
+    return this.deadMosquitoes;
+  }
+
+  public int getDeadHumans() {
+    return this.deadHumans;
   }
 
 }
