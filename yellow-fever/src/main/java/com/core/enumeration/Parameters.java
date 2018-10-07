@@ -135,8 +135,8 @@ public class Parameters {
   public class GlobalParamters {
 
     private int initialHumansNumberInfected = 10;
-    private int initialMosquitoesNumber = 1000;
-    private int initialHumansNumber = 4000; // 4000
+    private int initialMosquitoesNumber = 8000;
+    private int initialHumansNumber = 4000;
     private int probabilityOfEggsAppearInHouses = 30;
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;

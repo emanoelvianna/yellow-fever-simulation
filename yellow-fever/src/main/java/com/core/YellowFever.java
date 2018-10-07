@@ -8,7 +8,7 @@ import org.jfree.data.xy.XYSeries;
 
 import com.core.algorithms.TimeManager;
 import com.core.enumeration.Parameters;
-import com.core.observer.DadaabObserver;
+import com.core.observer.YellowFeverObserver;
 import com.model.Building;
 import com.model.Climate;
 import com.model.Facility;
@@ -149,7 +149,7 @@ public class YellowFever extends SimState {
 
   private TimeManager time = new TimeManager();
 
-  public DadaabObserver dObserver;
+  public YellowFeverObserver dObserver;
   int[] sumActivities = { 0, 0, 0, 0, 0, 0, 0, 0 }; //
   int[] dailyRain = new int[365];
 
@@ -186,13 +186,13 @@ public class YellowFever extends SimState {
     super.start();
     // accessing inpt files
     SimulationBuilder builder = new SimulationBuilder();
-    builder.create("data/d_camp_a.txt", "data/d_faci_a.txt", "data/d_costp_a.txt", this, this.random);
+    builder.create(this, this.random);
 
     schedule.scheduleRepeating(facility, facility.ORDERING, 1);
 
     // if (getOutputStats ==true){
-    dObserver = new DadaabObserver(this);
-    schedule.scheduleRepeating(dObserver, DadaabObserver.ORDERING, 1.0);
+    dObserver = new YellowFeverObserver(this);
+    schedule.scheduleRepeating(dObserver, YellowFeverObserver.ORDERING, 1.0);
     // }
     // updating chart information
     Steppable updater = new Steppable() {

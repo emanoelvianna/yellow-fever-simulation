@@ -17,16 +17,13 @@ import sim.engine.Steppable;
 import sim.field.grid.DoubleGrid2D;
 import sim.io.geo.ArcInfoASCGridExporter;
 import sim.util.Bag;
-// based on riftland worldobserver class
-// thanks goes to mcoletti and jbasset
 
-public class DadaabObserver implements Steppable {
+public class YellowFeverObserver implements Steppable {
 
-  private BufferedWriter dataFileBuffer_; // output file buffer for dataCSVFile_
-  private CSVWriter dataCSVFile_; // CSV file that contains run data
-
-  private BufferedWriter dataFileBuffer_act; // output file buffer for
-                                             // dataCSVFile_
+  private BufferedWriter dataFileBuffer;
+  private CSVWriter dataCSVFile_;
+  
+  private BufferedWriter dataFileBuffer_act;
   private CSVWriter dataCSVFile_act; // CSV file that contains run data
 
   // hold by camp
@@ -40,22 +37,22 @@ public class DadaabObserver implements Steppable {
 
   Bag choleraGridBag = new Bag();
 
-  YellowFever d;
+  YellowFever yellowFever;
 
   public final static int ORDERING = 3;
 
   private int step = 0;
   private boolean writeGrid = false;
 
-  public DadaabObserver(YellowFever dadaab) {
+  public YellowFeverObserver(YellowFever dadaab) {
     // setup(world);
     // <GCB>: you may want to adjust the number of columns based on these flags.
     // both in createLogFile, and step
-    d = null;
+    yellowFever = null;
     startLogFile();
   }
 
-  DadaabObserver() {
+  YellowFeverObserver() {
     startLogFile();
   }
 
@@ -92,55 +89,55 @@ public class DadaabObserver implements Steppable {
   int count = 0;
 
   public void step(SimState state) {
-    d = (YellowFever) state;
+    yellowFever = (YellowFever) state;
 
     String job = Long.toString(state.job());
-    String numSuscpitable = Integer.toString(d.getNumberOfSuscipitable());
-    String numExposed = Integer.toString(d.getNumberOfExposed());
-    String numInfected = Integer.toString(d.getNumberOfInfected());
-    String numRecovered = Integer.toString(d.getNumberOfRecovered());
-    String numDeath = Integer.toString(d.countDeath());
+    String numSuscpitable = Integer.toString(yellowFever.getNumberOfSuscipitable());
+    String numExposed = Integer.toString(yellowFever.getNumberOfExposed());
+    String numInfected = Integer.toString(yellowFever.getNumberOfInfected());
+    String numRecovered = Integer.toString(yellowFever.getNumberOfRecovered());
+    String numDeath = Integer.toString(yellowFever.countDeath());
 
     // "At Home","School","Water", "Mosque","Market", "Food C.", "Health
     // C.","Visit
     // R.", "Social","Hygiene"
     // TODO: Refatorar, existem atividades inexistentes
-    String numTotAgent = Integer.toString(d.allHumans.getAllObjects().numObjs);
-    String numAtHome = Integer.toString(d.getTotalActivity()[0]);
-    String numSchool = Integer.toString(d.getTotalActivity()[1]);
-    String numWater = Integer.toString(d.getTotalActivity()[2]);
-    String numMosque = Integer.toString(d.getTotalActivity()[3]);
-    String numMarket = Integer.toString(d.getTotalActivity()[4]);
-    String numFoodC = Integer.toString(d.getTotalActivity()[5]);
-    String numHealthC = Integer.toString(d.getTotalActivity()[6]);
-    String numVisitR = Integer.toString(d.getTotalActivity()[7]);
-    String numSocail = Integer.toString(d.getTotalActivity()[8]);
-    String numHygeiene = Integer.toString(d.getTotalActivity()[9]);
+    String numTotAgent = Integer.toString(yellowFever.allHumans.getAllObjects().numObjs);
+    String numAtHome = Integer.toString(yellowFever.getTotalActivity()[0]);
+    String numSchool = Integer.toString(yellowFever.getTotalActivity()[1]);
+    String numWater = Integer.toString(yellowFever.getTotalActivity()[2]);
+    String numMosque = Integer.toString(yellowFever.getTotalActivity()[3]);
+    String numMarket = Integer.toString(yellowFever.getTotalActivity()[4]);
+    String numFoodC = Integer.toString(yellowFever.getTotalActivity()[5]);
+    String numHealthC = Integer.toString(yellowFever.getTotalActivity()[6]);
+    String numVisitR = Integer.toString(yellowFever.getTotalActivity()[7]);
+    String numSocail = Integer.toString(yellowFever.getTotalActivity()[8]);
+    String numHygeiene = Integer.toString(yellowFever.getTotalActivity()[9]);
 
-    String numSusDag = Integer.toString(d.campSuscpitable[0]);
-    String numExpDag = Integer.toString(d.campExposed[0]);
-    String numInfDag = Integer.toString(d.campInfected[0]);
-    String numRecDag = Integer.toString(d.campRecovered[0]);
+    String numSusDag = Integer.toString(yellowFever.campSuscpitable[0]);
+    String numExpDag = Integer.toString(yellowFever.campExposed[0]);
+    String numInfDag = Integer.toString(yellowFever.campInfected[0]);
+    String numRecDag = Integer.toString(yellowFever.campRecovered[0]);
 
-    String numSusInfo = Integer.toString(d.campSuscpitable[1]);
-    String numExpInfo = Integer.toString(d.campExposed[1]);
-    String numInfInfo = Integer.toString(d.campInfected[1]);
-    String numRecInfo = Integer.toString(d.campRecovered[1]);
+    String numSusInfo = Integer.toString(yellowFever.campSuscpitable[1]);
+    String numExpInfo = Integer.toString(yellowFever.campExposed[1]);
+    String numInfInfo = Integer.toString(yellowFever.campInfected[1]);
+    String numRecInfo = Integer.toString(yellowFever.campRecovered[1]);
 
-    String numSusHag = Integer.toString(d.campSuscpitable[2]);
-    String numExpHag = Integer.toString(d.campExposed[2]);
-    String numInfHag = Integer.toString(d.campInfected[2]);
-    String numRecHag = Integer.toString(d.campRecovered[2]);
+    String numSusHag = Integer.toString(yellowFever.campSuscpitable[2]);
+    String numExpHag = Integer.toString(yellowFever.campExposed[2]);
+    String numInfHag = Integer.toString(yellowFever.campInfected[2]);
+    String numRecHag = Integer.toString(yellowFever.campRecovered[2]);
 
     // newly cholera cases
-    String numSuscpitable_cS = Integer.toString(d.getNumberOfSuscipitableNewly());
-    String numExposed_cS = Integer.toString(d.getNumberOfExposedNewly());
-    String numInfected_cS = Integer.toString(d.getNumberOfInfectedNewly());
-    String numRecovered_cS = Integer.toString(d.getNumberOfRecoveredNewly());
+    String numSuscpitable_cS = Integer.toString(yellowFever.getNumberOfSuscipitableNewly());
+    String numExposed_cS = Integer.toString(yellowFever.getNumberOfExposedNewly());
+    String numInfected_cS = Integer.toString(yellowFever.getNumberOfInfectedNewly());
+    String numRecovered_cS = Integer.toString(yellowFever.getNumberOfRecoveredNewly());
 
     // when to export raster;- everyday at midnight
     // // writeGrid =true;
-    if (d.schedule.getSteps() % 1440 == 5) {
+    if (yellowFever.schedule.getSteps() % 1440 == 5) {
       writeGrid = true;
     } else {
       writeGrid = false;
@@ -178,13 +175,13 @@ public class DadaabObserver implements Steppable {
 
         writeCholeraSpread();
 
-        ArcInfoASCGridExporter.write(d.allCampGeoGrid, dataASCCholera);
+        ArcInfoASCGridExporter.write(yellowFever.allCampGeoGrid, dataASCCholera);
         choleraGridBag.add(dataASCCholera);
 
       }
 
     } catch (IOException ex) {
-      Logger.getLogger(DadaabObserver.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(YellowFeverObserver.class.getName()).log(Level.SEVERE, null, ex);
     }
 
     this.step++;
@@ -192,7 +189,7 @@ public class DadaabObserver implements Steppable {
 
   public void finish() {
     try {
-      this.dataFileBuffer_.close();
+      this.dataFileBuffer.close();
       this.dataFileBuffer_act.close();
       this.dataFileBuffer_camp.close();
       this.dataFileBuffer_cStatus.close();
@@ -203,7 +200,7 @@ public class DadaabObserver implements Steppable {
       }
 
     } catch (IOException ex) {
-      Logger.getLogger(DadaabObserver.class.getName()).log(Level.SEVERE, null, ex);
+      Logger.getLogger(YellowFeverObserver.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
@@ -219,9 +216,9 @@ public class DadaabObserver implements Steppable {
     String filename_camp = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + "d_cholera_camp.csv";
 
     // cholera
-    this.dataFileBuffer_ = new BufferedWriter(new FileWriter(filename));
+    this.dataFileBuffer = new BufferedWriter(new FileWriter(filename));
 
-    this.dataCSVFile_ = new CSVWriter(dataFileBuffer_);
+    this.dataCSVFile_ = new CSVWriter(dataFileBuffer);
 
     // activity
     this.dataFileBuffer_act = new BufferedWriter(new FileWriter(filename_act));
@@ -241,13 +238,13 @@ public class DadaabObserver implements Steppable {
   //
   public void writeCholeraSpread() {
 
-    DoubleGrid2D grid = new DoubleGrid2D(d.allCamps.getWidth(), d.allCamps.getHeight());
+    DoubleGrid2D grid = new DoubleGrid2D(yellowFever.allCamps.getWidth(), yellowFever.allCamps.getHeight());
     // first put all values zero
 
-    for (int i = 0; i < d.allCamps.getWidth(); i++) {
-      for (int j = 0; j < d.allCamps.getHeight(); j++) {
+    for (int i = 0; i < yellowFever.allCamps.getWidth(); i++) {
+      for (int j = 0; j < yellowFever.allCamps.getHeight(); j++) {
 
-        Building faci = (Building) d.allCamps.get(i, j);
+        Building faci = (Building) yellowFever.allCamps.get(i, j);
         if (faci.getCampID() > 0) {
           grid.field[i][j] = 0;
         }
@@ -256,7 +253,7 @@ public class DadaabObserver implements Steppable {
     }
     // TODO: Verificar a funcionalidade sobre a febre amarela
     // then write the current refugee health status
-    for (Object o : d.allHumans.allObjects) {
+    for (Object o : yellowFever.allHumans.allObjects) {
       Human r = (Human) o;
       double tot = grid.field[r.getCurrentPosition().getLocationX()][r.getCurrentPosition().getLocationY()];
       if (r.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
@@ -271,7 +268,7 @@ public class DadaabObserver implements Steppable {
 
     }
 
-    d.allCampGeoGrid.setGrid(grid);
+    yellowFever.allCampGeoGrid.setGrid(grid);
 
   }
 
