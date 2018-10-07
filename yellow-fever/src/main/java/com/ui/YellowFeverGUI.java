@@ -52,7 +52,7 @@ public class YellowFeverGUI extends GUIState {
   private Display2D displayRainfall;
   private JFrame displayFrameRainfall;
   private FastValueGridPortrayal2D rainfallPortrayal = new FastValueGridPortrayal2D();
-  private ContinuousPortrayal2D refugeePortrayal = new ContinuousPortrayal2D();
+  private ContinuousPortrayal2D humansPortrayal = new ContinuousPortrayal2D();
   private SparseGridPortrayal2D facilPortrayal = new SparseGridPortrayal2D();
   private GeomVectorFieldPortrayal roadShapeProtrayal = new GeomVectorFieldPortrayal();
   private GeomVectorFieldPortrayal campShapeProtrayal = new GeomVectorFieldPortrayal();
@@ -90,7 +90,7 @@ public class YellowFeverGUI extends GUIState {
   public void setupPortrayals() {
     YellowFever dadaab = (YellowFever) state;
     rainfallPortrayal.setField(dadaab.rainfallGrid);
-    refugeePortrayal.setField(dadaab.allHumans);
+    humansPortrayal.setField(dadaab.allHumans);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
       // to draw each refugee type with differnet color
@@ -117,7 +117,7 @@ public class YellowFeverGUI extends GUIState {
       }
     };
 
-    refugeePortrayal.setPortrayalForAll(rPortrayal);
+    humansPortrayal.setPortrayalForAll(rPortrayal);
 
     facilPortrayal.setField(dadaab.facilityGrid);
     // facility portrial
@@ -217,7 +217,7 @@ public class YellowFeverGUI extends GUIState {
     // display.attach(landPortrayal, "Camps");
     display.attach(campShapeProtrayal, "Camps Vector");
     display.attach(roadShapeProtrayal, "Road Vector");
-    display.attach(refugeePortrayal, "Refugees");
+    display.attach(humansPortrayal, "Humans");
     display.attach(facilPortrayal, "Facility");
 
     // Dadaab db = (Dadaab) state;
@@ -233,7 +233,7 @@ public class YellowFeverGUI extends GUIState {
     displayFrameRainfall.setTitle("Rainfall");
 
     // Portray activity chart
-    JFreeChart chart = ChartFactory.createBarChart("Refugee's Activity", "Activity", "Percentage",
+    JFreeChart chart = ChartFactory.createBarChart("Human's Activity", "Activity", "Percentage",
         ((YellowFever) this.state).dataset, PlotOrientation.VERTICAL, false, false, false);
     chart.setBackgroundPaint(Color.WHITE);
     chart.getTitle().setPaint(Color.BLACK);
@@ -341,8 +341,8 @@ public class YellowFeverGUI extends GUIState {
     // population dynamics
     chartSeriesPopulation = new sim.util.media.chart.TimeSeriesChartGenerator();
     chartSeriesPopulation.resize(100, 50);
-    chartSeriesPopulation.setTitle("Refugee Population Dynamics");
-    chartSeriesPopulation.setRangeAxisLabel(" Number of Refugees");
+    chartSeriesPopulation.setTitle("Humans Population Dynamics");
+    chartSeriesPopulation.setRangeAxisLabel(" Number of Humans");
     chartSeriesPopulation.setDomainAxisLabel("Minutes");
     chartSeriesPopulation.addSeries(((YellowFever) this.state).totalTotalPopSeries, null);
     chartSeriesPopulation.addSeries(((YellowFever) this.state).totalDeathSeries, null);
@@ -377,12 +377,6 @@ public class YellowFeverGUI extends GUIState {
     dvi2.setOutlinePaint(Color.red);
     dvi2.setRadius(0.3);
     plot.addLayer(dvi2);
-
-    // TODO: Adicionar dia da semana
-    DialTextAnnotation annotation2 = new DialTextAnnotation("Day");
-    annotation2.setFont(new Font("Dialog", Font.BOLD, 18));
-    annotation2.setRadius(0.4);
-    plot.addLayer(annotation2);
 
     StandardDialScale scale = new StandardDialScale(0.0, 23.99, 90, -360, 1.0, 59);
     scale.setTickRadius(0.9);

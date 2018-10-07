@@ -139,7 +139,8 @@ public class SimulationBuilder {
 
           if (facilitytype > 0 && facilitytype < 11) {
 
-            Facility facility = new Facility();
+            int capacity = yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity();
+            Facility facility = new Facility(capacity);
             Building facilityField = (Building) yellowFever.allCamps.get(curr_col, curr_row);
             facility.setLocation(facilityField);
             facilityField.setFacility(facility);
@@ -264,10 +265,9 @@ public class SimulationBuilder {
       int tot = 0;
       if (yellowFever.getAllFamilies().numObjs > max) {
         tot = max;
-      }
-
-      else
+      } else {
         tot = yellowFever.getAllFamilies().numObjs;
+      }
 
       int numOfRel = 1 + yellowFever.random.nextInt(tot - 1);
 
@@ -281,7 +281,7 @@ public class SimulationBuilder {
 
       for (int jj = 0; jj < numOfRel; jj++) {
         if (f.equals((Family) yellowFever.getAllFamilies().objs[numberOfFamilies[jj]]) != true) {
-          Building l = ((Family) yellowFever.getAllFamilies().objs[numberOfFamilies[jj]]).getCampLocation();
+          Building l = ((Family) yellowFever.getAllFamilies().objs[numberOfFamilies[jj]]).getLocation();
           f.addRelative(l);
         }
       }
@@ -319,6 +319,7 @@ public class SimulationBuilder {
     }
 
     this.defineInitialTemperature(yellowFever);
+    this.defineInitialPrecipitation(yellowFever);
     this.generateRandomHumansInfected(yellowFever);
     this.administerRandomVaccines(yellowFever);
   }
@@ -330,6 +331,11 @@ public class SimulationBuilder {
       Mosquito mosquito = (Mosquito) object;
       mosquito.setInitialTemperature(initial);
     }
+  }
+
+  private void defineInitialPrecipitation(YellowFever yellowFever) {
+    Double initial = yellowFever.getClimate().getPrecipitation().get(0);
+    yellowFever.setInitialPrecipitation(initial);
   }
 
   private void administerRandomVaccines(YellowFever dadaab) {
@@ -372,9 +378,9 @@ public class SimulationBuilder {
 
   //// add households
   private void addAllHumans(int age, Sex sex, Family hh, YellowFever dadaab) {
-    Human human = new Human(age, sex, hh, hh.getCampLocation(), hh.getCampLocation(), dadaab.random, dadaab.allHumans);
+    Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), dadaab.random, dadaab.allHumans);
     hh.addMembers(human);
-    hh.getCampLocation().addRefugee(human);
+    hh.getLocation().addRefugee(human);
     human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     human.setCurrentActivity(ActivityMapping.STAY_HOME);
     human.setStudent(this.isStudent(age));

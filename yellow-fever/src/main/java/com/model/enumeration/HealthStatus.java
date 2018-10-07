@@ -22,13 +22,20 @@ public enum HealthStatus {
 
   public static boolean isHumanInfected(HealthStatus currentHealthStatus) {
     switch (currentHealthStatus) {
-    case EXPOSED:
-      return true;
     case MILD_INFECTION:
       return true;
     case SEVERE_INFECTION:
       return true;
     case TOXIC_INFECTION:
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  public static boolean isHumanExposed(HealthStatus currentHealthStatus) {
+    switch (currentHealthStatus) {
+    case EXPOSED:
       return true;
     default:
       return false;

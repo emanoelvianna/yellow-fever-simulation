@@ -28,7 +28,6 @@ public class Building implements Valuable, Serializable {
   private Bag mosquitoes;
   private int eggs;
 
-  // getter and setter
   public Building() {
     super();
     this.refugeeHH = new Bag();
@@ -39,6 +38,7 @@ public class Building implements Valuable, Serializable {
     this.patientCounter = 0;
     this.quantityOfVaccines = 0;
     this.eggs = 0;
+    this.water = 0;
   }
 
   public Building(int x, int y) {
@@ -52,12 +52,14 @@ public class Building implements Valuable, Serializable {
     this.patientCounter = 0;
     this.quantityOfVaccines = 0;
     this.eggs = 0;
+    this.water = 0;
   }
 
-  public boolean containsHumansInfected() {
+  public boolean containsHumansInfectedOrExposed() {
     for (Object object : humans) {
       Human human = (Human) object;
-      if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
+      HealthStatus currentHealthStatus = human.getCurrentHealthStatus();
+      if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
         return true;
       }
     }
@@ -200,8 +202,8 @@ public class Building implements Valuable, Serializable {
     this.patientCounter--;
   }
 
-  public void setPatientCounter(int c) {
-    this.patientCounter = c;
+  public void setPatientCounter(int count) {
+    this.patientCounter = count;
   }
 
   public int getPatientCounter() {
@@ -237,7 +239,7 @@ public class Building implements Valuable, Serializable {
   }
 
   public boolean containsSap() {
-    return sap;
+    return this.sap;
   }
 
   public void setSap(boolean sap) {
@@ -245,16 +247,15 @@ public class Building implements Valuable, Serializable {
   }
 
   public boolean containsNectar() {
-    return nectar;
+    return this.nectar;
   }
 
   public void setNectar(boolean nectar) {
     this.nectar = nectar;
   }
 
-  // TODO: Garantir que está funcionando!
   public boolean containsWater() {
-    return water != 0;
+    return this.water != 0;
   }
 
   public boolean containsHumans() {

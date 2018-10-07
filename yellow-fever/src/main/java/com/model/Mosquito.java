@@ -21,8 +21,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private YellowFever yellowFever;
   private Building currentPosition;
   private TimeManager time;
+  private int currentStep;
+  private int currentDay;
+  private double temperature;
   private int daysOfLife;
-  private double speed;
   private boolean hungry;
   private boolean carryingEggs;
   private boolean matureEggs;
@@ -30,19 +32,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private int daysWithoutFood;
   private HealthStatus currentHealthStatus;
   private HealthStatus previousHealthStatus;
-  private int sensoryAmplitude;
   private double timeOfMaturation;
-  private int currentStep;
-  private int currentDay;
-  private double temperature;
 
   public Mosquito(Building position) {
     this.random = new MersenneTwisterFast();
     this.daysOfLife = 4 + random.nextInt(32); // vector lifespan is 4-35 days
     this.currentHealthStatus = HealthStatus.SUSCEPTIBLE;
-    this.speed = 1.0;
     this.hungry = true;
-    this.sensoryAmplitude = 3;
     this.currentPosition = position;
     this.carryingEggs = false;
     this.incubationPeriod = 0;
@@ -151,8 +147,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       break;
     case MILD_INFECTION:
       if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-        int probability = yellowFever.getParams().getGlobal()
-            .getTransmissionProbabilityFromHostWithMildInfectionToVector();
+        int probability = yellowFever.getParams().getGlobal().getTransmissionProbabilityMildInfectionToVector();
         if (this.yellowFever.random.nextInt(101) <= probability) {
           this.infected();
         }
@@ -160,8 +155,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       break;
     case SEVERE_INFECTION:
       if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-        int probability = yellowFever.getParams().getGlobal()
-            .getTransmissionProbabilityFromHostWithSevereInfectionToVector();
+        int probability = yellowFever.getParams().getGlobal().getTransmissionProbabilitySevereInfectionToVector();
         if (this.yellowFever.random.nextInt(101) <= probability) {
           this.infected();
         }
@@ -234,28 +228,12 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     return 0;
   }
 
-  public double getSpeed() {
-    return speed;
-  }
-
-  public void setSpeed(double speed) {
-    this.speed = speed;
-  }
-
   public boolean isHungry() {
     return hungry;
   }
 
   public void setHungry(boolean hungry) {
     this.hungry = hungry;
-  }
-
-  public int getSensoryAmplitude() {
-    return sensoryAmplitude;
-  }
-
-  public void setSensoryAmplitude(int sensoryAmplitude) {
-    this.sensoryAmplitude = sensoryAmplitude;
   }
 
   public Building getCurrentPosition() {

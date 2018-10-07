@@ -70,10 +70,6 @@ public class YellowFever extends SimState {
   private double temperature;
   private int deadMosquitoes;
   private int deadHumans;
-  // TODO:
-  private int quantityOfHumansWithMildInfection;
-  private int quantityOfHumansWithSevereInfection;
-  private int quantityOfHumansWithToxicInfection;
 
   /**
    * charts and graphs
@@ -160,7 +156,7 @@ public class YellowFever extends SimState {
   public YellowFever(long seed, String[] args) {
     super(seed);
     this.params = new Parameters(args);
-    this.facility = new Facility();//
+    this.facility = new Facility(this.getParams().getGlobal().getHeaalthFacilityCapacity());
     this.setAllFamilies(new Bag());
     this.allMosquitoes = new Bag();
     this.familyHousing = new Bag();
@@ -205,7 +201,7 @@ public class YellowFever extends SimState {
       public void step(SimState state) {
         if (isNewDay()) {
           setTemperature();
-          setPrecipitacao();
+          setPrecipitation();
           probabilityOfEggsDying();
           probabilityOfEggsHatching();
           probabilityOfEggsAppearInHouses();
@@ -292,7 +288,7 @@ public class YellowFever extends SimState {
           if (human.getHome().getCampID() == 1) {
             if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusDag = totSusDag + 1;
-            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (HealthStatus.isHumanExposed(human.getCurrentHealthStatus())) {
               totExpDag = totExpDag + 1;
             } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfDag = totInfDag + 1;
@@ -307,7 +303,7 @@ public class YellowFever extends SimState {
 
             if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusInfo = totSusInfo + 1;
-            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (HealthStatus.isHumanExposed(human.getCurrentHealthStatus())) {
               totExpInfo = totExpInfo + 1;
             } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfInfo = totInfInfo + 1;
@@ -321,7 +317,7 @@ public class YellowFever extends SimState {
           if (human.getHome().getCampID() == 3) {
             if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totSusHag = totSusHag + 1;
-            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (HealthStatus.isHumanExposed(human.getCurrentHealthStatus())) {
               totExpHag = totExpHag + 1;
             } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totInfHag = totInfHag + 1;
@@ -336,10 +332,9 @@ public class YellowFever extends SimState {
 
           if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
             totalSus = totalSus + 1;
-          } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+          } else if (HealthStatus.isHumanExposed(human.getCurrentHealthStatus())) {
             totalExp = totalExp + 1;
           } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
-            // TODO: Pessoas expostas também estão infectadas?
             totalInf = totalInf + 1;
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
             totalRec = totalRec + 1;
@@ -350,7 +345,7 @@ public class YellowFever extends SimState {
           if (human.getCurrentHealthStatus() != human.getPreviousHealthStatus()) {
             if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
               totalSusNewly = totalSusNewly + 1;
-            } else if (human.getCurrentHealthStatus().equals(HealthStatus.EXPOSED)) {
+            } else if (HealthStatus.isHumanExposed(human.getCurrentHealthStatus())) {
               totalExpNewly = totalExpNewly + 1;
             } else if (HealthStatus.isHumanInfected(human.getCurrentHealthStatus())) {
               totalInfNewly = totalInfNewly + 1;
@@ -472,7 +467,7 @@ public class YellowFever extends SimState {
     this.temperature = initial;
   }
 
-  private void setPrecipitacao() {
+  private void setPrecipitation() {
     List<Double> rainfall = climate.getPrecipitation();
     double mm = params.getGlobal().getWaterAbsorption();
     for (Object object : getFamilyHousing()) {
@@ -480,6 +475,17 @@ public class YellowFever extends SimState {
       if (random.nextDouble() <= 0.5) { // 50% chance
         housing.waterAbsorption(mm);
         housing.addWater(rainfall.get(currentDay));
+      }
+    }
+  }
+
+  public void setInitialPrecipitation(double initial) {
+    double mm = params.getGlobal().getWaterAbsorption();
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (random.nextDouble() <= 0.5) { // 50% chance
+        housing.waterAbsorption(mm);
+        housing.addWater(initial);
       }
     }
   }
@@ -550,19 +556,18 @@ public class YellowFever extends SimState {
     }
   }
 
-  // TODO: Rever está informação
   // age class or ageset
   private int ageClass(int age) {
     int a = 0;
-    if (age < 5) {
+    if (age >= 5 && age <= 19) { // between 5-19
       a = 0;
-    } else if (age >= 5 && age < 12) {
+    } else if (age >= 20 && age <= 34) { // between 20-34
       a = 1;
-    } else if (age >= 12 && age < 18) {
+    } else if (age >= 35 && age <= 49) { // between 35-49
       a = 2;
-    } else if (age >= 18 && age < 60) {
+    } else if (age >= 50 && age <= 64) { // between 50-64
       a = 3;
-    } else {
+    } else { // age between 65-90
       a = 4;
     }
     return a;

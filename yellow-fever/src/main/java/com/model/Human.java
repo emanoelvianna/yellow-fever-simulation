@@ -81,7 +81,6 @@ public class Human implements Steppable, Valuable, Serializable {
     Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
-      // this.setGoal(this.getHome());
       return;
     } else if (this.getCurrentPosition().equals(this.getGoal()) && !this.getGoal().equals(this.getHome())
         && this.isStay()) {
@@ -133,14 +132,15 @@ public class Human implements Steppable, Valuable, Serializable {
 
   // assign the best goal
   public void calculateGoal() {
+    // is leaving the hospital
+    if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {
+      this.currentPosition.removePatient();
+    }
+
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity();
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
-      // is leaving the hospital
-      if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {
-        this.currentPosition.removePatient();
-      }
       // your selected activity
       this.setCurrentActivity(bestActivity);
       // track current activity - for the visualization
@@ -316,7 +316,8 @@ public class Human implements Steppable, Valuable, Serializable {
 
     this.setPreviousHealthStatus(this.getCurrentHealthStatus());
 
-    if (HealthStatus.isHumanInfected(this.currentHealthStatus)) {
+    HealthStatus currentHealthStatus = this.currentHealthStatus;
+    if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
       this.checkCurrentStateOfInfection();
     }
 
@@ -344,9 +345,9 @@ public class Human implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void setObjectLocation(Continuous2D allRefugees) {
-    allRefugees.setObjectLocation(this, new Double2D(family.getCampLocation().getLocationX() + jitterX,
-        family.getCampLocation().getLocationY() + jitterY));
+  private void setObjectLocation(Continuous2D allHumans) {
+    allHumans.setObjectLocation(this,
+        new Double2D(family.getLocation().getLocationX() + jitterX, family.getLocation().getLocationY() + jitterY));
   }
 
   public void setStoppable(Stoppable stopp) {

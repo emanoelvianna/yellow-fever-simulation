@@ -11,7 +11,7 @@ public class Family {
   private Bag members; // holds the family members
 
   public Family(Building loc) {
-    this.setCampLocation(loc);
+    this.setLocation(loc);
     members = new Bag();
     relatives = new Bag();
   }
@@ -32,11 +32,11 @@ public class Family {
   }
 
   // location of house
-  final public void setCampLocation(Building location) {
+  final public void setLocation(Building location) {
     this.location = location;
   }
 
-  final public Building getCampLocation() {
+  final public Building getLocation() {
     return location;
   }
 

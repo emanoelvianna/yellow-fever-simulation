@@ -13,19 +13,17 @@ public class Facility implements Steppable, Valuable {
   private Building location; // location of the facility
   public static final int ORDERING = 1; // schedule after rainfall
 
-  public Facility() {
-    this.capacity = 0;
+  public Facility(int capacity) {
+    this.capacity = capacity;
   }
 
   public void step(SimState state) {
-    YellowFever dadaab = (YellowFever) state;
-    if (dadaab.isNewDay()) {
-      this.countResources(dadaab);
-    }
+    YellowFever yellowFever = (YellowFever) state;
+    this.countResources(yellowFever);
   }
 
-  public boolean isReachedCapacity(Building f, YellowFever d) {
-    if (f.getPatientCounter() >= d.getParams().getGlobal().getHeaalthFacilityCapacity()) {
+  public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
+    if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
       return true;
     } else
       return false;
@@ -34,7 +32,7 @@ public class Facility implements Steppable, Valuable {
   public void countResources(YellowFever d) {
     for (Object obj : d.getHealthCenters()) {
       Building building = (Building) obj;
-      building.setPatientCounter(building.getPatientCounter() - this.capacity);
+      building.setPatientCounter(this.capacity - building.getPatientCounter());
     }
   }
 

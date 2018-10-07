@@ -1,10 +1,5 @@
 package com.core.observer;
 
-/**
- *
- * @author gmu
- */
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;

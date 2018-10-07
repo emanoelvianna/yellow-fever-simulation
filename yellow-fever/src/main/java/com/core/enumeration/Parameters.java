@@ -90,13 +90,13 @@ public class Parameters {
         global.transmissionProbabilityFromVectorToHost);
     global.transmissionProbabilityFromVectorToHost = intParameter;
 
-    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityFromHostWithMildInfectionToVector",
-        global.transmissionProbabilityFromHostWithMildInfectionToVector);
-    global.transmissionProbabilityFromHostWithMildInfectionToVector = intParameter;
+    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityMildInfectionToVector",
+        global.transmissionProbabilityMildInfectionToVector);
+    global.transmissionProbabilityMildInfectionToVector = intParameter;
 
-    intParameter = returnIntParameter(parameterDB, "transmissionProbabilityFromHostWithSevereInfectionToVector",
-        global.transmissionProbabilityFromHostWithSevereInfectionToVector);
-    global.transmissionProbabilityFromHostWithSevereInfectionToVector = intParameter;
+    intParameter = returnIntParameter(parameterDB, "transmissionProbabilitySevereInfectionToVector",
+        global.transmissionProbabilitySevereInfectionToVector);
+    global.transmissionProbabilitySevereInfectionToVector = intParameter;
 
     intParameter = returnIntParameter(parameterDB, "probabilityOfMildInfection", global.probabilityOfMildInfection);
     global.probabilityOfMildInfection = intParameter;
@@ -146,12 +146,12 @@ public class Parameters {
     private int probabilityOfMildInfection = 85;
     private int probabilityFromSevereInfectionTotoxicInfection = 10;
     private int transmissionProbabilityFromVectorToHost = 75;
-    private int transmissionProbabilityFromHostWithMildInfectionToVector = 30;
-    private int transmissionProbabilityFromHostWithSevereInfectionToVector = 75;
+    private int transmissionProbabilityMildInfectionToVector = 30;
+    private int transmissionProbabilitySevereInfectionToVector = 75;
+    private int healthFacilityCapacity = 1000;
 
     // TODO: Rever
     public int MaximumNumberRelative = 15;
-    public int healthFacilityCapacity = 1000;
 
     public void setInitialHumansNumber(int num) {
       this.initialHumansNumber = num;
@@ -270,22 +270,22 @@ public class Parameters {
       this.transmissionProbabilityFromVectorToHost = transmissionProbabilityFromVectorToHost;
     }
 
-    public int getTransmissionProbabilityFromHostWithMildInfectionToVector() {
-      return transmissionProbabilityFromHostWithMildInfectionToVector;
+    public int getTransmissionProbabilityMildInfectionToVector() {
+      return transmissionProbabilityMildInfectionToVector;
     }
 
-    public void setTransmissionProbabilityFromHostWithMildInfectionToVector(
+    public void setTransmissionProbabilityMildInfectionToVector(
         int transmissionProbabilityFromHostWithMildInfectionToVector) {
-      this.transmissionProbabilityFromHostWithMildInfectionToVector = transmissionProbabilityFromHostWithMildInfectionToVector;
+      this.transmissionProbabilityMildInfectionToVector = transmissionProbabilityFromHostWithMildInfectionToVector;
     }
 
-    public int getTransmissionProbabilityFromHostWithSevereInfectionToVector() {
-      return transmissionProbabilityFromHostWithSevereInfectionToVector;
+    public int getTransmissionProbabilitySevereInfectionToVector() {
+      return transmissionProbabilitySevereInfectionToVector;
     }
 
-    public void setTransmissionProbabilityFromHostWithSevereInfectionToVector(
+    public void setTransmissionProbabilitySevereInfectionToVector(
         int transmissionProbabilityFromHostWithSevereInfectionToVector) {
-      this.transmissionProbabilityFromHostWithSevereInfectionToVector = transmissionProbabilityFromHostWithSevereInfectionToVector;
+      this.transmissionProbabilitySevereInfectionToVector = transmissionProbabilityFromHostWithSevereInfectionToVector;
     }
   }
 }

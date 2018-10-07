@@ -29,7 +29,6 @@ public class Activity {
     if (this.gettingMedicalHelp()) {
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.human.hasSymptomsOfInfection()) {
-      // TODO: Tenho que garantir que ele fica em casa durante todo o dia!
       return ActivityMapping.STAY_HOME;
     }
     return defineActivitiesAccordingToSomeCriterion();
@@ -135,13 +134,11 @@ public class Activity {
       break;
     case HEALTH_CENTER:
       // time at maximum unti 4 hours
-
       Building goal = this.human.getGoal();
-      if (goal.getFacility().isReachedCapacity(goal, yellowFever)) {
+      if (!goal.getFacility().isReachedCapacity(goal, yellowFever)) {
         period = minimumStay + random.nextInt(4 * MINUTE);
-        // TODO: Precisa garantir que está funcionando
-        // TODO: Está levando em consideração os recursos do hospital
         this.human.getGoal().addPatient();
+        goal.addPatient();
       } else {
         period = 0;
       }
