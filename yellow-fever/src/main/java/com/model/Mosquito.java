@@ -71,6 +71,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void isActive(int currentStep) {
+    // TODO: Conversar com a epidemiologista em relação ao horario
     if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
       if (this.hungry) {
         if (this.isCarryingEggs()) {
@@ -107,14 +108,27 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void ovipositionProcess() {
+    // TODO: Confirmar este valor junto a epidemilogista
+    // TODO: Adicionar está quantidade ao modelo escrito, usando referencia!
     this.currentPosition.addEgg(100);
     this.currentPosition.defineTheMaturationTimeOfTheEggs(this.temperature);
     this.carryingEggs = false;
   }
 
+  private void normalFood() {
+    if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
+      this.hungry = false;
+    } else {
+      this.hungry = true;
+    }
+  }
+
+  // TODO: Adicionar a probabilidade dele morrer na tentativa de obter comida!
   private void bloodFood() {
     if (this.currentPosition.getHumans().size() > 0) {
-      if (random.nextDouble() <= yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood()) {
+      // TODO: Padronizar os parametros utilizados sobre o modelo
+      double probability = yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood();
+      if (random.nextDouble() <= probability) {
         int size = this.currentPosition.getHumans().size();
         this.yellowFever.random.nextInt(size);
         this.toBite((Human) currentPosition.getHumans().get(this.yellowFever.random.nextInt(size)));
@@ -122,14 +136,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       } else {
         this.hungry = true;
       }
-    } else {
-      this.hungry = true;
-    }
-  }
-
-  private void normalFood() {
-    if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
-      this.hungry = false;
     } else {
       this.hungry = true;
     }

@@ -1,4 +1,4 @@
-package com.core.observer;
+package com.core.report;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

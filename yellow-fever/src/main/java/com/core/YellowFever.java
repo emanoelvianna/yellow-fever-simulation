@@ -7,8 +7,7 @@ import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.data.xy.XYSeries;
 
 import com.core.algorithms.TimeManager;
-import com.core.enumeration.Parameters;
-import com.core.observer.YellowFeverObserver;
+import com.core.report.YellowFeverObserver;
 import com.model.Building;
 import com.model.Climate;
 import com.model.Facility;
@@ -508,11 +507,11 @@ public class YellowFever extends SimState {
       Building housing = (Building) object;
       if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
         double timeOfMaturation = housing.getTimeOfMaturation();
-        housing.setTimeOfMaturation(timeOfMaturation--);
-      } else if (housing.getTimeOfMaturation() == 0 && housing.containsEggs()) {
+        housing.setTimeOfMaturation(--timeOfMaturation);
+      } else if (housing.getTimeOfMaturation() <= 0 && housing.containsEggs()) {
         int amount = housing.getEggs();
         for (int i = 0; i < amount; i++) {
-          if (random.nextDouble() > 0.5) { // 50% chance of female
+          if (random.nextDouble() >= 0.5) { // 50% chance of female
             Mosquito mosquito = new Mosquito(housing);
             mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
             housing.addMosquito(mosquito);

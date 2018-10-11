@@ -1,4 +1,4 @@
-package com.core.enumeration;
+package com.core;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,7 @@ public class Parameters {
     int intParameter = 0;
     double doubleParameter = 0;
 
+    // TODO: Padronizar as probabilidades como inteiro ou fracionario
     intParameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
     global.initialHumansNumberInfected = intParameter;
 
