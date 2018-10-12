@@ -56,9 +56,7 @@ public class YellowFeverGUI extends GUIState {
   private SparseGridPortrayal2D facilPortrayal = new SparseGridPortrayal2D();
   private GeomVectorFieldPortrayal roadShapeProtrayal = new GeomVectorFieldPortrayal();
   private GeomVectorFieldPortrayal campShapeProtrayal = new GeomVectorFieldPortrayal();
-
   private TimeSeriesChartGenerator chartSeriesCholera;
-  private TimeSeriesChartGenerator chartSeriesCholeraNewly;
   private TimeSeriesChartGenerator chartSeriesPopulation;
 
   public static void main(String[] args) {
@@ -209,8 +207,8 @@ public class YellowFeverGUI extends GUIState {
     displayRainfall.repaint();
   }
 
-  public void init(Controller c) {
-    super.init(c);
+  public void init(Controller controller) {
+    super.init(controller);
     display = new Display2D(380, 760, this);
     displayRainfall = new Display2D(380, 760, this);
 
@@ -222,13 +220,13 @@ public class YellowFeverGUI extends GUIState {
 
     // Dadaab db = (Dadaab) state;
     displayFrame = display.createFrame();
-    c.registerFrame(displayFrame);
+    controller.registerFrame(displayFrame);
     displayFrame.setVisible(true);
 
     displayRainfall.attach(rainfallPortrayal, "Rainfall");
 
     displayFrameRainfall = displayRainfall.createFrame();
-    c.registerFrame(displayFrameRainfall);
+    controller.registerFrame(displayFrameRainfall);
     displayFrameRainfall.setVisible(false);
     displayFrameRainfall.setTitle("Rainfall");
 
@@ -253,7 +251,7 @@ public class YellowFeverGUI extends GUIState {
     frame.setSize(400, 350);
 
     frame.pack();
-    c.registerFrame(frame);
+    controller.registerFrame(frame);
 
     // Portray activity chart
     JFreeChart agechart = ChartFactory.createBarChart("Age Distribution", "Age  Group",
@@ -275,7 +273,7 @@ public class YellowFeverGUI extends GUIState {
     ageframe.setSize(400, 350);
 
     ageframe.pack();
-    c.registerFrame(ageframe);
+    controller.registerFrame(ageframe);
 
     // Portray activity chart
     JFreeChart famchart = ChartFactory.createBarChart("Household Size", "Size", "Total",
@@ -296,7 +294,7 @@ public class YellowFeverGUI extends GUIState {
     famframe.setSize(400, 350);
 
     famframe.pack();
-    c.registerFrame(famframe);
+    controller.registerFrame(famframe);
     //
 
     Dimension dm = new Dimension(30, 30);
@@ -312,31 +310,15 @@ public class YellowFeverGUI extends GUIState {
     chartSeriesCholera.setMinimumSize(dmn);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalsusceptibleSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalExposedSeries, null);
-    chartSeriesCholera.addSeries(((YellowFever) this.state).totalInfectedSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalMildInfectedSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalSevereInfectedSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalToxicInfectedSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalRecoveredSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).rainfallSeries, null);
 
     JFrame frameSeries = chartSeriesCholera.createFrame(this);
     frameSeries.pack();
-    c.registerFrame(frameSeries);
-
-    // newly cholera
-    chartSeriesCholeraNewly = new sim.util.media.chart.TimeSeriesChartGenerator();
-    chartSeriesCholeraNewly.createFrame();
-    chartSeriesCholeraNewly.setSize(dm);
-    chartSeriesCholeraNewly.setTitle("Health Status - Newly infected");
-    chartSeriesCholeraNewly.setRangeAxisLabel("Number of People");
-    chartSeriesCholeraNewly.setDomainAxisLabel("Minutes");
-    chartSeriesCholeraNewly.setMaximumSize(dm);
-    chartSeriesCholeraNewly.setMinimumSize(dmn);
-    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalsusceptibleSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalExposedSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalInfectedSeriesNewly, null);
-    chartSeriesCholeraNewly.addSeries(((YellowFever) this.state).totalRecoveredSeriesNewly, null);
-
-    JFrame frameSeriesNewly = chartSeriesCholeraNewly.createFrame(this);
-    frameSeriesNewly.pack();
-    c.registerFrame(frameSeriesNewly);
+    controller.registerFrame(frameSeries);
 
     // population dynamics
     chartSeriesPopulation = new sim.util.media.chart.TimeSeriesChartGenerator();
@@ -351,7 +333,7 @@ public class YellowFeverGUI extends GUIState {
 
     // frameSeriesPop.setSize(dmn)
     frameSeries.pack();
-    c.registerFrame(frameSeriesPop);
+    controller.registerFrame(frameSeriesPop);
     // time
 
     StandardDialFrame dialFrame = new StandardDialFrame();
@@ -398,7 +380,7 @@ public class YellowFeverGUI extends GUIState {
     timeframe.setVisible(false);
     timeframe.setSize(200, 100);
     timeframe.pack();
-    c.registerFrame(timeframe);
+    controller.registerFrame(timeframe);
 
     Dimension dl = new Dimension(300, 700);
     Legend legend = new Legend();
@@ -413,7 +395,7 @@ public class YellowFeverGUI extends GUIState {
     legendframe.setTitle("Legend");
     legendframe.getContentPane().add(legend);
     legendframe.pack();
-    c.registerFrame(legendframe);
+    controller.registerFrame(legendframe);
   }
 
   public Inspector getInspector() {

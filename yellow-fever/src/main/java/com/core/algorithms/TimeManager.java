@@ -19,23 +19,23 @@ public class TimeManager {
   }
 
   public int currentDayInWeek(int currentStep) {
-    int t = (int) currentStep % (HOURTIME * DURATION);
-    int da = ((int) currentStep - (t)) / (HOURTIME * DURATION);
-    int w = 0;
-    if (da <= WEEKDURATION) {
-      w = da;
-    } else
-      w = (int) da % WEEKDURATION;
+    int time = (int) currentStep % (HOURTIME * DURATION);
+    int day = ((int) currentStep - (time)) / (HOURTIME * DURATION);
+    int week = 0;
 
-    return w;
+    if (day < WEEKDURATION) {
+      week = day;
+    } else {
+      week = (int) day % WEEKDURATION;
+    }
+
+    return week + 1;
   }
 
-  // continuous day count
   public int dayCount(int currentStep) {
-    int h = this.currentHour(currentStep);
-    int t = (int) currentStep % (HOURTIME * DURATION);
-    int da = ((int) currentStep - (t)) / (HOURTIME * DURATION);
+    int time = (int) currentStep % (HOURTIME * DURATION);
+    int day = ((int) currentStep - (time)) / (HOURTIME * DURATION);
 
-    return da;
+    return day + 1;
   }
 }

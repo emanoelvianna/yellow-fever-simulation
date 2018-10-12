@@ -8,7 +8,6 @@ import ec.util.ParameterDatabase;
 public class Parameters {
 
   private GlobalParamters global = new GlobalParamters();
-
   private final static String A_FILE = "-file";
 
   public Parameters(String[] args) {
