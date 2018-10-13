@@ -59,10 +59,10 @@ public class YellowFeverReport implements Steppable {
       String numberSevereInfected = Integer.toString(yellowFever.getTotalOfHumansWithSevereInfected());
       String numberToxicInfected = Integer.toString(yellowFever.getTotalOfHumansWithToxicInfected());
       String numberRecovered = Integer.toString(yellowFever.getTotalOfHumansRecovered());
-      String numberDeath = Integer.toString(yellowFever.getNumberDeadHumans());
+      String numberDeadHumans = Integer.toString(yellowFever.getNumberDeadHumans());
 
       data = new String[] { day, numberSuscpitable, numberExposed, numberMildInfected, numberSevereInfected,
-          numberToxicInfected, numberRecovered, numberDeath };
+          numberToxicInfected, numberRecovered, numberDeadHumans };
       this.csvHumanHealthWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -77,9 +77,9 @@ public class YellowFeverReport implements Steppable {
       String numberSuscpitable = Integer.toString(yellowFever.getTotalOfMosquitoSusceptible());
       String numberExposed = Integer.toString(yellowFever.getTotalOfMosquitoExposed());
       String numberInfected = Integer.toString(yellowFever.getTotalOfMosquitoesWithInfection());
-      String numberDeath = Integer.toString(yellowFever.getNumberDeadMosquitoes());
+      String numberDeadMosquitoes = Integer.toString(yellowFever.getNumberDeadMosquitoes());
 
-      data = new String[] { day, numberSuscpitable, numberExposed, numberInfected, numberDeath };
+      data = new String[] { day, numberSuscpitable, numberExposed, numberInfected, numberDeadMosquitoes };
       this.csvMosquitoHealthWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -104,11 +104,13 @@ public class YellowFeverReport implements Steppable {
     try {
       String[] data;
       String day = Long.toString(yellowFever.getCurrentDay());
-      String numberOfVisits = null;
-      String vaccinesAvailable = null;
+      String numberOfVisits = Integer.toString(yellowFever.getTotalVisitsMedicalCenter());
+      String numberOfRefused = Integer.toString(yellowFever.getTotalRefusalsInMedicalCenter());
+      // TODO:
       String vaccinesApplied = null;
+      String vaccinesAvailable = null;
 
-      data = new String[] { day, numberOfVisits, vaccinesAvailable, vaccinesApplied };
+      data = new String[] { day, numberOfVisits, numberOfRefused };
       this.csvHealthCenterStateWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -153,9 +155,7 @@ public class YellowFeverReport implements Steppable {
       String[] eggsStateHeader = new String[] { "DAY", "AMOUNT", "DEAD" };
       csvEggsStatesWriter.writeLine(eggsStateHeader);
 
-      // TODO: Considerar pessoas não atendidas pela falta de vaga
-      String[] healthCenterStateHeader = new String[] { "DAY", "NUMBER_OF_VISITS", "VACCINES_AVAILABLE",
-          "VACCINES_APPLIED" };
+      String[] healthCenterStateHeader = new String[] { "DAY", "NUMBER_OF_VISITS", "NUMBER_OF_REFUSED" };
       csvHealthCenterStateWriter.writeLine(healthCenterStateHeader);
 
     } catch (IOException ex) {

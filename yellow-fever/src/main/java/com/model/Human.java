@@ -226,11 +226,11 @@ public class Human implements Steppable, Valuable, Serializable {
 
   private void defineToxicInfectionEvolution() {
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
-      if (yellowFever.random.nextDouble() < 0.5) { // 50% of case is recovery
+      if (this.yellowFever.random.nextDouble() < 0.5) { // 50% of case is recovery
         this.currentHealthStatus = HealthStatus.RECOVERED;
       } else {
         this.currentHealthStatus = HealthStatus.DEAD;
-        yellowFever.killrefugee(this);
+        this.yellowFever.killHuman(this);
       }
     } else if (this.toxicPeriod > 0 && this.isNewDay()
         && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {

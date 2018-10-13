@@ -44,11 +44,11 @@ public class YellowFever extends SimState {
   public SparseGrid2D nodes;
   // the road nodes closest to each of the locations
   public ObjectGrid2D closestNodes;
-  Network roadNetwork = new Network();
+  public Network roadNetwork = new Network();
   private final Parameters params;
   private int currentDay;
   private double temperature;
-
+  // used to the human statistics
   private int totalOfHumansSusceptible;
   private int totalOfHumansExposed;
   private int totalOfHumansWithMildInfection;
@@ -56,14 +56,16 @@ public class YellowFever extends SimState {
   private int totalOfHumansWithToxicInfected;
   private int totalOfHumansRecovered;
   private int totalDeadHumans;
-
+  // used to the mosquitoes statistics
   private int totalOfMosquitoSusceptible;
   private int totalOfMosquitoExposed;
   private int totalOfMosquitoesWithInfection;
   private int totalDeadMosquitoes;
-
   private int totalEggsInHouses;
   private int totalOfDeadEggs;
+  // used to the medical center statistics
+  private int totalVisitsMedicalCenter;
+  private int totalRefusalsInMedicalCenter;
 
   // charts and graphs
   public XYSeries rainfallSeries = new XYSeries(" Rainfall"); //
@@ -138,6 +140,8 @@ public class YellowFever extends SimState {
     this.totalDeadMosquitoes = 0;
     this.totalEggsInHouses = 0;
     this.totalOfDeadEggs = 0;
+    this.totalVisitsMedicalCenter = 0;
+    this.totalRefusalsInMedicalCenter = 0;
   }
 
   public void start() {
@@ -326,6 +330,7 @@ public class YellowFever extends SimState {
           } else {
             housing.removeEgg();
           }
+          this.totalEggsInHouses--;
         }
       }
     }
@@ -359,18 +364,18 @@ public class YellowFever extends SimState {
     }
   }
 
-  public void killrefugee(Human human) {
+  public void killHuman(Human human) {
     human.getFamily().removeMembers(human);
     if (human.getFamily().getMembers().numObjs == 0) {
-      getAllFamilies().remove(human.getFamily());
+      this.getAllFamilies().remove(human.getFamily());
     }
-    allHumans.remove(human);
+    this.allHumans.remove(human);
     this.totalDeadHumans++;
   }
 
-  public void killmosquito(Mosquito mosquito) {
+  public void killMosquito(Mosquito mosquito) {
     mosquito.getCurrentPosition().removeMosquito(mosquito);
-    allMosquitoes.remove(mosquito);
+    this.allMosquitoes.remove(mosquito);
     this.totalDeadMosquitoes++;
   }
 
@@ -610,12 +615,40 @@ public class YellowFever extends SimState {
     this.totalEggsInHouses = totalEggsInHouses;
   }
 
+  public void addAmountOfEggsInTotal(int amount) {
+    this.totalEggsInHouses += amount;
+  }
+
   public int getTotalOfDeadEggs() {
     return totalOfDeadEggs;
   }
 
   public void setTotalOfDeadEggs(int totalOfDeadEggs) {
     this.totalOfDeadEggs = totalOfDeadEggs;
+  }
+
+  public int getTotalVisitsMedicalCenter() {
+    return totalVisitsMedicalCenter;
+  }
+
+  public void setTotalVisitsMedicalCenter(int totalVisitsMedicalCenter) {
+    this.totalVisitsMedicalCenter = totalVisitsMedicalCenter;
+  }
+
+  public void addVisitToMedicalCenter() {
+    this.totalVisitsMedicalCenter++;
+  }
+
+  public int getTotalRefusalsInMedicalCenter() {
+    return totalRefusalsInMedicalCenter;
+  }
+
+  public void setTotalRefusalsInMedicalCenter(int totalRefusalsInMedicalCenter) {
+    this.totalRefusalsInMedicalCenter = totalRefusalsInMedicalCenter;
+  }
+
+  public void oneMoreRefused() {
+    this.totalRefusalsInMedicalCenter++;
   }
 
 }

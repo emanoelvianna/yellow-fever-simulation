@@ -126,7 +126,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.currentPosition.addEgg(amount);
     this.currentPosition.defineTheMaturationTimeOfTheEggs(this.temperature);
     this.carryingEggs = false;
-    this.yellowFever.setTotalEggsInHouses(this.yellowFever.getTotalEggsInHouses() + amount);
+    // used to the statistics
+    this.yellowFever.addAmountOfEggsInTotal(amount);
   }
 
   private void normalFood() {
@@ -221,11 +222,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void probabilityOfDying() {
     if (this.yellowFever.random.nextDouble() <= 0.05) { // 5% chance
-      this.yellowFever.killmosquito(this);
+      this.yellowFever.killMosquito(this);
     } else if (this.daysOfLife <= 0) {
-      this.yellowFever.killmosquito(this);
+      this.yellowFever.killMosquito(this);
     } else if (this.daysWithoutFood > 1) {
-      this.yellowFever.killmosquito(this);
+      this.yellowFever.killMosquito(this);
     }
   }
 

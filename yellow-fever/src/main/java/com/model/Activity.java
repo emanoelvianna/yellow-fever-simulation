@@ -135,12 +135,15 @@ public class Activity {
     case HEALTH_CENTER:
       // time at maximum unti 4 hours
       Building goal = this.human.getGoal();
-      if (!goal.getFacility().isReachedCapacity(goal, yellowFever)) {
+      if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
         period = minimumStay + random.nextInt(4 * MINUTE);
         this.human.getGoal().addPatient();
         goal.addPatient();
+        this.yellowFever.addVisitToMedicalCenter();
       } else {
         period = 0;
+        // used to the statistics
+        this.yellowFever.oneMoreRefused();
       }
       break;
     }

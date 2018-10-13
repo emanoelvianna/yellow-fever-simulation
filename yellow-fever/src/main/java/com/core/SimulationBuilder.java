@@ -301,7 +301,8 @@ public class SimulationBuilder {
         String[] info = line.split(divider);
         yellowFever.getClimate().addDate(info[0]);
         yellowFever.getClimate().addPrecipitation(Double.parseDouble(info[1]));
-        yellowFever.getClimate().addTemperature(Double.parseDouble(info[2]));
+        double average = Double.parseDouble((info[2] + info[3])) / 2;
+        yellowFever.getClimate().addTemperature(average);
       }
     } catch (FileNotFoundException e) {
       e.printStackTrace();

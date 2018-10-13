@@ -41,25 +41,25 @@ public class Family {
   }
 
   // holds memebers of the family
-  public void setMembers(Bag refugees) {
-    this.members = refugees;
+  public void setMembers(Bag members) {
+    this.members = members;
   }
 
   public Bag getMembers() {
     return members;
   }
 
-  public void addMembers(Human r) {
-    this.members.add(r);
+  public void addMembers(Human human) {
+    this.members.add(human);
   }
 
-  public void removeMembers(Human r) {
-    this.members.remove(r);
+  public void removeMembers(Human human) {
+    this.members.remove(human);
   }
 
   // location of the relative
-  public void setRelativesLocation(Bag r) {
-    this.relatives = r;
+  public void setRelativesLocation(Bag relatives) {
+    this.relatives = relatives;
   }
 
   public Bag getRelativesLocation() {
