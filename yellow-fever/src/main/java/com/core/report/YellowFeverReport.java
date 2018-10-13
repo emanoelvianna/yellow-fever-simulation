@@ -7,56 +7,109 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.core.YellowFever;
-import com.model.Building;
-import com.model.Human;
-import com.model.enumeration.HealthStatus;
 
 import net.sf.csv4j.CSVWriter;
 import sim.engine.SimState;
 import sim.engine.Steppable;
-import sim.field.grid.DoubleGrid2D;
-import sim.io.geo.ArcInfoASCGridExporter;
-import sim.util.Bag;
 
 public class YellowFeverReport implements Steppable {
 
+  public static final int ORDERING = 3;
   private static final long serialVersionUID = 1L;
-  private static final String INFECTION_STATISTICS_FILE_NAME = "infection_statistics.csv";
-  public final static int ORDERING = 3;
+  private static final String HUMAN_HEALTH_FILE_NAME = "human_health.csv";
+  private static final String MOSQUITO_HEALTH_FILE_NAME = "mosquito_health.csv";
+  private static final String EGGS_STATE_FILE_NAME = "eggs_state.csv";
+  private static final String HEALTH_CENTER_STATE_FILE_NAME = "health_center_state.csv";
   private YellowFever yellowFever;
-  private BufferedWriter bufferedWriter;
-  private CSVWriter csvWriter;
+  private BufferedWriter bufferedHumanHealthWriter;
+  private CSVWriter csvHumanHealthWriter;
+  private BufferedWriter bufferedMosquitoHealthWriter;
+  private CSVWriter csvMosquitoHealthWriter;
+  private BufferedWriter bufferedEggsStatesWriter;
+  private CSVWriter csvEggsStatesWriter;
+  private BufferedWriter bufferedHealthCenterStateWriter;
+  private CSVWriter csvHealthCenterStateWriter;
+  private int currentDay;
 
   public YellowFeverReport(YellowFever dadaab) {
     yellowFever = null;
+    this.currentDay = 0;
     this.buildHeaders();
   }
-
-  public YellowFeverReport() {
-    this.buildHeaders();
-  }
-
-  int count = 0;
 
   public void step(SimState state) {
+    yellowFever = (YellowFever) state;
+    if (yellowFever.getCurrentDay() != currentDay) {
+      this.currentDay = yellowFever.getCurrentDay();
+      this.writeHumanHealthStatistics();
+      this.writeMosquitoHealthStatistics();
+      this.WriteEggsStatusStatistics();
+      this.writeHealthCenterStateStatistics();
+    }
+  }
+
+  private void writeHumanHealthStatistics() {
     try {
-      yellowFever = (YellowFever) state;
+      String[] data;
       String day = Long.toString(yellowFever.getCurrentDay());
       String numberHumans = Integer.toString(yellowFever.allHumans.getAllObjects().numObjs);
-      String numberMosquitoes = Integer.toString(yellowFever.getAllMosquitoes().size());
-      String numberSuscpitable = Integer.toString(yellowFever.getNumberOfSusceptible());
-      String numberExposed = Integer.toString(yellowFever.getNumberOfExposed());
-      String numberMildInfected = Integer.toString(yellowFever.getNumberOfMildInfected());
-      String numberSevereInfected = Integer.toString(yellowFever.getNumberOfSevereInfected());
-      String numberToxicInfected = Integer.toString(yellowFever.getNumberOfToxicInfected());
-      String numberRecovered = Integer.toString(yellowFever.getNumberOfRecovered());
+      String numberSuscpitable = Integer.toString(yellowFever.getTotalOfHumansSusceptible());
+      String numberExposed = Integer.toString(yellowFever.getTotalOfHumansExposed());
+      String numberMildInfected = Integer.toString(yellowFever.getTotalOfHumansWithMildInfection());
+      String numberSevereInfected = Integer.toString(yellowFever.getTotalOfHumansWithSevereInfected());
+      String numberToxicInfected = Integer.toString(yellowFever.getTotalOfHumansWithToxicInfected());
+      String numberRecovered = Integer.toString(yellowFever.getTotalOfHumansRecovered());
       String numberDeath = Integer.toString(yellowFever.getNumberDeadHumans());
 
-      String[] data;
       data = new String[] { day, numberSuscpitable, numberExposed, numberMildInfected, numberSevereInfected,
           numberToxicInfected, numberRecovered, numberDeath };
-      this.csvWriter.writeLine(data);
-      
+      this.csvHumanHealthWriter.writeLine(data);
+    } catch (IOException ex) {
+      Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void writeMosquitoHealthStatistics() {
+    try {
+      String[] data;
+      String day = Long.toString(yellowFever.getCurrentDay());
+      String numberMosquitoes = Integer.toString(yellowFever.getAllMosquitoes().size());
+      String numberSuscpitable = Integer.toString(yellowFever.getTotalOfMosquitoSusceptible());
+      String numberExposed = Integer.toString(yellowFever.getTotalOfMosquitoExposed());
+      String numberInfected = Integer.toString(yellowFever.getTotalOfMosquitoesWithInfection());
+      String numberDeath = Integer.toString(yellowFever.getNumberDeadMosquitoes());
+
+      data = new String[] { day, numberSuscpitable, numberExposed, numberInfected, numberDeath };
+      this.csvMosquitoHealthWriter.writeLine(data);
+    } catch (IOException ex) {
+      Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void WriteEggsStatusStatistics() {
+    try {
+      String[] data;
+      String day = Long.toString(yellowFever.getCurrentDay());
+      String amount = Integer.toString(yellowFever.getTotalEggsInHouses());
+      String dead = Integer.toString(yellowFever.getTotalOfDeadEggs());
+
+      data = new String[] { day, amount, dead };
+      this.csvEggsStatesWriter.writeLine(data);
+    } catch (IOException ex) {
+      Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }
+
+  private void writeHealthCenterStateStatistics() {
+    try {
+      String[] data;
+      String day = Long.toString(yellowFever.getCurrentDay());
+      String numberOfVisits = null;
+      String vaccinesAvailable = null;
+      String vaccinesApplied = null;
+
+      data = new String[] { day, numberOfVisits, vaccinesAvailable, vaccinesApplied };
+      this.csvHealthCenterStateWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
     }
@@ -64,39 +117,49 @@ public class YellowFeverReport implements Steppable {
 
   public void finish() {
     try {
-      this.bufferedWriter.close();
+      this.bufferedHumanHealthWriter.close();
+      this.bufferedMosquitoHealthWriter.close();
+      this.bufferedEggsStatesWriter.close();
+      this.bufferedHealthCenterStateWriter.close();
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
-  private void createLogFile() throws IOException {
-    long now = System.currentTimeMillis();
-    String filename;
+  private void createFiles() throws IOException {
+    this.bufferedHumanHealthWriter = new BufferedWriter(new FileWriter(HUMAN_HEALTH_FILE_NAME));
+    this.csvHumanHealthWriter = new CSVWriter(bufferedHumanHealthWriter);
 
-    filename = String.format("%ty%tm%td%tH%tM%tS", now, now, now, now, now, now) + INFECTION_STATISTICS_FILE_NAME;
-    this.bufferedWriter = new BufferedWriter(new FileWriter(filename));
-    this.csvWriter = new CSVWriter(bufferedWriter);
+    this.bufferedMosquitoHealthWriter = new BufferedWriter(new FileWriter(MOSQUITO_HEALTH_FILE_NAME));
+    this.csvMosquitoHealthWriter = new CSVWriter(bufferedMosquitoHealthWriter);
+
+    this.bufferedEggsStatesWriter = new BufferedWriter(new FileWriter(EGGS_STATE_FILE_NAME));
+    this.csvEggsStatesWriter = new CSVWriter(bufferedEggsStatesWriter);
+
+    this.bufferedHealthCenterStateWriter = new BufferedWriter(new FileWriter(HEALTH_CENTER_STATE_FILE_NAME));
+    this.csvHealthCenterStateWriter = new CSVWriter(bufferedHealthCenterStateWriter);
   }
 
   private void buildHeaders() {
     try {
-      this.createLogFile();
+      this.createFiles();
       String[] humanHealthHeader = new String[] { "DAY", "SUSCIPTABLE", "EXPOSED", "MILD_INFECTION", "SEVERE_INFECTION",
           "TOXIC_INFECTION", "RECOVERED", "DEAD" };
-      csvWriter.writeLine(humanHealthHeader);
+      csvHumanHealthWriter.writeLine(humanHealthHeader);
 
-      String[] mosquitoHealthHeader = new String[] { "DAY", "SUSCIPTABLE", "EXPOSED", "INFECTION", "DEAD" };
+      String[] mosquitoHealthHeader = new String[] { "DAY", "SUSCIPTABLE", "EXPOSED", "INFECTED", "DEAD" };
+      csvMosquitoHealthWriter.writeLine(mosquitoHealthHeader);
 
-      String[] eggsStatusHeader = new String[] { "DAY", "AMOUNT", "DEAD" };
+      String[] eggsStateHeader = new String[] { "DAY", "AMOUNT", "DEAD" };
+      csvEggsStatesWriter.writeLine(eggsStateHeader);
 
       // TODO: Considerar pessoas não atendidas pela falta de vaga
-      String[] healthCenterStateHeader = new String[] { "DAY", "NUMBER_OF_VISITS", "QUANTITY_OF_AVAILABLE_VACCINES",
-          "QUANTITY_OF_VACCINES_APPLIED" };
+      String[] healthCenterStateHeader = new String[] { "DAY", "NUMBER_OF_VISITS", "VACCINES_AVAILABLE",
+          "VACCINES_APPLIED" };
+      csvHealthCenterStateWriter.writeLine(healthCenterStateHeader);
 
     } catch (IOException ex) {
       Logger.getLogger(YellowFever.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
-
 }

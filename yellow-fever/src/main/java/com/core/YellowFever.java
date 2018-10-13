@@ -33,7 +33,6 @@ import sim.util.Bag;
 public class YellowFever extends SimState {
 
   private static final long serialVersionUID = -5966446373681187141L;
-  // The model environment - holds fields (parcels)
   public ObjectGrid2D allCamps;
   public GeomGridField allCampGeoGrid;
   public DoubleGrid2D rainfallGrid; // TODO: Isto aqui ainda faz sentido?
@@ -49,14 +48,22 @@ public class YellowFever extends SimState {
   private final Parameters params;
   private int currentDay;
   private double temperature;
-  private int totalSusceptible;
-  private int totalExposed;
-  private int totalOfMildInfected;
-  private int totalOfSevereInfected;
-  private int totalOfToxicInfected;
-  private int totalOfRecovered;
-  private int totalDeadMosquitoes;
+
+  private int totalOfHumansSusceptible;
+  private int totalOfHumansExposed;
+  private int totalOfHumansWithMildInfection;
+  private int totalOfHumansWithSevereInfected;
+  private int totalOfHumansWithToxicInfected;
+  private int totalOfHumansRecovered;
   private int totalDeadHumans;
+
+  private int totalOfMosquitoSusceptible;
+  private int totalOfMosquitoExposed;
+  private int totalOfMosquitoesWithInfection;
+  private int totalDeadMosquitoes;
+
+  private int totalEggsInHouses;
+  private int totalOfDeadEggs;
 
   // charts and graphs
   public XYSeries rainfallSeries = new XYSeries(" Rainfall"); //
@@ -66,8 +73,8 @@ public class YellowFever extends SimState {
   public XYSeries totalSevereInfectedSeries = new XYSeries("Severe Infected");
   public XYSeries totalToxicInfectedSeries = new XYSeries("Toxic Infected");
   public XYSeries totalRecoveredSeries = new XYSeries("Recovered");
-  public XYSeries totalDeathSeries = new XYSeries(" Death");
-  public XYSeries totalTotalPopSeries = new XYSeries(" Total");
+  public XYSeries totalDeathSeries = new XYSeries("Death");
+  public XYSeries totalTotalPopSeries = new XYSeries("Total");
 
   public DefaultCategoryDataset dataset = new DefaultCategoryDataset();
   // shows age structure of agents
@@ -118,14 +125,19 @@ public class YellowFever extends SimState {
     this.market = new Bag();
     this.foodCenter = new Bag();
     this.other = new Bag();
-    this.totalSusceptible = 0;
-    this.totalExposed = 0;
-    this.totalOfMildInfected = 0;
-    this.totalOfSevereInfected = 0;
-    this.totalOfToxicInfected = 0;
-    this.totalOfRecovered = 0;
-    this.totalDeadMosquitoes = 0;
+    this.totalOfHumansSusceptible = 0;
+    this.totalOfHumansExposed = 0;
+    this.totalOfHumansWithMildInfection = 0;
+    this.totalOfHumansWithSevereInfected = 0;
+    this.totalOfHumansWithToxicInfected = 0;
+    this.totalOfHumansRecovered = 0;
     this.totalDeadHumans = 0;
+    this.totalOfMosquitoSusceptible = 0;
+    this.totalOfMosquitoExposed = 0;
+    this.totalOfMosquitoesWithInfection = 0;
+    this.totalDeadMosquitoes = 0;
+    this.totalEggsInHouses = 0;
+    this.totalOfDeadEggs = 0;
   }
 
   public void start() {
@@ -138,6 +150,8 @@ public class YellowFever extends SimState {
     this.outputStats(schedule);
 
     Steppable updater = new Steppable() {
+      private static final long serialVersionUID = 1L;
+
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
         if (isNewDay()) {
@@ -150,64 +164,82 @@ public class YellowFever extends SimState {
 
         // getting all humans
         Bag humans = allHumans.getAllObjects();
-
         // adding all agent families based o their family size
         int[] sumfamSiz = { 0, 0, 0, 0, 0, 0, 0 };
-
-        int totalOfSusceptible = 0;
-        int totalOfExposed = 0;
-        int totalOfMildInfected = 0;
-        int totalOfSevereInfected = 0;
-        int totalOfToxicInfected = 0;
-        int totalOfRecovered = 0;
-
         // accessing all families and chatagorize them based on their size
         for (int i = 0; i < getAllFamilies().numObjs; i++) {
           Family f = (Family) getAllFamilies().objs[i];
           // killrefugee(f);
           int siz = 0;
-          if (f.getMembers().numObjs > 6) { // aggregate all families of >6
-                                            // family size
+          // aggregate all families of >6 family size
+          if (f.getMembers().numObjs > 6) {
             siz = 6;
           } else {
             siz = f.getMembers().numObjs - 1;
           }
           sumfamSiz[siz] += 1;
         }
-        // accessing each agent
+
+        int totalOfHumansSusceptible = 0;
+        int totalOfHumansExposed = 0;
+        int totalOfHumansWithMildInfection = 0;
+        int totalOfHumansWithSevereInfected = 0;
+        int totalOfHumansWithToxicInfected = 0;
+        int totalOfHumansRecovered = 0;
         for (int i = 0; i < humans.numObjs; i++) {
           Human human = (Human) humans.objs[i];
-
-          if (human.getCurrentHealthStatus().equals(HealthStatus.SUSCEPTIBLE)) {
-            totalOfSusceptible++;
+          if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
+            totalOfHumansSusceptible++;
           } else if (HealthStatus.EXPOSED.equals(human.getCurrentHealthStatus())) {
-            totalOfExposed++;
+            totalOfHumansExposed++;
           } else if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
-            totalOfMildInfected++;
+            totalOfHumansWithMildInfection++;
           } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
-            totalOfSevereInfected++;
+            totalOfHumansWithSevereInfected++;
           } else if (HealthStatus.TOXIC_INFECTION.equals(human.getCurrentHealthStatus())) {
-            totalOfToxicInfected++;
+            totalOfHumansWithToxicInfected++;
           } else if (human.getCurrentHealthStatus().equals(HealthStatus.RECOVERED)) {
-            totalOfRecovered++;
+            totalOfHumansRecovered++;
           }
         }
 
-        setTotalSusceptible(totalOfSusceptible);
-        setTotalExposed(totalOfExposed);
-        setTotalOfMildInfected(totalOfMildInfected);
-        setTotalOfSevereInfected(totalOfSevereInfected);
-        setTotalOfToxicInfected(totalOfToxicInfected);
-        setTotalOfRecovered(totalOfRecovered);
+        setTotalOfHumansSusceptible(totalOfHumansSusceptible);
+        setTotalOfHumansExposed(totalOfHumansExposed);
+        setTotalOfHumansWithMildInfection(totalOfHumansWithMildInfection);
+        setTotalOfHumansWithSevereInfected(totalOfHumansWithSevereInfected);
+        setTotalOfHumansWithToxicInfected(totalOfHumansWithToxicInfected);
+        setTotalOfHumansRecovered(totalOfHumansRecovered);
+        setTotalDeadHumans(getNumberDeadHumans());
 
         totalTotalPopSeries.add((double) (state.schedule.getTime()), allHumans.getAllObjects().numObjs);
         totalDeathSeries.add((double) (state.schedule.getTime()), getNumberDeadHumans());
-        totalsusceptibleSeries.add((double) (state.schedule.getTime()), (totalOfSusceptible));
-        totalExposedSeries.add((double) (state.schedule.getTime()), (totalOfExposed));
-        totalMildInfectedSeries.add((double) (state.schedule.getTime()), (totalOfMildInfected));
-        totalSevereInfectedSeries.add((double) (state.schedule.getTime()), (totalOfSevereInfected));
-        totalToxicInfectedSeries.add((double) (state.schedule.getTime()), (totalOfToxicInfected));
-        totalRecoveredSeries.add((double) (state.schedule.getTime()), (totalOfRecovered));
+        totalsusceptibleSeries.add((double) (state.schedule.getTime()), (totalOfHumansSusceptible));
+        totalExposedSeries.add((double) (state.schedule.getTime()), (totalOfHumansExposed));
+        totalMildInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithMildInfection));
+        totalSevereInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithSevereInfected));
+        totalToxicInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithToxicInfected));
+        totalRecoveredSeries.add((double) (state.schedule.getTime()), (totalOfHumansRecovered));
+
+        int totalOfMosquitoSusceptible = 0;
+        int totalOfMosquitoExposed = 0;
+        int totalOfMosquitoesWithInfection = 0;
+        for (Object object : allMosquitoes) {
+          Mosquito mosquito = (Mosquito) object;
+          if (HealthStatus.SUSCEPTIBLE.equals(mosquito.getCurrentHealthStatus())) {
+            totalOfMosquitoSusceptible++;
+          } else if (HealthStatus.EXPOSED.equals(mosquito.getCurrentHealthStatus())) {
+            totalOfMosquitoExposed++;
+          } else if (HealthStatus.INFECTED.equals(mosquito.getCurrentHealthStatus())) {
+            totalOfMosquitoesWithInfection++;
+          }
+        }
+
+        setTotalOfMosquitoSusceptible(totalOfMosquitoSusceptible);
+        setTotalOfMosquitoExposed(totalOfMosquitoExposed);
+        setTotalOfMosquitoesWithInfection(totalOfMosquitoesWithInfection);
+        setTotalDeadMosquitoes(getNumberDeadMosquitoes());
+
+        setTotalEggsInHouses(totalEggsInHouses);
 
         int m = ((int) state.schedule.getTime()) % 60;
 
@@ -258,7 +290,9 @@ public class YellowFever extends SimState {
       Building housing = (Building) object;
       if (random.nextDouble() <= 0.5) { // 50% chance
         housing.waterAbsorption(mm);
-        housing.addWater(rainfall.get(currentDay));
+        if (currentDay < rainfall.size()) {
+          housing.addWater(rainfall.get(currentDay));
+        }
       }
     }
   }
@@ -270,19 +304,6 @@ public class YellowFever extends SimState {
       if (random.nextDouble() <= 0.5) { // 50% chance
         housing.waterAbsorption(mm);
         housing.addWater(initial);
-      }
-    }
-  }
-
-  private void probabilityOfEggsDying() {
-    for (Object object : getFamilyHousing()) {
-      Building housing = (Building) object;
-      if (housing.containsEggs()) {
-        int amount = housing.getEggs();
-        for (int i = 0; i < amount; i++) {
-          if (random.nextDouble() <= 0.05) // 5% chance
-            housing.removeEgg();
-        }
       }
     }
   }
@@ -315,7 +336,25 @@ public class YellowFever extends SimState {
     for (Object object : getFamilyHousing()) {
       Building housing = (Building) object;
       if (random.nextInt(101) <= probability) {
-        housing.addEgg(random.nextInt(101));
+        int amount = 1 + random.nextInt(100);
+        housing.addEgg(amount);
+        this.totalEggsInHouses += amount;
+      }
+    }
+  }
+
+  private void probabilityOfEggsDying() {
+    for (Object object : getFamilyHousing()) {
+      Building housing = (Building) object;
+      if (housing.containsEggs()) {
+        int amount = housing.getEggs();
+        for (int i = 0; i < amount; i++) {
+          if (random.nextDouble() <= 0.05) { // 5% chance
+            housing.removeEgg();
+            this.totalEggsInHouses--;
+            this.totalOfDeadEggs++;
+          }
+        }
       }
     }
   }
@@ -475,55 +514,7 @@ public class YellowFever extends SimState {
     this.market = market;
   }
 
-  public int getNumberOfSusceptible() {
-    return totalSusceptible;
-  }
-
-  public void setTotalSusceptible(int totalSusceptible) {
-    this.totalSusceptible = totalSusceptible;
-  }
-
-  public int getNumberOfExposed() {
-    return totalExposed;
-  }
-
-  public void setTotalExposed(int totalExposed) {
-    this.totalExposed = totalExposed;
-  }
-
-  public int getNumberOfMildInfected() {
-    return totalOfMildInfected;
-  }
-
-  public void setTotalOfMildInfected(int totalOfMildInfected) {
-    this.totalOfMildInfected = totalOfMildInfected;
-  }
-
-  public int getNumberOfSevereInfected() {
-    return totalOfSevereInfected;
-  }
-
-  public void setTotalOfSevereInfected(int totalOfSevereInfected) {
-    this.totalOfSevereInfected = totalOfSevereInfected;
-  }
-
-  public int getNumberOfToxicInfected() {
-    return totalOfToxicInfected;
-  }
-
-  public void setTotalOfToxicInfected(int totalOfToxicInfected) {
-    this.totalOfToxicInfected = totalOfToxicInfected;
-  }
-
-  public int getNumberOfRecovered() {
-    return totalOfRecovered;
-  }
-
-  public void setTotalOfRecovered(int totalOfRecovered) {
-    this.totalOfRecovered = totalOfRecovered;
-  }
-
-  public int getTotalDeadMosquitoes() {
+  public int getNumberDeadMosquitoes() {
     return totalDeadMosquitoes;
   }
 
@@ -537,6 +528,94 @@ public class YellowFever extends SimState {
 
   public void setTotalDeadHumans(int totalDeadHumans) {
     this.totalDeadHumans = totalDeadHumans;
+  }
+
+  public int getTotalOfHumansSusceptible() {
+    return totalOfHumansSusceptible;
+  }
+
+  public void setTotalOfHumansSusceptible(int totalOfHumansSusceptible) {
+    this.totalOfHumansSusceptible = totalOfHumansSusceptible;
+  }
+
+  public int getTotalOfHumansExposed() {
+    return totalOfHumansExposed;
+  }
+
+  public void setTotalOfHumansExposed(int totalOfHumansExposed) {
+    this.totalOfHumansExposed = totalOfHumansExposed;
+  }
+
+  public int getTotalOfHumansWithMildInfection() {
+    return totalOfHumansWithMildInfection;
+  }
+
+  public void setTotalOfHumansWithMildInfection(int totalOfHumansWithMildInfection) {
+    this.totalOfHumansWithMildInfection = totalOfHumansWithMildInfection;
+  }
+
+  public int getTotalOfHumansWithSevereInfected() {
+    return totalOfHumansWithSevereInfected;
+  }
+
+  public void setTotalOfHumansWithSevereInfected(int totalOfHumansWithSevereInfected) {
+    this.totalOfHumansWithSevereInfected = totalOfHumansWithSevereInfected;
+  }
+
+  public int getTotalOfHumansWithToxicInfected() {
+    return totalOfHumansWithToxicInfected;
+  }
+
+  public void setTotalOfHumansWithToxicInfected(int totalOfHumansWithToxicInfected) {
+    this.totalOfHumansWithToxicInfected = totalOfHumansWithToxicInfected;
+  }
+
+  public int getTotalOfHumansRecovered() {
+    return totalOfHumansRecovered;
+  }
+
+  public void setTotalOfHumansRecovered(int totalOfHumansRecovered) {
+    this.totalOfHumansRecovered = totalOfHumansRecovered;
+  }
+
+  public int getTotalOfMosquitoSusceptible() {
+    return totalOfMosquitoSusceptible;
+  }
+
+  public void setTotalOfMosquitoSusceptible(int totalOfMosquitoSusceptible) {
+    this.totalOfMosquitoSusceptible = totalOfMosquitoSusceptible;
+  }
+
+  public int getTotalOfMosquitoExposed() {
+    return totalOfMosquitoExposed;
+  }
+
+  public void setTotalOfMosquitoExposed(int totalOfMosquitoExposed) {
+    this.totalOfMosquitoExposed = totalOfMosquitoExposed;
+  }
+
+  public int getTotalOfMosquitoesWithInfection() {
+    return totalOfMosquitoesWithInfection;
+  }
+
+  public void setTotalOfMosquitoesWithInfection(int totalOfMosquitoesWithInfection) {
+    this.totalOfMosquitoesWithInfection = totalOfMosquitoesWithInfection;
+  }
+
+  public int getTotalEggsInHouses() {
+    return totalEggsInHouses;
+  }
+
+  public void setTotalEggsInHouses(int totalEggsInHouses) {
+    this.totalEggsInHouses = totalEggsInHouses;
+  }
+
+  public int getTotalOfDeadEggs() {
+    return totalOfDeadEggs;
+  }
+
+  public void setTotalOfDeadEggs(int totalOfDeadEggs) {
+    this.totalOfDeadEggs = totalOfDeadEggs;
   }
 
 }

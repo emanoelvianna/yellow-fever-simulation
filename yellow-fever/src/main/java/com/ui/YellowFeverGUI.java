@@ -91,6 +91,8 @@ public class YellowFeverGUI extends GUIState {
     humansPortrayal.setField(dadaab.allHumans);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
+      private static final long serialVersionUID = 1L;
+
       // to draw each refugee type with differnet color
       public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
         if (object != null) {
@@ -120,6 +122,7 @@ public class YellowFeverGUI extends GUIState {
     facilPortrayal.setField(dadaab.facilityGrid);
     // facility portrial
     RectanglePortrayal2D facPortrayal = new RectanglePortrayal2D(1.0, false) {
+      private static final long serialVersionUID = 1L;
       final Color borehole = new Color(0, 128, 255);
       final Color healthC = new Color(255, 0, 0);
       final Color school = new Color(0, 255, 0);
@@ -159,6 +162,7 @@ public class YellowFeverGUI extends GUIState {
     campShapeProtrayal.setField(dadaab.campShape);
 
     GeomPortrayal gp = new GeomPortrayal(true) {
+      private static final long serialVersionUID = 1L;
       final Color d = new Color(224, 255, 224);
       final Color i = new Color(255, 180, 210);
       final Color h = new Color(204, 204, 153);

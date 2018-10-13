@@ -62,7 +62,21 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       this.setTemperature();
       this.checkCurrentStateOfMaturation();
       this.checkCurrentStateOfInfection();
+
+      // TODO: Remover!
+      if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
+        System.out.println("Estou infectado!");
+        System.out.println("Periodo de incubação: " + this.incubationPeriod);
+        System.out.println("--");
+      }
+      if (HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+        System.out.println("Estou Exposto!");
+        System.out.println("Periodo de incubação: " + this.incubationPeriod);
+        System.out.println("--");
+      }
+      //
     }
+
     this.isActive(currentStep);
   }
 
@@ -108,11 +122,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void ovipositionProcess() {
-    // TODO: Confirmar este valor junto a epidemilogista
-    // TODO: Adicionar está quantidade ao modelo escrito, usando referencia!
-    this.currentPosition.addEgg(100);
+    int amount = 1 + random.nextInt(100);
+    this.currentPosition.addEgg(amount);
     this.currentPosition.defineTheMaturationTimeOfTheEggs(this.temperature);
     this.carryingEggs = false;
+    this.yellowFever.setTotalEggsInHouses(this.yellowFever.getTotalEggsInHouses() + amount);
   }
 
   private void normalFood() {
