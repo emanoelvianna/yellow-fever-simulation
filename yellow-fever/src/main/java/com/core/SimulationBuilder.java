@@ -301,8 +301,9 @@ public class SimulationBuilder {
         String[] info = line.split(divider);
         yellowFever.getClimate().addDate(info[0]);
         yellowFever.getClimate().addPrecipitation(Double.parseDouble(info[1]));
-        double average = Double.parseDouble((info[2] + info[3])) / 2;
-        yellowFever.getClimate().addTemperature(average);
+        Double maximumTemperature = Double.parseDouble(info[2]);
+        Double minimumTemperature = Double.parseDouble(info[3]);
+        yellowFever.getClimate().addTemperature((maximumTemperature + minimumTemperature) / 2);
       }
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -335,12 +336,12 @@ public class SimulationBuilder {
     yellowFever.setInitialPrecipitation(initial);
   }
 
-  private void administerRandomVaccines(YellowFever dadaab) {
-    int amount = dadaab.getParams().getGlobal().getQuantityOfVaccinesApplied();
+  private void administerRandomVaccines(YellowFever yellowFever) {
+    int amount = yellowFever.getParams().getGlobal().getQuantityOfVaccinesApplied();
     int index = 0;
     while (amount > 0) {
-      index = dadaab.random.nextInt(dadaab.getParams().getGlobal().getInitialHumansNumber());
-      Human human = (Human) dadaab.allHumans.getAllObjects().get(index);
+      index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
+      Human human = (Human) yellowFever.allHumans.getAllObjects().get(index);
       if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
         human.applyVaccine();
         amount--;
@@ -360,29 +361,29 @@ public class SimulationBuilder {
     }
   }
 
-  private static void createGrids(int width, int height, YellowFever dadaab) {
-    dadaab.allCamps = new ObjectGrid2D(width, height);
-    dadaab.rainfallGrid = new DoubleGrid2D(width, height, 0);
-    dadaab.allHumans = new Continuous2D(0.1, width, height);
-    dadaab.facilityGrid = new SparseGrid2D(width, height);
-    dadaab.roadGrid = new IntGrid2D(width, height);
-    dadaab.nodes = new SparseGrid2D(width, height);
-    dadaab.closestNodes = new ObjectGrid2D(width, height);
-    dadaab.roadLinks = new GeomVectorField(width, height);
-    dadaab.campShape = new GeomVectorField(width, height);
-    dadaab.allCampGeoGrid = new GeomGridField();
+  private static void createGrids(int width, int height, YellowFever yellowFever) {
+    yellowFever.allCamps = new ObjectGrid2D(width, height);
+    yellowFever.rainfallGrid = new DoubleGrid2D(width, height, 0);
+    yellowFever.allHumans = new Continuous2D(0.1, width, height);
+    yellowFever.facilityGrid = new SparseGrid2D(width, height);
+    yellowFever.roadGrid = new IntGrid2D(width, height);
+    yellowFever.nodes = new SparseGrid2D(width, height);
+    yellowFever.closestNodes = new ObjectGrid2D(width, height);
+    yellowFever.roadLinks = new GeomVectorField(width, height);
+    yellowFever.campShape = new GeomVectorField(width, height);
+    yellowFever.allCampGeoGrid = new GeomGridField();
   }
 
   //// add households
-  private void addAllHumans(int age, Sex sex, Family hh, YellowFever dadaab) {
-    Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), dadaab.random, dadaab.allHumans);
+  private void addAllHumans(int age, Sex sex, Family hh, YellowFever yellowFever) {
+    Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), yellowFever.random, yellowFever.allHumans);
     hh.addMembers(human);
     hh.getLocation().addRefugee(human);
     human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
     human.setCurrentActivity(ActivityMapping.STAY_HOME);
     human.setStudent(this.isStudent(age));
     human.setWorker(this.isWorker(age, sex));
-    human.setStoppable(dadaab.schedule.scheduleRepeating(human, Human.ORDERING, 1.0));
+    human.setStoppable(yellowFever.schedule.scheduleRepeating(human, Human.ORDERING, 1.0));
   }
 
   private boolean isStudent(int age) {

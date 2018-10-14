@@ -10,18 +10,18 @@ import sim.util.Bag;
 public class Activity {
 
   private YellowFever yellowFever;
+  private MersenneTwisterFast random;
   private Human human;
   private TimeManager time;
   private int currentStep;
   private int minuteInDay;
-  private MersenneTwisterFast random;
 
-  public Activity(YellowFever dadaab, Human human, TimeManager time, int currentStep, int minuteInDay) {
-    this.yellowFever = dadaab;
+  public Activity(YellowFever yellowFever, Human human, TimeManager time, int currentStep, int minuteInDay) {
+    this.yellowFever = yellowFever;
+    this.random = new MersenneTwisterFast();
     this.human = human;
     this.time = time;
     this.currentStep = currentStep;
-    this.random = new MersenneTwisterFast();
     this.minuteInDay = minuteInDay;
   }
 
@@ -36,15 +36,17 @@ public class Activity {
 
   private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
     if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if (time.currentDayInWeek(currentStep) < 5) {
-        if (random.nextDouble() < 0.1) { // 1% chance stay home
-          return ActivityMapping.STAY_HOME;
-        } else if (this.human.isWorker()) {
-          return ActivityMapping.WORK;
-        } else if (this.human.isStudent()) {
-          return this.everydayActivitiesForStudents();
-        } else {
-          return this.differentActivities();
+      if (5 > time.currentDayInWeek(currentStep)) {
+        synchronized (this.random) {
+          if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
+            return ActivityMapping.STAY_HOME;
+          } else if (this.human.isWorker()) {
+            return ActivityMapping.WORK;
+          } else if (this.human.isStudent()) {
+            return this.everydayActivitiesForStudents();
+          } else {
+            return this.differentActivities();
+          }
         }
       } else {
         return differentActivities();
@@ -54,30 +56,35 @@ public class Activity {
   }
 
   public ActivityMapping everydayActivitiesForStudents() {
-    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
-      return ActivityMapping.SCHOOL;
-    } else if (this.yellowFever.random.nextDouble() < 0.5) { // 50% chance
-      if (this.yellowFever.random.nextDouble() < 0.4) // 40% chance
-        return ActivityMapping.SOCIAL_VISIT;
-      else if (this.yellowFever.random.nextDouble() < 0.3) // 30% chance
-        return ActivityMapping.RELIGION_ACTIVITY;
-      else
-        return ActivityMapping.MARKET;
+    synchronized (this.random) {
+      if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+        return ActivityMapping.SCHOOL;
+      } else if (0.5 >= this.random.nextDouble()) { // 50% chance
+        if (0.4 >= this.random.nextDouble()) // 40% chance
+          return ActivityMapping.SOCIAL_VISIT;
+        else if (0.3 >= this.random.nextDouble()) // 30% chance
+          return ActivityMapping.RELIGION_ACTIVITY;
+        else
+          return ActivityMapping.MARKET;
+      }
+      return ActivityMapping.STAY_HOME;
     }
-    return ActivityMapping.STAY_HOME;
   }
 
+  // TODO: Problemas de concorrencia!
   public ActivityMapping differentActivities() {
-    if (this.yellowFever.random.nextDouble() < 0.8) { // 80% chance
-      if (this.yellowFever.random.nextDouble() < 0.4) { // 40% chance
-        return ActivityMapping.SOCIAL_VISIT;
-      } else if (this.yellowFever.random.nextDouble() < 0.3) { // 30% chance
-        return ActivityMapping.RELIGION_ACTIVITY;
-      } else {
-        return ActivityMapping.MARKET;
+    synchronized (this.random) {
+      if (0.8 >= this.random.nextDouble()) { // 80% chance
+        if (0.4 >= this.random.nextDouble()) { // 40% chance
+          return ActivityMapping.SOCIAL_VISIT;
+        } else if (0.3 >= this.random.nextDouble()) { // 30% chance
+          return ActivityMapping.RELIGION_ACTIVITY;
+        } else {
+          return ActivityMapping.MARKET;
+        }
+      } else { // 20% chance of home activity
+        return ActivityMapping.STAY_HOME;
       }
-    } else { // 20% chance of home activity
-      return ActivityMapping.STAY_HOME;
     }
   }
 
@@ -121,29 +128,37 @@ public class Activity {
       period = 10 * MINUTE;
       break;
     case SOCIAL_VISIT:
-      // the average visit time is 4 hours
-      period = minimumStay + random.nextInt(4 * MINUTE);
+      synchronized (this.random) {
+        // the average visit time is 4 hours
+        period = minimumStay + this.random.nextInt(4 * MINUTE);
+      }
       break;
     case RELIGION_ACTIVITY:
-      // time at maximum unti 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
+      synchronized (this.random) {
+        // time at maximum unti 2 hours
+        period = minimumStay + this.random.nextInt(2 * MINUTE);
+      }
       break;
     case MARKET:
-      // time at maximum unti 2 hours
-      period = minimumStay + random.nextInt(2 * MINUTE);
+      synchronized (this.random) {
+        // time at maximum unti 2 hours
+        period = minimumStay + this.random.nextInt(2 * MINUTE);
+      }
       break;
     case HEALTH_CENTER:
-      // time at maximum unti 4 hours
-      Building goal = this.human.getGoal();
-      if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
-        period = minimumStay + random.nextInt(4 * MINUTE);
-        this.human.getGoal().addPatient();
-        goal.addPatient();
-        this.yellowFever.addVisitToMedicalCenter();
-      } else {
-        period = 0;
-        // used to the statistics
-        this.yellowFever.oneMoreRefused();
+      synchronized (this.random) {
+        // time at maximum unti 4 hours
+        Building goal = this.human.getGoal();
+        if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
+          period = minimumStay + this.random.nextInt(4 * MINUTE);
+          goal.addPatient();
+          // used to the statistics
+          this.yellowFever.addVisitToMedicalCenter();
+        } else {
+          period = 0;
+          // used to the statistics
+          this.yellowFever.oneMoreRefused();
+        }
       }
       break;
     }
@@ -188,7 +203,7 @@ public class Activity {
     return f;
   }
 
-  public Building getNextTile(YellowFever dadaab, Building subgoal, Building position) {
+  public Building getNextTile(YellowFever yellowFever, Building subgoal, Building position) {
     // move in which direction?
     int moveX = 0, moveY = 0;
     int dx = subgoal.getLocationX() - position.getLocationX();
@@ -204,11 +219,11 @@ public class Activity {
       moveY = 1;
     }
     // can either move in Y direction or X direction: see which is better
-    Building xmove = ((Building) dadaab.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
-    Building ymove = ((Building) dadaab.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
+    Building xmove = ((Building) yellowFever.allCamps.field[position.getLocationX() + moveX][position.getLocationY()]);
+    Building ymove = ((Building) yellowFever.allCamps.field[position.getLocationX()][position.getLocationY() + moveY]);
 
-    boolean xmoveToRoad = ((Integer) dadaab.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
-    boolean ymoveToRoad = ((Integer) dadaab.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
+    boolean xmoveToRoad = ((Integer) yellowFever.roadGrid.get(xmove.getLocationX(), xmove.getLocationY())) > 0;
+    boolean ymoveToRoad = ((Integer) yellowFever.roadGrid.get(ymove.getLocationX(), ymove.getLocationX())) > 0;
 
     if (moveX == 0 && moveY == 0) {
       // we are ON the subgoal, so don't move at all
@@ -222,7 +237,7 @@ public class Activity {
       return xmove;
     } else if (xmoveToRoad == ymoveToRoad) {
       // equally good moves: pick randomly between them
-      if (dadaab.random.nextBoolean()) {
+      if (yellowFever.random.nextBoolean()) {
         return xmove;
       } else {
         return ymove;
@@ -263,10 +278,12 @@ public class Activity {
   }
 
   private boolean gettingMedicalHelp() {
-    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
-      if (random.nextDouble() <= 0.5) // 50% chance
-        return true;
-    return false;
+    synchronized (this.random) {
+      if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
+        if (0.5 >= this.random.nextDouble()) // 50% chance
+          return true;
+      return false;
+    }
   }
 
   public Human getRefugee() {

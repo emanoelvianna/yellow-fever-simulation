@@ -1,7 +1,5 @@
 package com.model;
 
-import com.model.enumeration.HealthStatus;
-
 import sim.util.Bag;
 
 public class Family {
@@ -14,21 +12,6 @@ public class Family {
     this.setLocation(loc);
     members = new Bag();
     relatives = new Bag();
-  }
-
-  public int numberOfInfectedFamilyMembers() {
-    int count = 0;
-    for (Object f : this.getMembers()) {
-      Human ref = (Human) f;
-      if (ref.getCurrentHealthStatus() == HealthStatus.MILD_INFECTION) {
-        count = count + 1;
-      } else if (ref.getCurrentHealthStatus() == HealthStatus.SEVERE_INFECTION) {
-        count = count + 1;
-      } else if (ref.getCurrentHealthStatus() == HealthStatus.TOXIC_INFECTION) {
-        count = count + 1;
-      }
-    }
-    return count;
   }
 
   // location of house
@@ -53,7 +36,7 @@ public class Family {
     this.members.add(human);
   }
 
-  public void removeMembers(Human human) {
+  public synchronized void removeMembers(Human human) {
     this.members.remove(human);
   }
 
@@ -70,7 +53,7 @@ public class Family {
     relatives.add(relative);
   }
 
-  public void removeFriend(Building relative) {
+  public synchronized void removeFriend(Building relative) {
     relatives.remove(relative);
   }
 

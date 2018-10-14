@@ -86,9 +86,9 @@ public class YellowFeverGUI extends GUIState {
   }
 
   public void setupPortrayals() {
-    YellowFever dadaab = (YellowFever) state;
-    rainfallPortrayal.setField(dadaab.rainfallGrid);
-    humansPortrayal.setField(dadaab.allHumans);
+    YellowFever yellowFever = (YellowFever) state;
+    rainfallPortrayal.setField(yellowFever.rainfallGrid);
+    humansPortrayal.setField(yellowFever.allHumans);
 
     OvalPortrayal2D rPortrayal = new OvalPortrayal2D(0.20) {
       private static final long serialVersionUID = 1L;
@@ -119,7 +119,7 @@ public class YellowFeverGUI extends GUIState {
 
     humansPortrayal.setPortrayalForAll(rPortrayal);
 
-    facilPortrayal.setField(dadaab.facilityGrid);
+    facilPortrayal.setField(yellowFever.facilityGrid);
     // facility portrial
     RectanglePortrayal2D facPortrayal = new RectanglePortrayal2D(1.0, false) {
       private static final long serialVersionUID = 1L;
@@ -159,7 +159,7 @@ public class YellowFeverGUI extends GUIState {
 
     facilPortrayal.setPortrayalForAll(facPortrayal);
     // camp shape port..
-    campShapeProtrayal.setField(dadaab.campShape);
+    campShapeProtrayal.setField(yellowFever.campShape);
 
     GeomPortrayal gp = new GeomPortrayal(true) {
       private static final long serialVersionUID = 1L;
@@ -193,7 +193,7 @@ public class YellowFeverGUI extends GUIState {
 
     campShapeProtrayal.setPortrayalForAll(gp);
 
-    roadShapeProtrayal.setField(dadaab.roadLinks);
+    roadShapeProtrayal.setField(yellowFever.roadLinks);
     roadShapeProtrayal.setPortrayalForAll(new GeomPortrayal(Color.LIGHT_GRAY, false));
 
     // roadPortrayal.setField(dadaab.roadGrid);
@@ -312,7 +312,7 @@ public class YellowFeverGUI extends GUIState {
     chartSeriesCholera.setDomainAxisLabel("Minutes");
     chartSeriesCholera.setMaximumSize(dm);
     chartSeriesCholera.setMinimumSize(dmn);
-    chartSeriesCholera.addSeries(((YellowFever) this.state).totalsusceptibleSeries, null);
+    chartSeriesCholera.addSeries(((YellowFever) this.state).totalSusceptibleSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalExposedSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalMildInfectedSeries, null);
     chartSeriesCholera.addSeries(((YellowFever) this.state).totalSevereInfectedSeries, null);
@@ -387,7 +387,7 @@ public class YellowFeverGUI extends GUIState {
     controller.registerFrame(timeframe);
 
     Dimension dl = new Dimension(300, 700);
-    Legend legend = new Legend();
+    LegendGUI legend = new LegendGUI();
     legend.setSize(dl);
 
     JFrame legendframe = new JFrame();

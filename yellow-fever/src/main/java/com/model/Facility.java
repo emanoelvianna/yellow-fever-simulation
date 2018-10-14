@@ -8,6 +8,7 @@ import sim.util.Valuable;
 
 public class Facility implements Steppable, Valuable {
 
+  private static final long serialVersionUID = 1L;
   private int capacity;
   private int facilityID; // id
   private Building location; // location of the facility
@@ -22,17 +23,19 @@ public class Facility implements Steppable, Valuable {
     this.countResources(yellowFever);
   }
 
-  public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
+  public synchronized boolean isReachedCapacity(Building building, YellowFever yellowFever) {
     if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
       return true;
     } else
       return false;
   }
 
-  public void countResources(YellowFever d) {
-    for (Object obj : d.getHealthCenters()) {
-      Building building = (Building) obj;
-      building.setPatientCounter(this.capacity - building.getPatientCounter());
+  public void countResources(YellowFever yellowFever) {
+    synchronized (yellowFever.getHealthCenters()) {
+      for (Object obj : yellowFever.getHealthCenters()) {
+        Building building = (Building) obj;
+        building.setPatientCounter(this.capacity - building.getPatientCounter());
+      }
     }
   }
 

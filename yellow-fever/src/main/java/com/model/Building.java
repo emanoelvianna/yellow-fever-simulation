@@ -3,13 +3,13 @@ package com.model;
 import java.io.Serializable;
 
 import com.core.YellowFever;
-import com.model.enumeration.HealthStatus;
 
 import sim.util.Bag;
 import sim.util.Valuable;
 
 public class Building implements Valuable, Serializable {
 
+  private static final long serialVersionUID = 1L;
   private int fieldID; // identify the type pf the field
   private int campID; // holds id of the three camps
   private double water; // hold water amount
@@ -26,18 +26,18 @@ public class Building implements Valuable, Serializable {
   private Bag refugeeHH; // camp location for household
   private Bag humans; // who are on the field right now
   private Bag mosquitoes;
-  private int eggs;
+  private Bag eggs;
 
   public Building() {
     super();
     this.refugeeHH = new Bag();
     this.humans = new Bag();
     this.mosquitoes = new Bag();
+    this.eggs = new Bag();
     this.timeOfMaturation = 0;
     this.amountOfResources = 0;
     this.patientCounter = 0;
     this.quantityOfVaccines = 0;
-    this.eggs = 0;
     this.water = 0;
   }
 
@@ -45,33 +45,18 @@ public class Building implements Valuable, Serializable {
     this.humans = new Bag();
     this.mosquitoes = new Bag();
     this.refugeeHH = new Bag();
+    this.eggs = new Bag();
     this.locationX = x;
     this.locationY = y;
     this.timeOfMaturation = 0;
     this.amountOfResources = 0;
     this.patientCounter = 0;
     this.quantityOfVaccines = 0;
-    this.eggs = 0;
     this.water = 0;
   }
 
-  public boolean containsHumansInfectedOrExposed() {
-    for (Object object : humans) {
-      Human human = (Human) object;
-      HealthStatus currentHealthStatus = human.getCurrentHealthStatus();
-      if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public void defineTheMaturationTimeOfTheEggs(double temperature) {
-    this.timeOfMaturation = 8 + Math.abs(temperature - 25);
-  }
-
   // check how many familes can occupied in a field
-  public boolean isCampOccupied(YellowFever dadaab) {
+  public synchronized boolean isCampOccupied(YellowFever dadaab) {
     if (this.getRefugeeHH().size() >= dadaab.getParams().getGlobal().getMaximumFamilyOccumpancyPerBuilding()) {
       return true;
     } else {
@@ -79,7 +64,7 @@ public class Building implements Valuable, Serializable {
     }
   }
 
-  public boolean equals(Building b) {
+  public synchronized boolean equals(Building b) {
     if (b.getLocationX() == this.getLocationX() && b.getLocationY() == this.getLocationY()) {
       return true;
     } else {
@@ -87,7 +72,7 @@ public class Building implements Valuable, Serializable {
     }
   }
 
-  public boolean equals(int x, int y) {
+  public synchronized boolean equals(int x, int y) {
     if (x == this.getLocationX() && y == this.getLocationY()) {
       return true;
     }
@@ -95,16 +80,16 @@ public class Building implements Valuable, Serializable {
   }
 
   // calaculate distance
-  public double distanceTo(Building b) {
+  public synchronized double distanceTo(Building b) {
     return Math.sqrt(
         Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
   }
 
-  public double distanceTo(int xCoord, int yCoord) {
+  public synchronized double distanceTo(int xCoord, int yCoord) {
     return Math.sqrt(Math.pow(xCoord - this.getLocationX(), 2) + Math.pow(yCoord - this.getLocationY(), 2));
   }
 
-  public Building copy() {
+  public synchronized Building copy() {
     Building fieldUnit = new Building(this.getLocationX(), this.getLocationY());
     return fieldUnit;
   }
@@ -113,15 +98,15 @@ public class Building implements Valuable, Serializable {
     this.refugeeHH = refugees;
   }
 
-  public Bag getRefugeeHH() {
+  public synchronized Bag getRefugeeHH() {
     return refugeeHH;
   }
 
-  public void addRefugeeHH(Family r) {
+  public synchronized void addRefugeeHH(Family r) {
     this.refugeeHH.add(r);
   }
 
-  public void removeRefugeeHH(Family r) {
+  public synchronized void removeRefugeeHH(Family r) {
     this.refugeeHH.remove(r);
   }
 
@@ -129,27 +114,27 @@ public class Building implements Valuable, Serializable {
     this.humans = humans;
   }
 
-  public Bag getHumans() {
+  public synchronized Bag getHumans() {
     return humans;
   }
 
-  public void addRefugee(Human r) {
+  public synchronized void addRefugee(Human r) {
     this.humans.add(r);
   }
 
-  public void removeRefugee(Human r) {
+  public synchronized void removeRefugee(Human r) {
     this.humans.remove(r);
   }
 
-  public void addMosquito(Mosquito mosquito) {
+  public synchronized void addMosquito(Mosquito mosquito) {
     this.mosquitoes.add(mosquito);
   }
 
-  public void removeMosquito(Mosquito mosquito) {
+  public synchronized void removeMosquito(Mosquito mosquito) {
     this.mosquitoes.remove(mosquito);
   }
 
-  public Bag getMosquitoes() {
+  public synchronized Bag getMosquitoes() {
     return mosquitoes;
   }
 
@@ -182,23 +167,23 @@ public class Building implements Valuable, Serializable {
     this.water = flow;
   }
 
-  public double getWater() {
+  public synchronized double getWater() {
     return water;
   }
 
-  public void addWater(double water) {
+  public synchronized void addWater(double water) {
     this.water = this.water + water;
   }
 
-  public void waterAbsorption(double absorption) {
+  public synchronized void waterAbsorption(double absorption) {
     this.water = this.water - absorption;
   }
 
-  public void addPatient() {
+  public synchronized void addPatient() {
     this.patientCounter++;
   }
 
-  public void removePatient() {
+  public synchronized void removePatient() {
     this.patientCounter--;
   }
 
@@ -206,7 +191,7 @@ public class Building implements Valuable, Serializable {
     this.patientCounter = count;
   }
 
-  public int getPatientCounter() {
+  public synchronized int getPatientCounter() {
     return patientCounter;
   }
 
@@ -238,7 +223,7 @@ public class Building implements Valuable, Serializable {
     return getCampID();
   }
 
-  public boolean containsSap() {
+  public synchronized boolean containsSap() {
     return this.sap;
   }
 
@@ -246,7 +231,7 @@ public class Building implements Valuable, Serializable {
     this.sap = sap;
   }
 
-  public boolean containsNectar() {
+  public synchronized boolean containsNectar() {
     return this.nectar;
   }
 
@@ -254,35 +239,31 @@ public class Building implements Valuable, Serializable {
     this.nectar = nectar;
   }
 
-  public boolean containsWater() {
+  public synchronized boolean containsWater() {
     return this.water != 0;
   }
 
-  public boolean containsHumans() {
+  public synchronized boolean containsHumans() {
     return this.humans.size() > 0;
   }
 
-  public boolean containsEggs() {
-    return this.eggs > 0;
+  public synchronized boolean containsEggs() {
+    return !this.eggs.isEmpty();
   }
 
-  public void addEgg(int eggs) {
-    this.eggs += eggs;
+  public synchronized void addEgg(Egg eggs) {
+    this.eggs.add(eggs);
   }
 
-  public void removeEgg() {
-    this.eggs--;
-  }
-
-  public int getEggs() {
+  public synchronized Bag getEggs() {
     return this.eggs;
   }
 
-  public boolean containsMosquitoes() {
+  public synchronized boolean containsMosquitoes() {
     return !this.mosquitoes.isEmpty();
   }
 
-  public double getTimeOfMaturation() {
+  public synchronized double getTimeOfMaturation() {
     return timeOfMaturation;
   }
 
@@ -290,7 +271,7 @@ public class Building implements Valuable, Serializable {
     this.timeOfMaturation = timeOfMaturation;
   }
 
-  public int getAmountOfResources() {
+  public synchronized int getAmountOfResources() {
     return amountOfResources;
   }
 
@@ -298,7 +279,7 @@ public class Building implements Valuable, Serializable {
     this.amountOfResources = amountOfResources;
   }
 
-  public int getQuantityOfVaccines() {
+  public synchronized int getQuantityOfVaccines() {
     return quantityOfVaccines;
   }
 

@@ -10,6 +10,7 @@ import com.core.algorithms.TimeManager;
 import com.core.report.YellowFeverReport;
 import com.model.Building;
 import com.model.Climate;
+import com.model.Egg;
 import com.model.Facility;
 import com.model.Family;
 import com.model.Human;
@@ -46,6 +47,46 @@ public class YellowFever extends SimState {
   public ObjectGrid2D closestNodes;
   public Network roadNetwork = new Network();
   private final Parameters params;
+
+  // charts and graphs
+  public XYSeries rainfallSeries = new XYSeries(" Rainfall"); //
+  public XYSeries totalSusceptibleSeries = new XYSeries("Susceptible");
+  public XYSeries totalExposedSeries = new XYSeries("Exposed");
+  public XYSeries totalMildInfectedSeries = new XYSeries("Mild Infected");
+  public XYSeries totalSevereInfectedSeries = new XYSeries("Severe Infected");
+  public XYSeries totalToxicInfectedSeries = new XYSeries("Toxic Infected");
+  public XYSeries totalRecoveredSeries = new XYSeries("Recovered");
+  public XYSeries totalDeathSeries = new XYSeries("Death");
+  public XYSeries totalTotalPopSeries = new XYSeries("Total");
+
+  public DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+  // shows age structure of agents
+  public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();
+  // shows family size
+  public DefaultCategoryDataset familydataset = new DefaultCategoryDataset();
+  public DefaultValueDataset hourDialer = new DefaultValueDataset();
+  public DefaultValueDataset dayDialer = new DefaultValueDataset();
+
+  private Bag allFamilies; // holding all families
+  private Bag allMosquitoes;
+  private Bag familyHousing;
+  private Bag allFacilities;
+  private Bag works;
+  private Bag schooles;
+  private Bag healthCenters;
+  private Bag mosques;
+  private Bag market;
+  private Bag foodCenter;
+  private Bag other;
+  // WaterContamination fm = new WaterContamination();
+  private Facility facility;// schduling borehole refill
+  private YellowFeverReport report;
+  private Climate climate;
+  private TimeManager time;
+
+  public int totalgridWidth = 10;
+  public int totalgridHeight = 10;
+
   private int currentDay;
   private double temperature;
   // used to the human statistics
@@ -67,50 +108,14 @@ public class YellowFever extends SimState {
   private int totalVisitsMedicalCenter;
   private int totalRefusalsInMedicalCenter;
 
-  // charts and graphs
-  public XYSeries rainfallSeries = new XYSeries(" Rainfall"); //
-  public XYSeries totalsusceptibleSeries = new XYSeries("Susceptible");
-  public XYSeries totalExposedSeries = new XYSeries("Exposed");
-  public XYSeries totalMildInfectedSeries = new XYSeries("Mild Infected");
-  public XYSeries totalSevereInfectedSeries = new XYSeries("Severe Infected");
-  public XYSeries totalToxicInfectedSeries = new XYSeries("Toxic Infected");
-  public XYSeries totalRecoveredSeries = new XYSeries("Recovered");
-  public XYSeries totalDeathSeries = new XYSeries("Death");
-  public XYSeries totalTotalPopSeries = new XYSeries("Total");
-
-  public DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-  // shows age structure of agents
-  public DefaultCategoryDataset agedataset = new DefaultCategoryDataset();
-  // shows family size
-  public DefaultCategoryDataset familydataset = new DefaultCategoryDataset();
-  public DefaultValueDataset hourDialer = new DefaultValueDataset();
-  public DefaultValueDataset dayDialer = new DefaultValueDataset();
-
-  public int totalgridWidth = 10;
-  public int totalgridHeight = 10;
-  private Bag allFamilies; // holding all families
-  private Bag allMosquitoes;
-  private Bag familyHousing;
-  private Bag allFacilities;
-  private Bag works;
-  private Bag schooles;
-  private Bag healthCenters;
-  private Bag mosques;
-  private Bag market;
-  private Bag foodCenter;
-  private Bag other;
-  // WaterContamination fm = new WaterContamination();
-  Facility facility;// schduling borehole refill
-  private Climate climate;
-
-  private TimeManager time = new TimeManager();
-
-  public YellowFeverReport report;
-  int[] sumActivities = { 0, 0, 0, 0, 0, 0, 0, 0 }; //
+  // TODO: Remover:
+  public int total = 0;
+  //
 
   public YellowFever(long seed, String[] args) {
     super(seed);
     this.params = new Parameters(args);
+    this.time = new TimeManager();
     this.facility = new Facility(this.getParams().getGlobal().getHeaalthFacilityCapacity());
     this.setAllFamilies(new Bag());
     this.allMosquitoes = new Bag();
@@ -118,15 +123,15 @@ public class YellowFever extends SimState {
     this.works = new Bag();
     this.allFacilities = new Bag();
     this.allCampGeoGrid = new GeomGridField();
-    this.climate = new Climate();
-    this.currentDay = 0;
-    this.temperature = 0;
     this.schooles = new Bag();
     this.healthCenters = new Bag();
     this.mosques = new Bag();
     this.market = new Bag();
     this.foodCenter = new Bag();
     this.other = new Bag();
+    this.climate = new Climate();
+    this.currentDay = 0;
+    this.temperature = 0;
     this.totalOfHumansSusceptible = 0;
     this.totalOfHumansExposed = 0;
     this.totalOfHumansWithMildInfection = 0;
@@ -217,7 +222,7 @@ public class YellowFever extends SimState {
 
         totalTotalPopSeries.add((double) (state.schedule.getTime()), allHumans.getAllObjects().numObjs);
         totalDeathSeries.add((double) (state.schedule.getTime()), getNumberDeadHumans());
-        totalsusceptibleSeries.add((double) (state.schedule.getTime()), (totalOfHumansSusceptible));
+        totalSusceptibleSeries.add((double) (state.schedule.getTime()), (totalOfHumansSusceptible));
         totalExposedSeries.add((double) (state.schedule.getTime()), (totalOfHumansExposed));
         totalMildInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithMildInfection));
         totalSevereInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithSevereInfected));
@@ -319,31 +324,43 @@ public class YellowFever extends SimState {
         double timeOfMaturation = housing.getTimeOfMaturation();
         housing.setTimeOfMaturation(--timeOfMaturation);
       } else if (housing.getTimeOfMaturation() <= 0 && housing.containsEggs()) {
-        int amount = housing.getEggs();
+        int amount = housing.getEggs().size();
         for (int i = 0; i < amount; i++) {
-          if (random.nextDouble() >= 0.5) { // 50% chance of female
-            Mosquito mosquito = new Mosquito(housing);
-            mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-            housing.addMosquito(mosquito);
-            housing.removeEgg();
-            allMosquitoes.add(mosquito);
+          Egg eggs = (Egg) housing.getEggs().get(i);
+          if (eggs.getAmount() > 0) {
+            for (int j = 0; j < eggs.getAmount(); j++) {
+              if (0.5 >= random.nextDouble()) { // 50% chance of female
+                Mosquito mosquito = new Mosquito(housing);
+                mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+                housing.addMosquito(mosquito);
+                int newAmount = eggs.getAmount() - 1;
+                eggs.setAmount(newAmount);
+                allMosquitoes.add(mosquito);
+              } else {
+                int newAmount = eggs.getAmount() - 1;
+                eggs.setAmount(newAmount);
+              }
+              this.totalEggsInHouses--;
+            }
           } else {
-            housing.removeEgg();
+            housing.getEggs().remove(i); // garbage Collector
           }
-          this.totalEggsInHouses--;
         }
       }
     }
   }
 
   private void probabilityOfEggsAppearInHouses() {
-    int probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
+    double probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
     for (Object object : getFamilyHousing()) {
       Building housing = (Building) object;
-      if (random.nextInt(101) <= probability) {
-        int amount = 1 + random.nextInt(100);
-        housing.addEgg(amount);
-        this.totalEggsInHouses += amount;
+      if (probability >= this.random.nextDouble()) {
+        if (housing.containsWater()) {
+          double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
+          int amount = 1 + this.random.nextInt(100);
+          housing.addEgg(new Egg(housing, maturationTimeOfTheEggs, amount));
+          this.totalEggsInHouses += amount;
+        }
       }
     }
   }
@@ -352,31 +369,40 @@ public class YellowFever extends SimState {
     for (Object object : getFamilyHousing()) {
       Building housing = (Building) object;
       if (housing.containsEggs()) {
-        int amount = housing.getEggs();
+        int amount = housing.getEggs().size();
         for (int i = 0; i < amount; i++) {
-          if (random.nextDouble() <= 0.05) { // 5% chance
-            housing.removeEgg();
-            this.totalEggsInHouses--;
-            this.totalOfDeadEggs++;
+          Egg eggs = (Egg) housing.getEggs().get(i);
+          if (eggs.getAmount() > 0) {
+            if (random.nextDouble() <= 0.05) { // 5% chance
+              int newAmount = eggs.getAmount() - 1;
+              eggs.setAmount(newAmount);
+              this.totalEggsInHouses--;
+              this.totalOfDeadEggs++;
+            }
+          } else {
+            housing.getEggs().remove(i); // garbage Collector
           }
         }
       }
     }
   }
 
-  public void killHuman(Human human) {
-    human.getFamily().removeMembers(human);
-    if (human.getFamily().getMembers().numObjs == 0) {
-      this.getAllFamilies().remove(human.getFamily());
+  public synchronized void killHuman(Human human) {
+    synchronized (this.allHumans) {
+      human.getFamily().removeMembers(human);
+      if (human.getFamily().getMembers().numObjs == 0) {
+        this.getAllFamilies().remove(human.getFamily()); // garbage Collector
+      }
+      this.allHumans.remove(human);
     }
-    this.allHumans.remove(human);
-    this.totalDeadHumans++;
   }
 
-  public void killMosquito(Mosquito mosquito) {
-    mosquito.getCurrentPosition().removeMosquito(mosquito);
-    this.allMosquitoes.remove(mosquito);
-    this.totalDeadMosquitoes++;
+  public synchronized void killMosquito(Mosquito mosquito) {
+    synchronized (this.allMosquitoes) {
+      mosquito.getCurrentPosition().removeMosquito(mosquito);
+      this.allMosquitoes.remove(mosquito);
+      this.totalDeadMosquitoes++;
+    }
   }
 
   public static void main(String[] args) {
@@ -389,6 +415,21 @@ public class YellowFever extends SimState {
     if (report != null) {
       this.report.finish();
     }
+  }
+
+  // used to the statistics
+  public synchronized void addVisitToMedicalCenter() {
+    this.totalVisitsMedicalCenter++;
+  }
+
+  // used to the statistics
+  public synchronized void oneMoreRefused() {
+    this.totalRefusalsInMedicalCenter++;
+  }
+
+  // used to the statistics
+  public synchronized void addToTheTotalEggsInTheEnvironment(int amount) {
+    this.totalEggsInHouses += amount;
   }
 
   public void addMosquitoes(Mosquito mosquito) {
@@ -615,10 +656,6 @@ public class YellowFever extends SimState {
     this.totalEggsInHouses = totalEggsInHouses;
   }
 
-  public void addAmountOfEggsInTotal(int amount) {
-    this.totalEggsInHouses += amount;
-  }
-
   public int getTotalOfDeadEggs() {
     return totalOfDeadEggs;
   }
@@ -635,20 +672,12 @@ public class YellowFever extends SimState {
     this.totalVisitsMedicalCenter = totalVisitsMedicalCenter;
   }
 
-  public void addVisitToMedicalCenter() {
-    this.totalVisitsMedicalCenter++;
-  }
-
   public int getTotalRefusalsInMedicalCenter() {
     return totalRefusalsInMedicalCenter;
   }
 
   public void setTotalRefusalsInMedicalCenter(int totalRefusalsInMedicalCenter) {
     this.totalRefusalsInMedicalCenter = totalRefusalsInMedicalCenter;
-  }
-
-  public void oneMoreRefused() {
-    this.totalRefusalsInMedicalCenter++;
   }
 
 }

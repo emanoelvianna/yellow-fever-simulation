@@ -78,9 +78,9 @@ public class Parameters {
     intParameter = returnIntParameter(parameterDB, "resourcesInMedicalCenters", global.resourcesInMedicalCenters);
     global.resourcesInMedicalCenters = intParameter;
 
-    intParameter = returnIntParameter(parameterDB, "probabilityOfEggsAppearInHouses",
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfEggsAppearInHouses",
         global.probabilityOfEggsAppearInHouses);
-    global.probabilityOfEggsAppearInHouses = intParameter;
+    global.probabilityOfEggsAppearInHouses = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfGettingBloodFood",
         global.probabilityOfGettingBloodFood);
@@ -136,8 +136,8 @@ public class Parameters {
 
     private int initialHumansNumberInfected = 10;
     private int initialMosquitoesNumber = 8000;
-    private int initialHumansNumber = 4000;
-    private int probabilityOfEggsAppearInHouses = 30;
+    private int initialHumansNumber = 1000;
+    private double probabilityOfEggsAppearInHouses = 0.3;
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;
     private int resourcesInMedicalCenters = 20;
@@ -206,11 +206,11 @@ public class Parameters {
       this.initialMosquitoesNumber = initialMosquitoesNumber;
     }
 
-    public int getProbabilityOfEggsAppearInHouses() {
+    public double getProbabilityOfEggsAppearInHouses() {
       return probabilityOfEggsAppearInHouses;
     }
 
-    public void setProbabilityOfEggsAppearInHouses(int probability) {
+    public void setProbabilityOfEggsAppearInHouses(double probability) {
       this.probabilityOfEggsAppearInHouses = probability;
     }
 

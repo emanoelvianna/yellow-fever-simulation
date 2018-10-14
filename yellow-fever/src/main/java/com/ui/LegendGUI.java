@@ -8,7 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 
-public class Legend extends Canvas {
+public class LegendGUI extends Canvas {
 
   private static final long serialVersionUID = 1L;
 
@@ -22,46 +22,46 @@ public class Legend extends Canvas {
     leg.draw(line);
 
     /* agent */
-    leg.setColor(new Color(0, 128, 0));
+    leg.setColor(Color.BLACK);
     leg.fillOval(20, 150, 20, 20);
 
-    leg.setColor(new Color(0, 0, 255)); // 244, 165, 130
+    leg.setColor(Color.YELLOW);
     leg.fillOval(20, 180, 20, 20);
 
-    leg.setColor(new Color(255, 0, 0));
+    leg.setColor(Color.PINK);
     leg.fillOval(20, 210, 20, 20);
 
-    leg.setColor(new Color(102, 0, 102));
+    leg.setColor(Color.ORANGE);
     leg.fillOval(20, 240, 20, 20);
+
+    leg.setColor(Color.RED);
+    leg.fillOval(20, 270, 20, 20);
+
+    leg.setColor(Color.BLUE);
+    leg.fillOval(20, 300, 20, 20);
 
     /* camps */
     leg.setColor(new Color(224, 255, 224));
-    leg.fillRect(20, 290, 30, 30);
+    leg.fillRect(20, 370, 30, 30);
 
     leg.setColor(new Color(255, 180, 210));
-    leg.fillRect(20, 330, 30, 30);
+    leg.fillRect(20, 405, 30, 30);
 
     leg.setColor(new Color(204, 204, 153));
-    leg.fillRect(20, 370, 30, 30);
+    leg.fillRect(20, 440, 30, 30);
 
     /* facilities */
     leg.setColor(new Color(0, 255, 0));
-    leg.drawRect(20, 430, 30, 30);
-
-    leg.setColor(new Color(0, 128, 255));
-    leg.drawRect(20, 470, 30, 30);
+    leg.drawRect(20, 520, 30, 30);
 
     leg.setColor(new Color(0, 0, 102));
-    leg.drawRect(20, 510, 30, 30);
+    leg.drawRect(20, 560, 30, 30);
 
     leg.setColor(new Color(0, 102, 102));
-    leg.drawRect(20, 550, 30, 30);
-
-    leg.setColor(new Color(102, 0, 102));
-    leg.drawRect(20, 590, 30, 30);
+    leg.drawRect(20, 600, 30, 30);
 
     leg.setColor(new Color(255, 0, 0));
-    leg.drawRect(20, 630, 30, 30);
+    leg.drawRect(20, 640, 30, 30);
 
     Font f = new Font("Serif", Font.BOLD, 24);
     leg.setFont(f);
@@ -75,32 +75,31 @@ public class Legend extends Canvas {
 
     leg.setColor(Color.black);
 
-    leg.drawString("Agent's Cholera Status", 20, 140);
-
-    leg.drawString("Refugee Camps", 20, 285);
-    leg.drawString("Facility", 20, 425);
+    leg.drawString("Agent's Status", 20, 130);
+    leg.drawString("Refugee Camps", 20, 350);
+    leg.drawString("Facility", 20, 500);
 
     Font f3 = new Font("Serif", Font.PLAIN, 20);
     leg.setFont(f3);
-
     leg.setColor(Color.black);
 
     leg.drawString("Road", 90, 80);
 
     leg.drawString("Susceptible", 70, 165);
     leg.drawString("Exposed", 70, 195);
-    leg.drawString("Infected", 70, 225);
-    leg.drawString("Recovered", 70, 255);
+    leg.drawString("Mild Infection", 70, 225);
+    leg.drawString("Severe Infection", 70, 255);
+    leg.drawString("Toxic Infection", 70, 285);
+    leg.drawString("Recovered", 70, 315);
 
-    leg.drawString("Dagahaley", 70, 315);
-    leg.drawString("Ifo", 70, 350);
-    leg.drawString("Hagadera", 70, 390);
+    leg.drawString("Dagahaley", 70, 395);
+    leg.drawString("Ifo", 70, 430);
+    leg.drawString("Hagadera", 70, 465);
 
-    leg.drawString("School", 70, 445);
-    leg.drawString("Borehole", 70, 490);
-    leg.drawString("Mosque", 70, 530);
-    leg.drawString("Market", 70, 570);
-    leg.drawString("Food Dist. Center", 70, 610);
-    leg.drawString("Health Center", 70, 650);
+    leg.drawString("School", 70, 545);
+    leg.drawString("Mosque", 70, 585);
+    leg.drawString("Market", 70, 625);
+    leg.drawString("Health Center", 70, 665);
+
   }
 }
