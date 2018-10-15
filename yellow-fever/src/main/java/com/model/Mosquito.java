@@ -114,7 +114,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     synchronized (this.random) {
       double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
       int amount = 1 + this.random.nextInt(100);
-      this.currentPosition.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
+      this.yellowFever.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
       this.carryingEggs = false;
       // used to the statistics
       this.yellowFever.addToTheTotalEggsInTheEnvironment(amount);
@@ -210,7 +210,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Problema com concorrência!
   private void probabilityOfDying() {
     double probability = 0.05; // 5% chance
     synchronized (this.random) {

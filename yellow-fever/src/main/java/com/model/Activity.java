@@ -71,7 +71,6 @@ public class Activity {
     }
   }
 
-  // TODO: Problemas de concorrencia!
   public ActivityMapping differentActivities() {
     synchronized (this.random) {
       if (0.8 >= this.random.nextDouble()) { // 80% chance

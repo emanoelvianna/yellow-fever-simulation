@@ -26,13 +26,11 @@ public class Building implements Valuable, Serializable {
   private Bag refugeeHH; // camp location for household
   private Bag humans; // who are on the field right now
   private Bag mosquitoes;
-  private Bag eggs;
 
   public Building() {
     this.refugeeHH = new Bag();
     this.humans = new Bag();
     this.mosquitoes = new Bag();
-    this.eggs = new Bag();
     this.timeOfMaturation = 0;
     this.amountOfResources = 0;
     this.patientCounter = 0;
@@ -44,7 +42,6 @@ public class Building implements Valuable, Serializable {
     this.humans = new Bag();
     this.mosquitoes = new Bag();
     this.refugeeHH = new Bag();
-    this.eggs = new Bag();
     this.locationX = x;
     this.locationY = y;
     this.timeOfMaturation = 0;
@@ -244,18 +241,6 @@ public class Building implements Valuable, Serializable {
 
   public synchronized boolean containsHumans() {
     return this.humans.size() > 0;
-  }
-
-  public synchronized boolean containsEggs() {
-    return !this.eggs.isEmpty();
-  }
-
-  public synchronized void addEgg(Egg eggs) {
-    this.eggs.add(eggs);
-  }
-
-  public synchronized Bag getEggs() {
-    return this.eggs;
   }
 
   public synchronized boolean containsMosquitoes() {
