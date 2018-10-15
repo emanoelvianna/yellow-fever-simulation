@@ -318,15 +318,14 @@ public class YellowFever extends SimState {
   }
 
   private void probabilityOfEggsHatching() {
-    for (Object object : getFamilyHousing()) {
-      Building housing = (Building) object;
+    for (Object building : getFamilyHousing()) {
+      Building housing = (Building) building;
       if (housing.getTimeOfMaturation() > 0 && housing.containsEggs()) {
         double timeOfMaturation = housing.getTimeOfMaturation();
         housing.setTimeOfMaturation(--timeOfMaturation);
       } else if (housing.getTimeOfMaturation() <= 0 && housing.containsEggs()) {
-        int amount = housing.getEggs().size();
-        for (int i = 0; i < amount; i++) {
-          Egg eggs = (Egg) housing.getEggs().get(i);
+        for (Object object : housing.getEggs()) {
+          Egg eggs = (Egg) object;
           if (eggs.getAmount() > 0) {
             for (int j = 0; j < eggs.getAmount(); j++) {
               if (0.5 >= random.nextDouble()) { // 50% chance of female
@@ -342,8 +341,9 @@ public class YellowFever extends SimState {
               }
               this.totalEggsInHouses--;
             }
+
           } else {
-            housing.getEggs().remove(i); // garbage Collector
+            housing.getEggs().remove(eggs); // garbage Collector
           }
         }
       }
@@ -366,12 +366,11 @@ public class YellowFever extends SimState {
   }
 
   private void probabilityOfEggsDying() {
-    for (Object object : getFamilyHousing()) {
-      Building housing = (Building) object;
+    for (Object building : getFamilyHousing()) {
+      Building housing = (Building) building;
       if (housing.containsEggs()) {
-        int amount = housing.getEggs().size();
-        for (int i = 0; i < amount; i++) {
-          Egg eggs = (Egg) housing.getEggs().get(i);
+        for (Object object : housing.getEggs()) {
+          Egg eggs = (Egg) object;
           if (eggs.getAmount() > 0) {
             if (random.nextDouble() <= 0.05) { // 5% chance
               int newAmount = eggs.getAmount() - 1;
@@ -380,7 +379,7 @@ public class YellowFever extends SimState {
               this.totalOfDeadEggs++;
             }
           } else {
-            housing.getEggs().remove(i); // garbage Collector
+            housing.getEggs().remove(eggs); // garbage Collector
           }
         }
       }

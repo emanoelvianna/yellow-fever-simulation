@@ -136,7 +136,7 @@ public class Parameters {
 
     private int initialHumansNumberInfected = 10;
     private int initialMosquitoesNumber = 8000;
-    private int initialHumansNumber = 1000;
+    private int initialHumansNumber = 4000;
     private double probabilityOfEggsAppearInHouses = 0.3;
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;

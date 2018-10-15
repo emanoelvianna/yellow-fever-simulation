@@ -301,7 +301,7 @@ public class Human implements Steppable, Valuable, Serializable {
   public void defineIncubationPeriod() {
     synchronized (this.random) {
       // 3-6 days
-      this.incubationPeriod = 3 + this.random.nextInt(100);
+      this.incubationPeriod = 3 + this.random.nextInt(4);
     }
   }
 

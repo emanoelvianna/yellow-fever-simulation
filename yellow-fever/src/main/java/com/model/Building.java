@@ -29,7 +29,6 @@ public class Building implements Valuable, Serializable {
   private Bag eggs;
 
   public Building() {
-    super();
     this.refugeeHH = new Bag();
     this.humans = new Bag();
     this.mosquitoes = new Bag();

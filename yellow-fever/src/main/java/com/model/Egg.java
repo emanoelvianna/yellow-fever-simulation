@@ -1,6 +1,12 @@
 package com.model;
 
-public class Egg {
+import sim.engine.SimState;
+import sim.engine.Steppable;
+import sim.util.Valuable;
+
+public class Egg implements Steppable, Valuable {
+
+  private static final long serialVersionUID = 1L;
   private Building currentPosition;
   private double timeOfMaturation;
   private int amount;
@@ -9,6 +15,10 @@ public class Egg {
     this.currentPosition = currentPosition;
     this.timeOfMaturation = timeOfMaturation;
     this.amount = amount;
+  }
+
+  public void step(SimState state) {
+
   }
 
   public Building getCurrentPosition() {
@@ -33,5 +43,9 @@ public class Egg {
 
   public void setAmount(int amount) {
     this.amount = amount;
+  }
+
+  public double doubleValue() {
+    return 0;
   }
 }
