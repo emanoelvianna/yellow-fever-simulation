@@ -34,9 +34,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private HealthStatus currentHealthStatus;
   private HealthStatus previousHealthStatus;
   private double timeOfMaturation;
+  private boolean dead;
 
-  public Mosquito(Building position) {
-    this.random = new MersenneTwisterFast();
+  public Mosquito(Building position, MersenneTwisterFast random) {
+    this.random = random;
     this.currentHealthStatus = HealthStatus.SUSCEPTIBLE;
     this.hungry = true;
     this.currentPosition = position;
@@ -47,9 +48,12 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.temperature = 0;
     this.timeOfMaturation = 0;
     this.defineVectorLifespan();
+    this.dead = false;
   }
 
   public void step(SimState state) {
+    if (this.dead)
+      return;
     this.yellowFever = (YellowFever) state;
     this.time = this.yellowFever.getTime();
     this.currentStep = (int) yellowFever.schedule.getSteps();
@@ -59,7 +63,9 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       }
       this.hungry = true; // reset the power
       this.daysOfLife--;
-      this.probabilityOfDying();
+      this.dead = this.probabilityOfDying();
+      if (this.dead)
+        return;
       this.setTemperature();
       this.checkCurrentStateOfMaturation();
       this.checkCurrentStateOfInfection();
@@ -97,12 +103,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void probabilityOfCarryingEggs() {
-    synchronized (this.random) {
-      if (0.2 >= this.random.nextDouble()) { // 20% chance
-        this.setCarryingEggs(true);
-      } else {
-        this.setCarryingEggs(false);
-      }
+    if (0.2 >= this.random.nextDouble()) { // 20% chance
+      this.setCarryingEggs(true);
+    } else {
+      this.setCarryingEggs(false);
     }
   }
 
@@ -110,15 +114,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.timeOfMaturation = 3 + Math.abs((this.temperature - 21) / 5);
   }
 
+  // TODO: Problema com concorrencia!
   private void ovipositionProcess() {
-    synchronized (this.random) {
-      double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
-      int amount = 1 + this.random.nextInt(100);
-      this.yellowFever.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
-      this.carryingEggs = false;
-      // used to the statistics
-      this.yellowFever.addToTheTotalEggsInTheEnvironment(amount);
-    }
+    double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
+    int amount = 1 + this.random.nextInt(100);
+    this.yellowFever.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
+    this.carryingEggs = false;
+    // used to the statistics
+    this.yellowFever.addToTheTotalEggsInTheEnvironment(amount);
   }
 
   private void normalFood() {
@@ -129,18 +132,15 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Adicionar a probabilidade dele morrer na tentativa de obter comida!
   private void bloodFood() {
     if (this.currentPosition.getHumans().size() > 0) {
-      // TODO: Padronizar os parametros utilizados sobre o modelo
       double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood();
       if (probability >= this.random.nextDouble()) {
         int size = this.currentPosition.getHumans().size();
         Human human = (Human) currentPosition.getHumans().get(this.random.nextInt(size));
-        synchronized (human) {
-          this.toBite(human);
-          this.hungry = false;
-        }
+        this.toBite(human);
+        this.hungry = false;
+        this.dead = this.probabilityOfDying();
       } else {
         this.hungry = true;
       }
@@ -149,27 +149,37 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  // TODO: Padronizar valores de probabilidade para decimal!
   public void toBite(Human human) {
     synchronized (human.getCurrentHealthStatus()) {
-      if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
-        int probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
-        if (probability >= this.random.nextDouble()) {
-          human.infected();
+      switch (human.getCurrentHealthStatus()) {
+      case SUSCEPTIBLE:
+        if (HealthStatus.INFECTED.equals(this.getCurrentHealthStatus())) {
+          double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
+          if (probability >= this.random.nextDouble()) {
+            human.infected();
+          }
         }
-      } else if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-        if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
-          int probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityMildInfectionToVector();
+        break;
+      case MILD_INFECTION:
+        if (HealthStatus.SUSCEPTIBLE.equals(this.getCurrentHealthStatus())) {
+          double probability = this.yellowFever.getParams().getGlobal()
+              .getTransmissionProbabilityMildInfectionToVector();
           if (probability >= this.random.nextDouble()) {
             this.infected();
           }
-        } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
-          int probability = this.yellowFever.getParams().getGlobal()
+        }
+        break;
+      case SEVERE_INFECTION:
+        if (HealthStatus.SUSCEPTIBLE.equals(this.getCurrentHealthStatus())) {
+          double probability = this.yellowFever.getParams().getGlobal()
               .getTransmissionProbabilitySevereInfectionToVector();
           if (probability >= this.random.nextDouble()) {
             this.infected();
           }
         }
+        break;
+      default:
+        break;
       }
     }
   }
@@ -183,15 +193,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void infected() {
+    if (!HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus))
+      return;
     this.defineIncubationPeriod();
     this.currentHealthStatus = HealthStatus.EXPOSED;
   }
 
   private void defineIncubationPeriod() {
-    synchronized (this.random) {
-      // 8-12 days
-      this.incubationPeriod = 8 + this.random.nextInt(5);
-    }
+    this.incubationPeriod = 8 + this.random.nextInt(5); // 8-12 days
   }
 
   private void checkCurrentStateOfMaturation() {
@@ -210,22 +219,21 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void probabilityOfDying() {
+  private boolean probabilityOfDying() {
     double probability = 0.05; // 5% chance
-    synchronized (this.random) {
-      if (probability >= this.random.nextDouble()) {
-        this.yellowFever.killMosquito(this);
-      } else if (this.daysOfLife <= 0) {
-        this.yellowFever.killMosquito(this);
-      } else if (this.daysWithoutFood > 1) {
-        this.yellowFever.killMosquito(this);
-      }
+    if (probability >= this.random.nextDouble()) {
+      return true;
+    } else if (this.daysOfLife <= 0) {
+      return true;
+    } else if (this.daysWithoutFood > 1) {
+      return true;
     }
+    return false;
   }
 
   private void setTemperature() {
     List<Double> temperatures = this.yellowFever.getClimate().getTemperature();
-    if (currentDay < temperatures.size()) {
+    if (this.currentDay < temperatures.size()) {
       this.temperature = temperatures.get(currentDay);
     }
   }
@@ -235,10 +243,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void defineVectorLifespan() {
-    synchronized (this.random) {
-      // vector lifespan is 4-35 days
-      this.daysOfLife = 4 + this.random.nextInt(32);
-    }
+    this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
   }
 
   public void setStoppable(Stoppable stopp) {
@@ -311,6 +316,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public void setDaysWithoutFood(int daysWithoutFood) {
     this.daysWithoutFood = daysWithoutFood;
+  }
+
+  public boolean isDead() {
+    return dead;
+  }
+
+  public void setDead(boolean dead) {
+    this.dead = dead;
   }
 
 }

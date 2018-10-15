@@ -10,6 +10,10 @@ import sim.util.Valuable;
 public class Building implements Valuable, Serializable {
 
   private static final long serialVersionUID = 1L;
+  private Facility facility;
+  private Bag refugeeHH; // camp location for household
+  private Bag humans; // who are on the field right now
+  private Bag mosquitoes;
   private int fieldID; // identify the type pf the field
   private int campID; // holds id of the three camps
   private double water; // hold water amount
@@ -19,13 +23,9 @@ public class Building implements Valuable, Serializable {
   private double timeOfMaturation;
   private int amountOfResources;
   private int quantityOfVaccines;
-  private int patientCounter;
-  private Facility facility;
   private int locationX;
   private int locationY;
-  private Bag refugeeHH; // camp location for household
-  private Bag humans; // who are on the field right now
-  private Bag mosquitoes;
+  private int patientCounter;
 
   public Building() {
     this.refugeeHH = new Bag();
@@ -33,9 +33,9 @@ public class Building implements Valuable, Serializable {
     this.mosquitoes = new Bag();
     this.timeOfMaturation = 0;
     this.amountOfResources = 0;
-    this.patientCounter = 0;
     this.quantityOfVaccines = 0;
     this.water = 0;
+    this.patientCounter = 0;
   }
 
   public Building(int x, int y) {
@@ -46,9 +46,9 @@ public class Building implements Valuable, Serializable {
     this.locationY = y;
     this.timeOfMaturation = 0;
     this.amountOfResources = 0;
-    this.patientCounter = 0;
     this.quantityOfVaccines = 0;
     this.water = 0;
+    this.patientCounter = 0;
   }
 
   // check how many familes can occupied in a field
@@ -76,16 +76,16 @@ public class Building implements Valuable, Serializable {
   }
 
   // calaculate distance
-  public synchronized double distanceTo(Building b) {
+  public double distanceTo(Building b) {
     return Math.sqrt(
         Math.pow(b.getLocationX() - this.getLocationX(), 2) + Math.pow(b.getLocationY() - this.getLocationY(), 2));
   }
 
-  public synchronized double distanceTo(int xCoord, int yCoord) {
+  public double distanceTo(int xCoord, int yCoord) {
     return Math.sqrt(Math.pow(xCoord - this.getLocationX(), 2) + Math.pow(yCoord - this.getLocationY(), 2));
   }
 
-  public synchronized Building copy() {
+  public Building copy() {
     Building fieldUnit = new Building(this.getLocationX(), this.getLocationY());
     return fieldUnit;
   }
@@ -94,15 +94,15 @@ public class Building implements Valuable, Serializable {
     this.refugeeHH = refugees;
   }
 
-  public synchronized Bag getRefugeeHH() {
+  public Bag getRefugeeHH() {
     return refugeeHH;
   }
 
-  public synchronized void addRefugeeHH(Family r) {
+  public void addRefugeeHH(Family r) {
     this.refugeeHH.add(r);
   }
 
-  public synchronized void removeRefugeeHH(Family r) {
+  public void removeRefugeeHH(Family r) {
     this.refugeeHH.remove(r);
   }
 
@@ -110,27 +110,27 @@ public class Building implements Valuable, Serializable {
     this.humans = humans;
   }
 
-  public synchronized Bag getHumans() {
+  public Bag getHumans() {
     return humans;
   }
 
-  public synchronized void addRefugee(Human r) {
+  public void addRefugee(Human r) {
     this.humans.add(r);
   }
 
-  public synchronized void removeRefugee(Human r) {
+  public void removeRefugee(Human r) {
     this.humans.remove(r);
   }
 
-  public synchronized void addMosquito(Mosquito mosquito) {
+  public void addMosquito(Mosquito mosquito) {
     this.mosquitoes.add(mosquito);
   }
 
-  public synchronized void removeMosquito(Mosquito mosquito) {
+  public void removeMosquito(Mosquito mosquito) {
     this.mosquitoes.remove(mosquito);
   }
 
-  public synchronized Bag getMosquitoes() {
+  public Bag getMosquitoes() {
     return mosquitoes;
   }
 
@@ -163,32 +163,20 @@ public class Building implements Valuable, Serializable {
     this.water = flow;
   }
 
+  // TODO: Preciso utilizar o synchronized?
+  // TODO: Quais outros casos que preciso utilizar aqui?
   public synchronized double getWater() {
     return water;
   }
 
+  // TODO: Preciso utilizar o synchronized?
   public synchronized void addWater(double water) {
     this.water = this.water + water;
   }
 
+  // TODO: Preciso utilizar o synchronized?
   public synchronized void waterAbsorption(double absorption) {
     this.water = this.water - absorption;
-  }
-
-  public synchronized void addPatient() {
-    this.patientCounter++;
-  }
-
-  public synchronized void removePatient() {
-    this.patientCounter--;
-  }
-
-  public void setPatientCounter(int count) {
-    this.patientCounter = count;
-  }
-
-  public synchronized int getPatientCounter() {
-    return patientCounter;
   }
 
   public void setElevation(double elev) {
@@ -219,7 +207,7 @@ public class Building implements Valuable, Serializable {
     return getCampID();
   }
 
-  public synchronized boolean containsSap() {
+  public boolean containsSap() {
     return this.sap;
   }
 
@@ -227,7 +215,7 @@ public class Building implements Valuable, Serializable {
     this.sap = sap;
   }
 
-  public synchronized boolean containsNectar() {
+  public boolean containsNectar() {
     return this.nectar;
   }
 
@@ -235,19 +223,19 @@ public class Building implements Valuable, Serializable {
     this.nectar = nectar;
   }
 
-  public synchronized boolean containsWater() {
+  public boolean containsWater() {
     return this.water != 0;
   }
 
-  public synchronized boolean containsHumans() {
+  public boolean containsHumans() {
     return this.humans.size() > 0;
   }
 
-  public synchronized boolean containsMosquitoes() {
+  public boolean containsMosquitoes() {
     return !this.mosquitoes.isEmpty();
   }
 
-  public synchronized double getTimeOfMaturation() {
+  public double getTimeOfMaturation() {
     return timeOfMaturation;
   }
 
@@ -255,7 +243,7 @@ public class Building implements Valuable, Serializable {
     this.timeOfMaturation = timeOfMaturation;
   }
 
-  public synchronized int getAmountOfResources() {
+  public int getAmountOfResources() {
     return amountOfResources;
   }
 
@@ -263,12 +251,20 @@ public class Building implements Valuable, Serializable {
     this.amountOfResources = amountOfResources;
   }
 
-  public synchronized int getQuantityOfVaccines() {
+  public int getQuantityOfVaccines() {
     return quantityOfVaccines;
   }
 
   public void setQuantityOfVaccines(int quantityOfVaccines) {
     this.quantityOfVaccines = quantityOfVaccines;
+  }
+
+  public void setPatientCounter(int counter) {
+    this.patientCounter = counter;
+  }
+
+  public int getPatientCounter() {
+    return patientCounter;
   }
 
 }

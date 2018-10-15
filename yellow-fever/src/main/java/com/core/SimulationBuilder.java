@@ -146,8 +146,7 @@ public class SimulationBuilder {
         for (int curr_col = 0; curr_col < width; ++curr_col) {
           int facilitytype = Integer.parseInt(tokens[curr_col]);
           if (facilitytype > 0 && facilitytype < 11) {
-            int capacity = yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity();
-            Facility facility = new Facility(capacity);
+            Facility facility = new Facility();
             Building facilityField = (Building) yellowFever.allCamps.get(curr_col, curr_row);
             facility.setLocation(facilityField);
             facilityField.setFacility(facility);
@@ -157,7 +156,6 @@ public class SimulationBuilder {
               facility.setFacilityID(2);
               yellowFever.getWorks().add(facilityField);
             } else if (facilitytype == 2 || facilitytype == 3) {
-              facility.setCapacity(yellowFever.getParams().getGlobal().getResourcesInMedicalCenters());
               facility.setFacilityID(6);
               yellowFever.getHealthCenters().add(facilityField);
             } else if (facilitytype == 4) {
@@ -376,7 +374,8 @@ public class SimulationBuilder {
 
   //// add households
   private void addAllHumans(int age, Sex sex, Family hh, YellowFever yellowFever) {
-    Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), yellowFever.random, yellowFever.allHumans);
+    Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), yellowFever.random,
+        yellowFever.allHumans);
     hh.addMembers(human);
     hh.getLocation().addRefugee(human);
     human.setCurrentHealthStatus(HealthStatus.SUSCEPTIBLE);
@@ -528,34 +527,34 @@ public class SimulationBuilder {
     }
   }
 
-  public void populateMosquito(YellowFever dadaab) {
-    int initialMosquitoesNumber = dadaab.getParams().getGlobal().getInitialMosquitoesNumber();
+  public void populateMosquito(YellowFever yellowFever) {
+    int initialMosquitoesNumber = yellowFever.getParams().getGlobal().getInitialMosquitoesNumber();
 
     while (initialMosquitoesNumber > 0) {
-      int index = dadaab.random.nextInt(dadaab.getFamilyHousing().numObjs);
-      Building housing = (Building) dadaab.getFamilyHousing().objs[index];
+      int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
+      Building housing = (Building) yellowFever.getFamilyHousing().objs[index];
       if (housing.containsMosquitoes()) {
-        if (dadaab.random.nextDouble() > 0.5) { // 50% chance of has more
-                                                // mosquitoes
-          Mosquito mosquito = new Mosquito(housing);
-          mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+        // 50% chance of has more mosquitoes
+        if (yellowFever.random.nextDouble() > 0.5) {
+          Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+          mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
           housing.addMosquito(mosquito);
-          dadaab.addMosquitoes(mosquito);
+          yellowFever.addMosquitoes(mosquito);
           initialMosquitoesNumber--;
         }
       } else {
-        Mosquito mosquito = new Mosquito(housing);
-        mosquito.setStoppable(dadaab.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
         housing.addMosquito(mosquito);
-        dadaab.addMosquitoes(mosquito);
+        yellowFever.addMosquitoes(mosquito);
         initialMosquitoesNumber--;
       }
     }
   }
 
-  public Sex defineSex(YellowFever dadaab) {
+  public Sex defineSex(YellowFever yellowFever) {
     // sex 50-50 chance
-    if (dadaab.random.nextDouble() > 0.5) {
+    if (yellowFever.random.nextDouble() > 0.5) {
       return Sex.M;
     } else {
       return Sex.F;
@@ -563,7 +562,7 @@ public class SimulationBuilder {
   }
 
   /// raod network methods from haiti project
-  static void extractFromRoadLinks(GeomVectorField roadLinks, YellowFever dadaab) {
+  static void extractFromRoadLinks(GeomVectorField roadLinks, YellowFever yellowFever) {
     Bag geoms = roadLinks.getGeometries();
     Envelope e = roadLinks.getMBR();
     double xmin = e.getMinX(), ymin = e.getMinY(), xmax = e.getMaxX(), ymax = e.getMaxY();
@@ -574,11 +573,11 @@ public class SimulationBuilder {
 
       MasonGeometry gm = (MasonGeometry) o;
       if (gm.getGeometry() instanceof LineString) {
-        readLineString((LineString) gm.getGeometry(), xcols, ycols, xmin, ymin, xmax, ymax, dadaab);
+        readLineString((LineString) gm.getGeometry(), xcols, ycols, xmin, ymin, xmax, ymax, yellowFever);
       } else if (gm.getGeometry() instanceof MultiLineString) {
         MultiLineString mls = (MultiLineString) gm.getGeometry();
         for (int i = 0; i < mls.getNumGeometries(); i++) {
-          readLineString((LineString) mls.getGeometryN(i), xcols, ycols, xmin, ymin, xmax, ymax, dadaab);
+          readLineString((LineString) mls.getGeometryN(i), xcols, ycols, xmin, ymin, xmax, ymax, yellowFever);
         }
       }
     }
@@ -603,7 +602,7 @@ public class SimulationBuilder {
    *          - maximum y value in shapefile
    */
   static void readLineString(LineString geometry, int xcols, int ycols, double xmin, double ymin, double xmax,
-      double ymax, YellowFever dadaab) {
+      double ymax, YellowFever yellowFever) {
 
     CoordinateSequence cs = geometry.getCoordinateSequence();
 
@@ -629,11 +628,11 @@ public class SimulationBuilder {
       }
 
       // find that node or establish it if it doesn't yet exist
-      Bag ns = dadaab.nodes.getObjectsAtLocation(xint, yint);
+      Bag ns = yellowFever.nodes.getObjectsAtLocation(xint, yint);
       Node n;
       if (ns == null) {
         n = new Node(new Building(xint, yint));
-        dadaab.nodes.setObjectLocation(n, xint, yint);
+        yellowFever.nodes.setObjectLocation(n, xint, yint);
       } else {
         n = (Node) ns.get(0);
       }
@@ -658,7 +657,7 @@ public class SimulationBuilder {
 
       // create the new link and save it
       Edge e = new Edge(oldNode, n, weight);
-      dadaab.roadNetwork.addEdge(e);
+      yellowFever.roadNetwork.addEdge(e);
       oldNode.getLinks().add(e);
       n.getLinks().add(e);
 
@@ -687,12 +686,12 @@ public class SimulationBuilder {
    * @param closestNodes
    *          - the field to populate
    */
-  static ObjectGrid2D setupNearestNodes(YellowFever dadaab) {
+  static ObjectGrid2D setupNearestNodes(YellowFever yellowFever) {
 
     ObjectGrid2D closestNodes = new ObjectGrid2D(GRID_WIDTH, GRID_HEIGHT);
     ArrayList<Crawler> crawlers = new ArrayList<Crawler>();
 
-    for (Object o : dadaab.roadNetwork.allNodes) {
+    for (Object o : yellowFever.roadNetwork.allNodes) {
       Node n = (Node) o;
       Crawler c = new Crawler(n, n.getLocation());
       crawlers.add(c);
@@ -708,7 +707,7 @@ public class SimulationBuilder {
       for (int i = 0; i < size; i++) {
 
         // randomly pick a remaining crawler
-        int index = dadaab.random.nextInt(crawlers.size());
+        int index = yellowFever.random.nextInt(crawlers.size());
         Crawler c = crawlers.remove(index);
 
         // check if the location has already been claimed
@@ -722,7 +721,7 @@ public class SimulationBuilder {
           // reproduce
           Bag neighbors = new Bag();
 
-          dadaab.allCamps.getNeighborsHamiltonianDistance(c.location.getLocationX(), c.location.getLocationY(), 1,
+          yellowFever.allCamps.getNeighborsHamiltonianDistance(c.location.getLocationX(), c.location.getLocationY(), 1,
               false, neighbors, null, null);
 
           for (Object o : neighbors) {

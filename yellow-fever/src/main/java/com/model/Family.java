@@ -36,7 +36,7 @@ public class Family {
     this.members.add(human);
   }
 
-  public synchronized void removeMembers(Human human) {
+  public void removeMembers(Human human) {
     this.members.remove(human);
   }
 
@@ -53,7 +53,7 @@ public class Family {
     relatives.add(relative);
   }
 
-  public synchronized void removeFriend(Building relative) {
+  public void removeFriend(Building relative) {
     relatives.remove(relative);
   }
 

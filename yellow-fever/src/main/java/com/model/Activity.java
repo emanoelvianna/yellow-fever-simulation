@@ -134,37 +134,28 @@ public class Activity {
       break;
     case RELIGION_ACTIVITY:
       synchronized (this.random) {
-        // time at maximum unti 2 hours
+        // time at maximum 2 hours
         period = minimumStay + this.random.nextInt(2 * MINUTE);
       }
       break;
     case MARKET:
       synchronized (this.random) {
-        // time at maximum unti 2 hours
+        // time at maximum 2 hours
         period = minimumStay + this.random.nextInt(2 * MINUTE);
       }
       break;
     case HEALTH_CENTER:
-      synchronized (this.random) {
-        // time at maximum unti 4 hours
-        Building goal = this.human.getGoal();
-        if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
-          period = minimumStay + this.random.nextInt(4 * MINUTE);
-          goal.addPatient();
-          // used to the statistics
-          this.yellowFever.addVisitToMedicalCenter();
-        } else {
-          period = 0;
-          // used to the statistics
-          this.yellowFever.oneMoreRefused();
-        }
+      Building goal = this.human.getGoal();
+      if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
+        // time at maximum 4 hours
+        period = minimumStay + this.random.nextInt(4 * MINUTE);
       }
       break;
     }
     return (period + this.minuteInDay);
   }
 
-  public void doActivity(Building f, ActivityMapping activityMapping, YellowFever dadaab) {
+  public void doActivity(ActivityMapping activityMapping) {
     switch (activityMapping) {
     case STAY_HOME:
       break;

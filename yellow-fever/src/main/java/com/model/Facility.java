@@ -9,33 +9,29 @@ import sim.util.Valuable;
 public class Facility implements Steppable, Valuable {
 
   private static final long serialVersionUID = 1L;
-  private int capacity;
+  public static final int ORDERING = 1; // schedule after rainfall
   private int facilityID; // id
   private Building location; // location of the facility
-  public static final int ORDERING = 1; // schedule after rainfall
-
-  public Facility(int capacity) {
-    this.capacity = capacity;
-  }
 
   public void step(SimState state) {
     YellowFever yellowFever = (YellowFever) state;
-    this.countResources(yellowFever);
+    this.resetPatientNumber(yellowFever);
   }
 
-  public synchronized boolean isReachedCapacity(Building building, YellowFever yellowFever) {
+  // TODO: Garantir que está funcionando!
+  public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
     if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
       return true;
     } else
       return false;
   }
 
-  public void countResources(YellowFever yellowFever) {
-    synchronized (yellowFever.getHealthCenters()) {
-      for (Object obj : yellowFever.getHealthCenters()) {
-        Building building = (Building) obj;
-        building.setPatientCounter(this.capacity - building.getPatientCounter());
-      }
+  public void resetPatientNumber(YellowFever yellowFever) {
+    for (Object object : yellowFever.getHealthCenters()) {
+      Building building = (Building) object;
+      int amount = building.getPatientCounter();
+      int capacity = yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity();
+      building.setPatientCounter(capacity - amount);
     }
   }
 
@@ -57,14 +53,6 @@ public class Facility implements Steppable, Valuable {
 
   public double doubleValue() {
     return this.getFacilityID();
-  }
-
-  public int getCapacity() {
-    return capacity;
-  }
-
-  public void setCapacity(int capacity) {
-    this.capacity = capacity;
   }
 
 }

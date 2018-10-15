@@ -12,7 +12,6 @@ import com.model.Building;
 import com.model.Climate;
 import com.model.Egg;
 import com.model.Facility;
-import com.model.Family;
 import com.model.Human;
 import com.model.Mosquito;
 import com.model.enumeration.DayOfWeek;
@@ -109,15 +108,11 @@ public class YellowFever extends SimState {
   private int totalVisitsMedicalCenter;
   private int totalRefusalsInMedicalCenter;
 
-  // TODO: Remover:
-  public int total = 0;
-  //
-
   public YellowFever(long seed, String[] args) {
     super(seed);
     this.params = new Parameters(args);
     this.time = new TimeManager();
-    this.facility = new Facility(this.getParams().getGlobal().getHeaalthFacilityCapacity());
+    this.facility = new Facility();
     this.setAllFamilies(new Bag());
     this.allMosquitoes = new Bag();
     this.familyHousing = new Bag();
@@ -166,31 +161,113 @@ public class YellowFever extends SimState {
       // all graphs and charts wll be updated in each steps
       public void step(SimState state) {
         if (isNewDay()) {
-          setTemperature();
-          setPrecipitation();
-          probabilityOfEggsDying();
-          probabilityOfEggsHatching();
-          probabilityOfEggsAppearInHouses();
+          // define temperature
+          List<Double> temperatures = climate.getTemperature();
+          if (currentDay < temperatures.size()) {
+            temperature = temperatures.get(currentDay);
+          }
+
+          // define precipitation
+          synchronized (state.schedule) {
+            List<Double> rainfall = climate.getPrecipitation();
+            double mm = params.getGlobal().getWaterAbsorption();
+            for (Object object : getFamilyHousing()) {
+              Building housing = (Building) object;
+              if (random.nextDouble() <= 0.5) { // 50% chance
+                housing.waterAbsorption(mm);
+                if (currentDay < rainfall.size()) {
+                  housing.addWater(rainfall.get(currentDay));
+                }
+              }
+            }
+          }
+
+          // probability of eggs dying
+          synchronized (state.schedule) {
+            for (Object object : getEggs()) {
+              Egg e = (Egg) object;
+              if (e.getAmount() > 0) {
+                if (0.05 >= random.nextDouble()) { // 5% chance
+                  int newAmount = e.getAmount() - 1;
+                  e.setAmount(newAmount);
+                  totalEggsInHouses--;
+                  totalOfDeadEggs++;
+                }
+              } else {
+                eggs.remove(e); // garbage Collector
+              }
+            }
+          }
+
+          // probability of eggs hatching;
+          synchronized (state.schedule) {
+            for (Object object : getEggs()) {
+              Egg e = (Egg) object;
+              if (e.getTimeOfMaturation() > 0) {
+                double timeOfMaturation = e.getTimeOfMaturation() - 1;
+                e.setTimeOfMaturation(timeOfMaturation);
+              } else if (e.getAmount() > 0) {
+                for (int j = 0; j < e.getAmount(); j++) {
+                  if (0.5 >= random.nextDouble()) { // 50% chance of female
+                    Mosquito mosquito = new Mosquito(e.getCurrentPosition(), random);
+                    mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+                    e.getCurrentPosition().addMosquito(mosquito);
+                    int newAmount = e.getAmount() - 1;
+                    e.setAmount(newAmount);
+                    allMosquitoes.add(mosquito);
+                  } else {
+                    int newAmount = e.getAmount() - 1;
+                    e.setAmount(newAmount);
+                  }
+                }
+              } else {
+                eggs.remove(e);
+              }
+            }
+          }
+
+          // probability of eggs appear in houses
+          synchronized (state.schedule) {
+            double probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
+            for (Object object : getFamilyHousing()) {
+              Building housing = (Building) object;
+              if (probability >= random.nextDouble()) {
+                if (housing.containsWater()) {
+                  double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
+                  int amount = 1 + random.nextInt(100);
+                  eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount));
+                  totalEggsInHouses += amount;
+                }
+              }
+            }
+          }
+        }
+
+        // garbage collector
+        for (Object human : allHumans.getAllObjects()) {
+          Human h = (Human) human;
+          if (h.isDead()) {
+            h.getFamily().removeMembers(h);
+            if (h.getFamily().getMembers().numObjs == 0) {
+              getAllFamilies().remove(h.getFamily());
+            }
+            allHumans.allObjects.remove(h);
+            totalDeadHumans++;
+          }
+        }
+
+        // garbage collector
+        for (Object mosquito : allMosquitoes) {
+          Mosquito m = (Mosquito) mosquito;
+          if (m.isDead()) {
+            m.getCurrentPosition().removeMosquito(m);
+            allMosquitoes.remove(m);
+            totalDeadMosquitoes++;
+          }
         }
 
         // getting all humans
         Bag humans = allHumans.getAllObjects();
-        // adding all agent families based o their family size
-        int[] sumfamSiz = { 0, 0, 0, 0, 0, 0, 0 };
-        // accessing all families and chatagorize them based on their size
-        for (int i = 0; i < getAllFamilies().numObjs; i++) {
-          Family f = (Family) getAllFamilies().objs[i];
-          // killrefugee(f);
-          int siz = 0;
-          // aggregate all families of >6 family size
-          if (f.getMembers().numObjs > 6) {
-            siz = 6;
-          } else {
-            siz = f.getMembers().numObjs - 1;
-          }
-          sumfamSiz[siz] += 1;
-        }
-
         int totalOfHumansSusceptible = 0;
         int totalOfHumansExposed = 0;
         int totalOfHumansWithMildInfection = 0;
@@ -282,30 +359,8 @@ public class YellowFever extends SimState {
     return String.valueOf(DayOfWeek.getDayOfWeek(day));
   }
 
-  public double setTemperature() {
-    List<Double> temperatures = climate.getTemperature();
-    if (currentDay < temperatures.size()) {
-      temperature = temperatures.get(currentDay);
-    }
-    return this.temperature;
-  }
-
   public void setInitialTemperature(double initial) {
     this.temperature = initial;
-  }
-
-  private void setPrecipitation() {
-    List<Double> rainfall = climate.getPrecipitation();
-    double mm = params.getGlobal().getWaterAbsorption();
-    for (Object object : getFamilyHousing()) {
-      Building housing = (Building) object;
-      if (random.nextDouble() <= 0.5) { // 50% chance
-        housing.waterAbsorption(mm);
-        if (currentDay < rainfall.size()) {
-          housing.addWater(rainfall.get(currentDay));
-        }
-      }
-    }
   }
 
   public void setInitialPrecipitation(double initial) {
@@ -316,81 +371,6 @@ public class YellowFever extends SimState {
         housing.waterAbsorption(mm);
         housing.addWater(initial);
       }
-    }
-  }
-
-  private void probabilityOfEggsHatching() {
-    for (Object object : getEggs()) {
-      Egg eggs = (Egg) object;
-      if (eggs.getTimeOfMaturation() > 0) {
-        double timeOfMaturation = eggs.getTimeOfMaturation() - 1;
-        eggs.setTimeOfMaturation(timeOfMaturation);
-      } else if (eggs.getAmount() > 0) {
-        for (int j = 0; j < eggs.getAmount(); j++) {
-          if (0.5 >= this.random.nextDouble()) { // 50% chance of female
-            Mosquito mosquito = new Mosquito(eggs.getCurrentPosition());
-            mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-            eggs.getCurrentPosition().addMosquito(mosquito);
-            int newAmount = eggs.getAmount() - 1;
-            eggs.setAmount(newAmount);
-            allMosquitoes.add(mosquito);
-          } else {
-            int newAmount = eggs.getAmount() - 1;
-            eggs.setAmount(newAmount);
-          }
-        }
-      } else {
-        this.getEggs().remove(eggs);
-      }
-    }
-  }
-
-  private void probabilityOfEggsAppearInHouses() {
-    double probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
-    for (Object object : getFamilyHousing()) {
-      Building housing = (Building) object;
-      if (probability >= this.random.nextDouble()) {
-        if (housing.containsWater()) {
-          double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
-          int amount = 1 + this.random.nextInt(100);
-          this.eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount));
-          this.totalEggsInHouses += amount;
-        }
-      }
-    }
-  }
-
-  private void probabilityOfEggsDying() {
-    for (Object object : this.getEggs()) {
-      Egg eggs = (Egg) object;
-      if (eggs.getAmount() > 0) {
-        if (0.05 >= random.nextDouble()) { // 5% chance
-          int newAmount = eggs.getAmount() - 1;
-          eggs.setAmount(newAmount);
-          this.totalEggsInHouses--;
-          this.totalOfDeadEggs++;
-        }
-      } else {
-        this.getEggs().remove(eggs); // garbage Collector
-      }
-    }
-  }
-
-  public synchronized void killHuman(Human human) {
-    synchronized (this.allHumans) {
-      human.getFamily().removeMembers(human);
-      if (human.getFamily().getMembers().numObjs == 0) {
-        this.getAllFamilies().remove(human.getFamily()); // garbage Collector
-      }
-      this.allHumans.remove(human);
-    }
-  }
-
-  public synchronized void killMosquito(Mosquito mosquito) {
-    synchronized (this.allMosquitoes) {
-      mosquito.getCurrentPosition().removeMosquito(mosquito);
-      this.allMosquitoes.remove(mosquito);
-      this.totalDeadMosquitoes++;
     }
   }
 

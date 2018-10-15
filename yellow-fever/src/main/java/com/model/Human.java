@@ -52,6 +52,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private int delayForVaccineEffect;
   private boolean serious;
   private int currentDay;
+  private boolean dead;
 
   public Human(int age, Sex sex, Family family, Building home, Building position, MersenneTwisterFast random,
       Continuous2D allHumans) {
@@ -80,6 +81,30 @@ public class Human implements Steppable, Valuable, Serializable {
     this.setObjectLocation(allHumans);
   }
 
+  public void step(SimState state) {
+    if (this.dead)
+      return;
+    this.yellowFever = (YellowFever) state;
+    this.currentStep = (int) yellowFever.schedule.getSteps();
+    if (this.currentStep < 1440) {
+      this.minuteInDay = this.currentStep;
+    } else {
+      this.minuteInDay = this.currentStep % 1440;
+    }
+
+    this.setPreviousHealthStatus(this.getCurrentHealthStatus());
+    HealthStatus currentHealthStatus = this.currentHealthStatus;
+    if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
+      this.checkCurrentStateOfInfection();
+    }
+
+    if (this.vaccinated) {
+      this.defineImmunityEvolution();
+    }
+
+    this.move(currentStep);
+  }
+
   public void move(int steps) {
     Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
     // if you do not have goal then return
@@ -91,7 +116,7 @@ public class Human implements Steppable, Valuable, Serializable {
     }
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
-      activity.doActivity(this.getGoal(), this.getCurrentActivity(), yellowFever);
+      activity.doActivity(this.getCurrentActivity());
       calculateGoal();
     }
     // else move to your goal
@@ -135,11 +160,6 @@ public class Human implements Steppable, Valuable, Serializable {
 
   // assign the best goal
   public void calculateGoal() {
-    // is leaving the hospital
-    if (ActivityMapping.HEALTH_CENTER.equals(this.currentActivity)) {
-      this.currentPosition.removePatient();
-    }
-
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity();
@@ -173,6 +193,8 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void infected() {
+    if (!HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus))
+      return;
     this.defineIncubationPeriod();
     this.currentHealthStatus = HealthStatus.EXPOSED;
   }
@@ -187,20 +209,18 @@ public class Human implements Steppable, Valuable, Serializable {
   private void defineInfection() {
     int probability;
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
-      synchronized (this.random) {
-        probability = yellowFever.getParams().getGlobal().getProbabilityOfMildInfection();
+      probability = yellowFever.getParams().getGlobal().getProbabilityOfMildInfection();
+      if ((1 + this.random.nextInt(100)) <= probability) {
+        this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
+        this.definePeriodOfInfection();
+      } else {
+        this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
+        this.definePeriodOfInfection();
+        probability = yellowFever.getParams().getGlobal().getProbabilityFromSevereInfectionTotoxicInfection();
         if ((1 + this.random.nextInt(100)) <= probability) {
-          this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
-          this.definePeriodOfInfection();
+          this.serious = true;
         } else {
-          this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
-          this.definePeriodOfInfection();
-          probability = yellowFever.getParams().getGlobal().getProbabilityFromSevereInfectionTotoxicInfection();
-          if ((1 + this.random.nextInt(100)) <= probability) {
-            this.serious = true;
-          } else {
-            this.serious = false;
-          }
+          this.serious = false;
         }
       }
     } else if (this.incubationPeriod > 0 && this.isNewDay() && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
@@ -232,14 +252,12 @@ public class Human implements Steppable, Valuable, Serializable {
 
   private void defineToxicInfectionEvolution() {
     if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
-      synchronized (this.random) {
-        // 50% of case is recovery
-        if (this.random.nextDouble() < 0.5) {
-          this.currentHealthStatus = HealthStatus.RECOVERED;
-        } else {
-          this.currentHealthStatus = HealthStatus.DEAD;
-          this.yellowFever.killHuman(this);
-        }
+      // 50% of case is recovery
+      if (this.random.nextDouble() < 0.5) {
+        this.currentHealthStatus = HealthStatus.RECOVERED;
+      } else {
+        this.currentHealthStatus = HealthStatus.DEAD;
+        this.dead = true;
       }
     } else if (this.toxicPeriod > 0 && this.isNewDay()
         && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
@@ -270,7 +288,18 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void receiveTreatment() {
-    this.receivedTreatment = true;
+    boolean infected = HealthStatus.isHumanInfected(this.currentHealthStatus);
+    boolean reachedCapacity = this.getCurrentPosition().getFacility().isReachedCapacity(this.getGoal(),
+        this.yellowFever);
+    if (infected && !reachedCapacity) {
+      this.getCurrentPosition().setPatientCounter(this.getGoal().getPatientCounter() + 1);
+      this.receivedTreatment = true;
+      // used to the statistics
+      this.yellowFever.addVisitToMedicalCenter();
+    } else {
+      // used to the statistics
+      this.yellowFever.oneMoreRefused();
+    }
   }
 
   public void applyVaccine() {
@@ -285,24 +314,15 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void definePeriodOfInfection() {
-    synchronized (this.random) {
-      // 3-4 days
-      this.infectionPeriod = 3 + this.random.nextInt(2);
-    }
+    this.infectionPeriod = 3 + this.random.nextInt(2); // 3-4 days
   }
 
   private void definePeriodOfToxicInfection() {
-    synchronized (this.random) {
-      // 7-10 days
-      this.toxicPeriod = 7 + this.random.nextInt(4);
-    }
+    this.toxicPeriod = 7 + this.random.nextInt(4); // 7-10 days
   }
 
   public void defineIncubationPeriod() {
-    synchronized (this.random) {
-      // 3-6 days
-      this.incubationPeriod = 3 + this.random.nextInt(4);
-    }
+    this.incubationPeriod = 3 + this.random.nextInt(4); // 3-6 days
   }
 
   private boolean isNewDay() {
@@ -312,29 +332,6 @@ public class Human implements Steppable, Valuable, Serializable {
     } else {
       return false;
     }
-  }
-
-  public void step(SimState state) {
-    this.yellowFever = (YellowFever) state;
-    this.currentStep = (int) yellowFever.schedule.getSteps();
-
-    if (this.currentStep < 1440) {
-      this.minuteInDay = this.currentStep;
-    } else {
-      this.minuteInDay = this.currentStep % 1440;
-    }
-
-    this.setPreviousHealthStatus(this.getCurrentHealthStatus());
-    HealthStatus currentHealthStatus = this.currentHealthStatus;
-    if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
-      this.checkCurrentStateOfInfection();
-    }
-
-    if (this.vaccinated) {
-      this.defineImmunityEvolution();
-    }
-
-    this.move(currentStep);
   }
 
   public double doubleValue() {
@@ -521,6 +518,14 @@ public class Human implements Steppable, Valuable, Serializable {
 
   public void setDelayForVaccineEffect(int delayForVaccineEffect) {
     this.delayForVaccineEffect = delayForVaccineEffect;
+  }
+
+  public boolean isDead() {
+    return dead;
+  }
+
+  public void setDead(boolean dead) {
+    this.dead = dead;
   }
 
 }
