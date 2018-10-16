@@ -22,6 +22,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private YellowFever yellowFever;
   private Building currentPosition;
   private TimeManager time;
+  private HealthStatus currentHealthStatus;
   private int currentStep;
   private int currentDay;
   private double temperature;
@@ -31,9 +32,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private boolean matureEggs;
   private int incubationPeriod;
   private int daysWithoutFood;
-  private HealthStatus currentHealthStatus;
-  private HealthStatus previousHealthStatus;
   private double timeOfMaturation;
+  private int eggLaying;
   private boolean dead;
 
   public Mosquito(Building position, MersenneTwisterFast random) {
@@ -47,6 +47,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.currentDay = 0;
     this.temperature = 0;
     this.timeOfMaturation = 0;
+    this.defineEggLaying();
     this.defineVectorLifespan();
     this.dead = false;
   }
@@ -66,6 +67,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       this.dead = this.probabilityOfDying();
       if (this.dead)
         return;
+      if (this.eggLaying > 0)
+        this.eggLaying--;
       this.setTemperature();
       this.checkCurrentStateOfMaturation();
       this.checkCurrentStateOfInfection();
@@ -103,6 +106,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void probabilityOfCarryingEggs() {
+    if (this.eggLaying > 0)
+      return;
     if (0.2 >= this.random.nextDouble()) { // 20% chance
       this.setCarryingEggs(true);
     } else {
@@ -114,12 +119,13 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.timeOfMaturation = 3 + Math.abs((this.temperature - 21) / 5);
   }
 
-  // TODO: Problema com concorrencia!
+  // TODO: Problema com concorrencia?
   private void ovipositionProcess() {
     double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
     int amount = 1 + this.random.nextInt(100);
     this.yellowFever.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
     this.carryingEggs = false;
+    this.defineEggLaying();
     // used to the statistics
     this.yellowFever.addToTheTotalEggsInTheEnvironment(amount);
   }
@@ -246,6 +252,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
   }
 
+  private void defineEggLaying() {
+    this.eggLaying = 3 + this.random.nextInt(5); // 3-7 days
+  }
+
   public void setStoppable(Stoppable stopp) {
     stopper = stopp;
   }
@@ -302,14 +312,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.currentHealthStatus = currentHealthStatus;
   }
 
-  public HealthStatus getPreviousHealthStatus() {
-    return previousHealthStatus;
-  }
-
-  public void setPreviousHealthStatus(HealthStatus previousHealthStatus) {
-    this.previousHealthStatus = previousHealthStatus;
-  }
-
   public int getDaysWithoutFood() {
     return daysWithoutFood;
   }
@@ -324,6 +326,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public void setDead(boolean dead) {
     this.dead = dead;
+  }
+
+  public int getEggLaying() {
+    return eggLaying;
+  }
+
+  public void setEggLaying(int eggLaying) {
+    this.eggLaying = eggLaying;
   }
 
 }

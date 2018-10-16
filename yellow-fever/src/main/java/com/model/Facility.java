@@ -14,25 +14,15 @@ public class Facility implements Steppable, Valuable {
   private Building location; // location of the facility
 
   public void step(SimState state) {
-    YellowFever yellowFever = (YellowFever) state;
-    this.resetPatientNumber(yellowFever);
+
   }
 
-  // TODO: Garantir que está funcionando!
   public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
-    if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
+    // TODO: voltar ao valor do paramtro!
+    if (building.getPatientCounter() >= 1) {
       return true;
     } else
       return false;
-  }
-
-  public void resetPatientNumber(YellowFever yellowFever) {
-    for (Object object : yellowFever.getHealthCenters()) {
-      Building building = (Building) object;
-      int amount = building.getPatientCounter();
-      int capacity = yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity();
-      building.setPatientCounter(capacity - amount);
-    }
   }
 
   public void setFacilityID(int id) {

@@ -105,8 +105,8 @@ public class YellowFever extends SimState {
   private int totalEggsInHouses;
   private int totalOfDeadEggs;
   // used to the medical center statistics
-  private int totalVisitsMedicalCenter;
-  private int totalRefusalsInMedicalCenter;
+  public int totalVisitsMedicalCenter;
+  public int totalRefusalsInMedicalCenter;
 
   public YellowFever(long seed, String[] args) {
     super(seed);
@@ -379,17 +379,17 @@ public class YellowFever extends SimState {
   }
 
   // used to the statistics
-  public synchronized void addVisitToMedicalCenter() {
+  public void addVisitToMedicalCenter() {
     this.totalVisitsMedicalCenter++;
   }
 
   // used to the statistics
-  public synchronized void oneMoreRefused() {
+  public void oneMoreRefused() {
     this.totalRefusalsInMedicalCenter++;
   }
 
   // used to the statistics
-  public synchronized void addToTheTotalEggsInTheEnvironment(int amount) {
+  public void addToTheTotalEggsInTheEnvironment(int amount) {
     this.totalEggsInHouses += amount;
   }
 
@@ -641,11 +641,11 @@ public class YellowFever extends SimState {
     this.totalRefusalsInMedicalCenter = totalRefusalsInMedicalCenter;
   }
 
-  public synchronized void addEgg(Egg eggs) {
+  public void addEgg(Egg eggs) {
     this.eggs.add(eggs);
   }
 
-  public synchronized Bag getEggs() {
+  public Bag getEggs() {
     return this.eggs;
   }
 

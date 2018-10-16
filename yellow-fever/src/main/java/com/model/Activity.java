@@ -128,14 +128,14 @@ public class Activity {
       break;
     case SOCIAL_VISIT:
       synchronized (this.random) {
-        // the average visit time is 4 hours
-        period = minimumStay + this.random.nextInt(4 * MINUTE);
+        // the average visit time is 8 hours
+        period = minimumStay + this.random.nextInt(8 * MINUTE);
       }
       break;
     case RELIGION_ACTIVITY:
       synchronized (this.random) {
-        // time at maximum 2 hours
-        period = minimumStay + this.random.nextInt(2 * MINUTE);
+        // time at maximum 4 hours
+        period = minimumStay + this.random.nextInt(4 * MINUTE);
       }
       break;
     case MARKET:
@@ -146,10 +146,8 @@ public class Activity {
       break;
     case HEALTH_CENTER:
       Building goal = this.human.getGoal();
-      if (!goal.getFacility().isReachedCapacity(goal, this.yellowFever)) {
-        // time at maximum 4 hours
-        period = minimumStay + this.random.nextInt(4 * MINUTE);
-      }
+      // time at maximum 16 hours
+      period = 4 + this.random.nextInt(13 * MINUTE);
       break;
     }
     return (period + this.minuteInDay);

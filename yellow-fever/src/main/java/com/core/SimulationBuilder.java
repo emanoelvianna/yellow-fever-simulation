@@ -534,20 +534,27 @@ public class SimulationBuilder {
       int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
       Building housing = (Building) yellowFever.getFamilyHousing().objs[index];
       if (housing.containsMosquitoes()) {
-        // 50% chance of has more mosquitoes
+        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+        double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+        if (probability >= yellowFever.random.nextDouble()) {
+          mosquito.setEggLaying(0); // carry eggs in next step
+        }
+        housing.addMosquito(mosquito);
+        yellowFever.addMosquitoes(mosquito);
+        initialMosquitoesNumber--;
+      } else {
         if (yellowFever.random.nextDouble() > 0.5) {
           Mosquito mosquito = new Mosquito(housing, yellowFever.random);
           mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+          double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+          if (probability >= yellowFever.random.nextDouble()) {
+            mosquito.setEggLaying(0); // carry eggs in next step
+          }
           housing.addMosquito(mosquito);
           yellowFever.addMosquitoes(mosquito);
           initialMosquitoesNumber--;
         }
-      } else {
-        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
-        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-        housing.addMosquito(mosquito);
-        yellowFever.addMosquitoes(mosquito);
-        initialMosquitoesNumber--;
       }
     }
   }

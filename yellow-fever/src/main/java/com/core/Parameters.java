@@ -105,6 +105,9 @@ public class Parameters {
         global.probabilityFromSevereInfectionTotoxicInfection);
     global.probabilityFromSevereInfectionTotoxicInfection = intParameter;
 
+    doubleParameter = returnDoubleParameter(parameterDB, "", global.probabilityOfCarryEggsAtSimulationStart);
+    global.probabilityOfCarryEggsAtSimulationStart = doubleParameter;
+
     getGlobal().setMaximumNumberRelative(
         returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
 
@@ -150,6 +153,7 @@ public class Parameters {
     private double transmissionProbabilityMildInfectionToVector = 0.30;
     private double transmissionProbabilitySevereInfectionToVector = 0.75;
     private int healthFacilityCapacity = 1000;
+    private double probabilityOfCarryEggsAtSimulationStart = 0.01;
 
     // TODO: Rever
     public int MaximumNumberRelative = 15;
@@ -287,6 +291,14 @@ public class Parameters {
     public void setTransmissionProbabilitySevereInfectionToVector(
         int transmissionProbabilityFromHostWithSevereInfectionToVector) {
       this.transmissionProbabilitySevereInfectionToVector = transmissionProbabilityFromHostWithSevereInfectionToVector;
+    }
+
+    public double getProbabilityOfCarryEggsAtSimulationStart() {
+      return probabilityOfCarryEggsAtSimulationStart;
+    }
+
+    public void setProbabilityOfCarryEggsAtSimulationStart(double probabilityOfCarryEggsAtSimulationStart) {
+      this.probabilityOfCarryEggsAtSimulationStart = probabilityOfCarryEggsAtSimulationStart;
     }
   }
 }
