@@ -36,7 +36,7 @@ public class Activity {
 
   private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
     if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if (5 > time.currentDayInWeek(currentStep)) {
+      if (time.currentDayInWeek(currentStep) < 6) {
         synchronized (this.random) {
           if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
             return ActivityMapping.STAY_HOME;

@@ -134,10 +134,11 @@ public class Parameters {
 
   public class GlobalParamters {
 
+    // TODO: Rever os parametros padrão junto ao documento!
     private int initialHumansNumberInfected = 10;
-    private int initialMosquitoesNumber = 8000;
-    private int initialHumansNumber = 4000;
-    private double probabilityOfEggsAppearInHouses = 0.3;
+    private int initialMosquitoesNumber = 1000;
+    private int initialHumansNumber = 500;
+    private double probabilityOfEggsAppearInHouses = 0.01;
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;
     private int resourcesInMedicalCenters = 20;
