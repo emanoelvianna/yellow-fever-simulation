@@ -169,6 +169,14 @@ public class Human implements Steppable, Valuable, Serializable {
       Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity();
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
+      // TODO: Funcionando parcialmente
+      if (ActivityMapping.HEALTH_CENTER.equals(bestActivity)) {
+        if (this.goal.getFacility().isReachedCapacity(this.goal, this.yellowFever)) {
+          bestActivity = ActivityMapping.STAY_HOME;
+          this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
+        }
+      }
+
       // your selected activity
       this.setCurrentActivity(bestActivity);
       // track current activity - for the visualization
@@ -293,22 +301,9 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void receiveTreatment() {
-    boolean infected = HealthStatus.isHumanInfected(this.currentHealthStatus);
-    boolean reachedCapacity = this.getCurrentPosition().getFacility().isReachedCapacity(this.getCurrentPosition(),
-        this.yellowFever);
-    if (infected && !reachedCapacity) {
-      this.getCurrentPosition().setPatientCounter(this.getCurrentPosition().getPatientCounter() + 1);
-      System.out.println("Número de pacientes no hospital: " + this.getCurrentPosition().getPatientCounter());
-      this.receivedTreatment = true;
-      System.out.println("Estou no hospital recebendo tratamento!");
-      // used to the statistics
-      this.yellowFever.addVisitToMedicalCenter();
-    } else {
-      System.out.println("Fui recusado no hospital!! =[");
-      this.stayingTime = 0;
-      // used to the statistics
-      this.yellowFever.oneMoreRefused();
-    }
+    this.receivedTreatment = true;
+    // used to the statistics
+    this.yellowFever.addVisitToMedicalCenter();
   }
 
   public void applyVaccine() {

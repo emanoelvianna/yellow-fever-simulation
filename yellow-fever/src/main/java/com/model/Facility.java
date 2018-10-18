@@ -1,6 +1,7 @@
 package com.model;
 
 import com.core.YellowFever;
+import com.core.algorithms.TimeManager;
 
 import sim.engine.SimState;
 import sim.engine.Steppable;
@@ -10,19 +11,42 @@ public class Facility implements Steppable, Valuable {
 
   private static final long serialVersionUID = 1L;
   public static final int ORDERING = 1; // schedule after rainfall
-  private int facilityID; // id
+  private YellowFever yellowFever;
   private Building location; // location of the facility
+  private TimeManager time;
+  private int facilityID; // id
+  private int currentStep;
+  private int currentDay;
+
+  public Facility() {
+    this.time = new TimeManager();
+    this.currentStep = 0;
+    this.currentDay = 0;
+  }
 
   public void step(SimState state) {
+    this.yellowFever = (YellowFever) state;
+    this.currentStep = (int) yellowFever.schedule.getSteps();
+    if (this.isNewDay()) {
+      this.yellowFever.setMaximumCapacity(false);
+    }
+  }
 
+  private boolean isNewDay() {
+    if (this.time.dayCount(currentStep) > this.currentDay) {
+      this.currentDay = this.time.dayCount(currentStep);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
-    // TODO: voltar ao valor do paramtro!
-    if (building.getPatientCounter() >= 1) {
+    if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
+      this.yellowFever.setMaximumCapacity(true);
       return true;
-    } else
-      return false;
+    }
+    return false;
   }
 
   public void setFacilityID(int id) {
@@ -44,5 +68,4 @@ public class Facility implements Steppable, Valuable {
   public double doubleValue() {
     return this.getFacilityID();
   }
-
 }
