@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.model.Building;
+import com.model.Egg;
 import com.model.Facility;
 import com.model.Family;
 import com.model.Human;
@@ -118,15 +119,21 @@ public class SimulationBuilder {
       Logger.getLogger(SimulationBuilder.class.getName()).log(Level.SEVERE, null, ex);
     }
 
+    // add climate to the environment
+    this.defineInitialTemperature(yellowFever);
+    this.defineInitialPrecipitation(yellowFever);
+
+    // add resource to the environment
+    this.populateNormalFood(yellowFever);
+
     // add agents to the environment
     this.populateHuman(yellowFever);
     this.populateMosquito(yellowFever);
 
     this.defineFamilies(yellowFever);
-    this.defineInitialTemperature(yellowFever);
-    this.defineInitialPrecipitation(yellowFever);
 
     this.generateRandomHumansInfected(yellowFever);
+    this.generateRandomMosquitoesInfected(yellowFever);
     this.administerRandomVaccines(yellowFever);
   }
 
@@ -353,8 +360,18 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) yellowFever.allHumans.getAllObjects().get(index);
-      human.setIncubationPeriod(3 + yellowFever.random.nextInt(4));
-      human.setCurrentHealthStatus(HealthStatus.EXPOSED);
+      human.infected();
+      amount--;
+    }
+  }
+
+  private void generateRandomMosquitoesInfected(YellowFever yellowFever) {
+    int amount = yellowFever.getParams().getGlobal().getInitialMosquitoesNumberInfected();
+    int index = 0;
+    while (amount > 0) {
+      index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
+      Mosquito mosquito = (Mosquito) yellowFever.getAllMosquitoes().get(index);
+      mosquito.infected();
       amount--;
     }
   }
@@ -426,8 +443,6 @@ public class SimulationBuilder {
     int[] size = { 0, 0, 0, 0, 0, 0, 0, 0 };
     // family size ranges from 1 to 11
 
-    int count = 0;
-    int rem = 0;// remaining
     int curTot = 0;
 
     for (int i = 0; i < size.length; i++) {
@@ -487,15 +502,6 @@ public class SimulationBuilder {
         yellowFever.getAllFamilies().add(hh);
         fieldUnit.addRefugeeHH(hh);
 
-        // 50% chance to contains nectar
-        if (yellowFever.random.nextDouble() < 0.5) {
-          fieldUnit.setNectar(true);
-        }
-        // 50% chance to contains sap
-        if (yellowFever.random.nextDouble() < 0.5) {
-          fieldUnit.setSap(true);
-        }
-
         int random = yellowFever.random.nextInt(101);
         int age = 0;
         for (int i = 0; i < tot; i++) {
@@ -527,9 +533,10 @@ public class SimulationBuilder {
     }
   }
 
-  public void populateMosquito(YellowFever yellowFever) {
+  private void populateMosquito(YellowFever yellowFever) {
+    int qCarregando = 0;
+    int qCasa = 0;
     int initialMosquitoesNumber = yellowFever.getParams().getGlobal().getInitialMosquitoesNumber();
-
     while (initialMosquitoesNumber > 0) {
       int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
       Building housing = (Building) yellowFever.getFamilyHousing().objs[index];
@@ -538,28 +545,59 @@ public class SimulationBuilder {
         mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
         double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
         if (probability >= yellowFever.random.nextDouble()) {
-          mosquito.setEggLaying(0); // carry eggs in next step
+          this.carryEggs(mosquito);
+          qCarregando++;
+        } else if (0.01 >= yellowFever.random.nextDouble()) { // TODO: Deve acabar sendo um parametro!
+          // probability of home containing eggs
+          this.populateEggsInHouse(yellowFever, housing, mosquito);
+          qCasa++;
         }
         housing.addMosquito(mosquito);
         yellowFever.addMosquitoes(mosquito);
         initialMosquitoesNumber--;
-      } else {
-        if (yellowFever.random.nextDouble() > 0.5) {
-          Mosquito mosquito = new Mosquito(housing, yellowFever.random);
-          mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-          double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
-          if (probability >= yellowFever.random.nextDouble()) {
-            mosquito.setEggLaying(0); // carry eggs in next step
-          }
-          housing.addMosquito(mosquito);
-          yellowFever.addMosquitoes(mosquito);
-          initialMosquitoesNumber--;
+      } else if (yellowFever.random.nextDouble() > 0.5) {
+        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+        double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+        if (probability >= yellowFever.random.nextDouble()) {
+          this.carryEggs(mosquito);
         }
+        housing.addMosquito(mosquito);
+        yellowFever.addMosquitoes(mosquito);
+        initialMosquitoesNumber--;
       }
+    }
+    System.out.println("Quantidade de mosquitos carregando ovos: " + qCarregando);
+    System.out.println("Quantidade de mosquitos nas casas: " + qCasa);
+  }
+
+  private void populateNormalFood(YellowFever yellowFever) {
+    for (Object object : yellowFever.getFamilyHousing()) {
+      Building housing = (Building) object;
+      double probability = yellowFever.getParams().getGlobal().getProbabilityOfHouseContainsNaturalFood();
+      if (probability >= yellowFever.random.nextDouble())
+        housing.setNectar(true);
+      if (probability >= yellowFever.random.nextDouble())
+        housing.setSap(true);
     }
   }
 
-  public Sex defineSex(YellowFever yellowFever) {
+  private void populateEggsInHouse(YellowFever yellowFever, Building housing, Mosquito mosquito) {
+    double maturationTimeOfTheEggs = 8 + Math.abs(yellowFever.getTemperature() - 25);
+    int amount = 1 + yellowFever.random.nextInt(100);
+    Egg egg = new Egg(housing, maturationTimeOfTheEggs, amount);
+    egg.setImported(false);
+    yellowFever.addEgg(egg);
+    mosquito.setCarryingEggs(false);
+    mosquito.defineEggLaying();
+  }
+
+  private void carryEggs(Mosquito mosquito) {
+    mosquito.setEggLaying(0); // carry eggs in next step
+    mosquito.defineTimeOfMaturation();
+  }
+
+  private Sex defineSex(YellowFever yellowFever) {
     // sex 50-50 chance
     if (yellowFever.random.nextDouble() > 0.5) {
       return Sex.M;

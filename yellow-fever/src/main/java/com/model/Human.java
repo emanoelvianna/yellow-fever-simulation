@@ -92,16 +92,17 @@ public class Human implements Steppable, Valuable, Serializable {
       this.minuteInDay = this.currentStep % 1440;
     }
 
-    this.setPreviousHealthStatus(this.getCurrentHealthStatus());
-    HealthStatus currentHealthStatus = this.currentHealthStatus;
-    if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
-      this.checkCurrentStateOfInfection();
-    }
+    if (this.isNewDay()) {
+      this.setPreviousHealthStatus(this.getCurrentHealthStatus());
+      HealthStatus currentHealthStatus = this.currentHealthStatus;
+      if (HealthStatus.isHumanInfected(currentHealthStatus) || HealthStatus.isHumanExposed(currentHealthStatus)) {
+        this.checkCurrentStateOfInfection();
+      }
 
-    if (this.vaccinated) {
-      this.defineImmunityEvolution();
+      if (this.vaccinated) {
+        this.defineImmunityEvolution();
+      }
     }
-
     this.move(currentStep);
   }
 
@@ -236,7 +237,7 @@ public class Human implements Steppable, Valuable, Serializable {
           this.serious = false;
         }
       }
-    } else if (this.incubationPeriod > 0 && this.isNewDay() && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
+    } else if (this.incubationPeriod > 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       this.incubationPeriod--;
     }
   }
@@ -244,8 +245,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private void defineMildInfectionEvolution() {
     if (this.infectionPeriod == 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.infectionPeriod > 0 && this.isNewDay()
-        && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.infectionPeriod > 0 && HealthStatus.MILD_INFECTION.equals(this.currentHealthStatus)) {
       this.infectionPeriod--;
     }
   }
@@ -257,8 +257,7 @@ public class Human implements Steppable, Valuable, Serializable {
     } else if (!this.serious && this.infectionPeriod == 0
         && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.infectionPeriod > 0 && this.isNewDay()
-        && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.infectionPeriod > 0 && HealthStatus.SEVERE_INFECTION.equals(this.currentHealthStatus)) {
       this.infectionPeriod--;
     }
   }
@@ -272,8 +271,7 @@ public class Human implements Steppable, Valuable, Serializable {
         this.currentHealthStatus = HealthStatus.DEAD;
         this.dead = true;
       }
-    } else if (this.toxicPeriod > 0 && this.isNewDay()
-        && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+    } else if (this.toxicPeriod > 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
       this.toxicPeriod--;
     }
   }
@@ -281,8 +279,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private void defineImmunityEvolution() {
     if (this.delayForVaccineEffect == 0 && HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
       this.currentHealthStatus = HealthStatus.RECOVERED;
-    } else if (this.delayForVaccineEffect > 0 && this.isNewDay()
-        && HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+    } else if (this.delayForVaccineEffect > 0 && HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
       this.delayForVaccineEffect--;
     }
   }

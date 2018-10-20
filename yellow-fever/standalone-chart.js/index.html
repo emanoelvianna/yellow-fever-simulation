@@ -2,83 +2,122 @@
 <html>
 
 <head>
-    <title>Visualization of simulation results</title>
+  <title>Visualization of simulation results</title>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta name="description" content="">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-    <script src="node_modules/chart.js/dist/Chart.js"></script>
-    <script src="app/utils.js"></script>
-    <!-- styles -->
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="description" content="">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <script src="node_modules/chart.js/dist/Chart.js"></script>
+  <script src="app/utils.js"></script>
+  <!-- styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div class="container">
-    </div>
-    <script>
-        function createConfig(mode, intersect) {
-            return {
-                type: 'line',
-                data: {
-                    labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
-                    datasets: [{
-                        label: 'My First dataset',
-                        borderColor: window.chartColors.red,
-                        backgroundColor: window.chartColors.red,
-                        data: [10, 10, 10, 7, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                        fill: false,
-                    }, {
-                        label: 'My Second dataset',
-                        borderColor: window.chartColors.blue,
-                        backgroundColor: window.chartColors.blue,
-                        data: [7, 49, 46, 13, 25, 30, 22],
-                        fill: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Mode: ' + mode + ', intersect = ' + intersect
-                    },
-                    tooltips: {
-                        mode: mode,
-                        intersect: intersect,
-                    },
-                    hover: {
-                        mode: mode,
-                        intersect: intersect
-                    },
-                }
-            };
+  <div class="chart-container">
+    <canvas id="chart-1"></canvas>
+    <canvas id="chart-2"></canvas>
+  </div>
+
+  <script>
+    var ctx = document.getElementById('chart-1');
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+        datasets: [{
+          label: 'Exposto',
+          borderColor: window.chartColors.yellow,
+          backgroundColor: window.chartColors.yellow,
+          data: [10, 10, 10, 7, 4, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          fill: false,
+        }, {
+          label: 'Infecção leve',
+          borderColor: window.chartColors.pink,
+          backgroundColor: window.chartColors.pink,
+          data: [0, 0, 0, 3, 6, 8, 8, 6, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          fill: false,
+        }, {
+          label: 'Recuperado',
+          borderColor: window.chartColors.blue,
+          backgroundColor: window.chartColors.blue,
+          data: [0, 0, 0, 0, 0, 0, 2, 4, 7, 9, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+          fill: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        title: {
+          display: true,
+          text: 'Evolução da infecção no período de um mês sobre o agente humano'
+        },
+        scales: {
+          xAxes: [{
+            display: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Tempo (dias)'
+            }
+          }],
+          yAxes: [{
+            display: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Número de casos'
+            }
+          }]
         }
+      }
+    });
 
-        window.onload = function() {
-            var container = document.querySelector('.container');
-
-            [{
-                mode: 'index',
-                intersect: true,
-            }, {
-                mode: 'index',
-                intersect: false,
-            }].forEach(function(details) {
-                var div = document.createElement('div');
-                div.classList.add('chart-container');
-
-                var canvas = document.createElement('canvas');
-                div.appendChild(canvas);
-                container.appendChild(div);
-
-                var ctx = canvas.getContext('2d');
-                var config = createConfig(details.mode, details.intersect);
-                new Chart(ctx, config);
-            });
-        };
-    </script>
+    var ctx = document.getElementById('chart-2');
+    var myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+        datasets: [{
+            label: 'Quantidade presente nas residências',
+            borderColor: window.chartColors.pink,
+            backgroundColor: window.chartColors.pink,
+            data: [96, 158, 185, 194, 113, 402, 202, 145, 122, 270, 384, 170, 64, 241, 489, 272, 171, 2, 426, 154, 160, 32, 234, 250, 182, 62, 271, 170, 226, 94],
+            fill: false,
+          },
+          {
+            label: 'Quantidade de mortos',
+            borderColor: window.chartColors.blue,
+            backgroundColor: window.chartColors.blue,
+            data: [0, 0, 0, 6, 6, 10, 12, 9, 17, 17, 26, 18, 30, 28, 38, 23, 35, 53, 72, 121, 150, 191, 248, 318, 326, 360, 453, 450, 460, 721, ],
+            fill: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        title: {
+          display: true,
+          text: 'Disseminação da forma de ovos do Mosquito Aedes Aegypti'
+        },
+        scales: {
+          xAxes: [{
+            display: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Tempo (dias)'
+            }
+          }],
+          yAxes: [{
+            display: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Número de ovos'
+            }
+          }]
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>

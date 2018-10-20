@@ -10,11 +10,13 @@ public class Egg implements Steppable, Valuable {
   private Building currentPosition;
   private double timeOfMaturation;
   private int amount;
+  private boolean imported;
 
   public Egg(Building currentPosition, double timeOfMaturation, int amount) {
     this.currentPosition = currentPosition;
     this.timeOfMaturation = timeOfMaturation;
     this.amount = amount;
+    this.imported = true;
   }
 
   public void step(SimState state) {
@@ -47,5 +49,13 @@ public class Egg implements Steppable, Valuable {
 
   public double doubleValue() {
     return 0;
+  }
+
+  public boolean isImported() {
+    return imported;
+  }
+
+  public void setImported(boolean imported) {
+    this.imported = imported;
   }
 }

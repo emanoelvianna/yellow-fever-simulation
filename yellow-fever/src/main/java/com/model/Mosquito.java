@@ -91,13 +91,16 @@ public class Mosquito implements Steppable, Valuable, Serializable {
         }
       }
       if (this.isCarryingEggs()) {
+        System.out.println("--");
+        System.out.println("Estou carregando ovos:" + this.isCarryingEggs());
+        System.out.println("Meu tempo de maturação está como: " + timeOfMaturation);
         if (this.isMatureEggs()) {
+          System.out.println("Ovos estão maduros!");
           this.timeOfMaturation = 0; // reset time
           if (this.currentPosition.containsWater()) {
             this.ovipositionProcess();
+            System.out.println("Ainda estou carregando ovos:" + this.isCarryingEggs());
           }
-        } else if (timeOfMaturation == 0) {
-          this.defineTimeOfMaturation();
         }
       } else {
         this.probabilityOfCarryingEggs();
@@ -108,22 +111,25 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void probabilityOfCarryingEggs() {
     if (this.eggLaying > 0)
       return;
+    // TODO: Deve ser um parametro!
     if (0.2 >= this.random.nextDouble()) { // 20% chance
       this.setCarryingEggs(true);
+      this.defineTimeOfMaturation();
     } else {
       this.setCarryingEggs(false);
     }
   }
 
-  private void defineTimeOfMaturation() {
+  public void defineTimeOfMaturation() {
     this.timeOfMaturation = 3 + Math.abs((this.temperature - 21) / 5);
   }
 
-  // TODO: Problema com concorrencia?
   private void ovipositionProcess() {
     double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
     int amount = 1 + this.random.nextInt(100);
-    this.yellowFever.addEgg(new Egg(this.currentPosition, maturationTimeOfTheEggs, amount));
+    Egg egg = new Egg(this.currentPosition, maturationTimeOfTheEggs, amount);
+    egg.setImported(false);
+    this.yellowFever.addEgg(egg);
     this.carryingEggs = false;
     this.defineEggLaying();
     // used to the statistics
@@ -156,36 +162,23 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   public void toBite(Human human) {
-    synchronized (human.getCurrentHealthStatus()) {
-      switch (human.getCurrentHealthStatus()) {
-      case SUSCEPTIBLE:
-        if (HealthStatus.INFECTED.equals(this.getCurrentHealthStatus())) {
-          double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
-          if (probability >= this.random.nextDouble()) {
-            human.infected();
-          }
+    if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
+      double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
+      if (probability >= this.random.nextDouble()) {
+        human.infected();
+      }
+    } else if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+      if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
+        double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityMildInfectionToVector();
+        if (probability >= this.random.nextDouble()) {
+          this.infected();
         }
-        break;
-      case MILD_INFECTION:
-        if (HealthStatus.SUSCEPTIBLE.equals(this.getCurrentHealthStatus())) {
-          double probability = this.yellowFever.getParams().getGlobal()
-              .getTransmissionProbabilityMildInfectionToVector();
-          if (probability >= this.random.nextDouble()) {
-            this.infected();
-          }
+      } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
+        double probability = this.yellowFever.getParams().getGlobal()
+            .getTransmissionProbabilitySevereInfectionToVector();
+        if (probability >= this.random.nextDouble()) {
+          this.infected();
         }
-        break;
-      case SEVERE_INFECTION:
-        if (HealthStatus.SUSCEPTIBLE.equals(this.getCurrentHealthStatus())) {
-          double probability = this.yellowFever.getParams().getGlobal()
-              .getTransmissionProbabilitySevereInfectionToVector();
-          if (probability >= this.random.nextDouble()) {
-            this.infected();
-          }
-        }
-        break;
-      default:
-        break;
       }
     }
   }
@@ -198,7 +191,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     }
   }
 
-  private void infected() {
+  public void infected() {
     if (!HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus))
       return;
     this.defineIncubationPeriod();
@@ -226,6 +219,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private boolean probabilityOfDying() {
+    // TODO: Deve ser um parametro!
     double probability = 0.05; // 5% chance
     if (probability >= this.random.nextDouble()) {
       return true;
@@ -252,7 +246,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
   }
 
-  private void defineEggLaying() {
+  public void defineEggLaying() {
     this.eggLaying = 3 + this.random.nextInt(5); // 3-7 days
   }
 

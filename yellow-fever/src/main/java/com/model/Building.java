@@ -163,19 +163,15 @@ public class Building implements Valuable, Serializable {
     this.water = flow;
   }
 
-  // TODO: Preciso utilizar o synchronized?
-  // TODO: Quais outros casos que preciso utilizar aqui?
-  public synchronized double getWater() {
+  public double getWater() {
     return water;
   }
 
-  // TODO: Preciso utilizar o synchronized?
-  public synchronized void addWater(double water) {
+  public void addWater(double water) {
     this.water = this.water + water;
   }
 
-  // TODO: Preciso utilizar o synchronized?
-  public synchronized void waterAbsorption(double absorption) {
+  public void waterAbsorption(double absorption) {
     this.water = this.water - absorption;
   }
 

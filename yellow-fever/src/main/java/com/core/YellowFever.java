@@ -96,15 +96,17 @@ public class YellowFever extends SimState {
   private int totalOfHumansWithSevereInfected;
   private int totalOfHumansWithToxicInfected;
   private int totalOfHumansRecovered;
-  private int totalDeadHumans;
+  private int amountDeadHumans;
   // used to the mosquitoes statistics
   private int totalOfMosquitoSusceptible;
   private int totalOfMosquitoExposed;
   private int totalOfMosquitoesWithInfection;
   private int amountOfTransportedEggs;
-  private int totalDeadMosquitoes;
+  private int amountDeadMosquitoes;
+  // used to the eggs statistics
   private int amountOfEggsInHouses;
   private int amountOfDeadEggs;
+  private int amountOfEggsHatched;
   // used to the medical center statistics
   private int totalVisitsMedicalCenter;
   private int totalRefusalsInMedicalCenter;
@@ -137,14 +139,15 @@ public class YellowFever extends SimState {
     this.totalOfHumansWithSevereInfected = 0;
     this.totalOfHumansWithToxicInfected = 0;
     this.totalOfHumansRecovered = 0;
-    this.totalDeadHumans = 0;
+    this.amountDeadHumans = 0;
     this.totalOfMosquitoSusceptible = 0;
     this.totalOfMosquitoExposed = 0;
     this.totalOfMosquitoesWithInfection = 0;
     this.amountOfTransportedEggs = 0;
-    this.totalDeadMosquitoes = 0;
+    this.amountDeadMosquitoes = 0;
     this.amountOfEggsInHouses = 0;
     this.amountOfDeadEggs = 0;
+    this.amountOfEggsHatched = 0;
     this.totalVisitsMedicalCenter = 0;
     this.totalRefusalsInMedicalCenter = 0;
     this.maximumCapacity = false;
@@ -166,9 +169,14 @@ public class YellowFever extends SimState {
       public void step(SimState state) {
         if (isNewDay()) {
           // reset values
+          amountDeadHumans = 0;
+          amountDeadMosquitoes = 0;
           amountOfTransportedEggs = 0;
+          amountOfEggsHatched = 0;
           amountOfEggsInHouses = 0;
           amountOfDeadEggs = 0;
+
+          // TODO: Adicionar resultados para temperatura e precipitação
 
           // define temperature
           List<Double> temperatures = climate.getTemperature();
@@ -188,15 +196,15 @@ public class YellowFever extends SimState {
               }
             }
           }
-
+          
           // probability of eggs dying
-          for (Object object : getEggs()) {
+          for (Object object : eggs) {
             Egg e = (Egg) object;
             if (e.getAmount() > 0) {
+              // TODO: Deve ser um parametro!
               if (0.05 >= random.nextDouble()) { // 5% chance
-                int newAmount = e.getAmount() - 1;
-                e.setAmount(newAmount);
-                // amountOfEggsInHouses--;
+                e.setAmount(e.getAmount() - 1);
+                // used to the statistics
                 amountOfDeadEggs++;
               }
             } else {
@@ -204,14 +212,30 @@ public class YellowFever extends SimState {
             }
           }
 
+          int quantidade = 0;
+          // probability of eggs appear in houses
+          double probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
+          for (Object object : getFamilyHousing()) {
+            Building housing = (Building) object;
+            if (housing.containsWater() && !housing.containsMosquitoes()) {
+              if (probability >= random.nextDouble()) {
+                double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
+                int amount = 1 + random.nextInt(100);
+                eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount));
+                quantidade++;
+              }
+            }
+          }
+          
+          System.out.println("Quantidade de ovos adicionados nas casas: " + quantidade);
+
           // probability of eggs hatching
-          for (Object object : getEggs()) {
+          for (Object object : eggs) {
             Egg e = (Egg) object;
             if (e.getTimeOfMaturation() > 0) {
-              double timeOfMaturation = e.getTimeOfMaturation() - 1;
-              e.setTimeOfMaturation(timeOfMaturation);
+              e.setTimeOfMaturation(e.getTimeOfMaturation() - 1);
             } else if (e.getAmount() > 0) {
-              for (int j = 0; j < e.getAmount(); j++) {
+              for (int i = 0; i < e.getAmount(); i++) {
                 if (0.5 >= random.nextDouble()) { // 50% chance of female
                   Mosquito mosquito = new Mosquito(e.getCurrentPosition(), random);
                   mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
@@ -219,60 +243,50 @@ public class YellowFever extends SimState {
                   int newAmount = e.getAmount() - 1;
                   e.setAmount(newAmount);
                   allMosquitoes.add(mosquito);
+                  // used to the statistics
+                  amountOfEggsHatched++;
                 } else {
                   int newAmount = e.getAmount() - 1;
                   e.setAmount(newAmount);
                 }
               }
             } else {
-              eggs.remove(e);
+              eggs.remove(e); // garbage collector
             }
+            // used to the statistics
+            amountOfEggsInHouses += e.getAmount();
           }
 
-          // probability of eggs appear in houses
-          double probability = params.getGlobal().getProbabilityOfEggsAppearInHouses();
-          for (Object object : getFamilyHousing()) {
-            Building housing = (Building) object;
-            if (probability >= random.nextDouble()) {
-              if (housing.containsWater()) {
-                double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
-                int amount = 1 + random.nextInt(100);
-                eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount));
-                amountOfEggsInHouses += amount;
+          System.out.println("tamanho da lista original: " + eggs.size());
+          
+          /**
+          // garbage collector
+          for (Object human : allHumans.getAllObjects()) {
+            Human h = (Human) human;
+            if (h.isDead()) {
+              h.getFamily().removeMembers(h);
+              if (h.getFamily().getMembers().numObjs == 0) {
+                getAllFamilies().remove(h.getFamily());
               }
+              allHumans.allObjects.remove(h);
+              // used to the statistics
+              amountDeadHumans++;
             }
           }
 
-          // amount of transported eggs
+          // garbage collector
           for (Object mosquito : allMosquitoes) {
             Mosquito m = (Mosquito) mosquito;
-            if (m.isCarryingEggs()) {
+            if (m.isDead()) {
+              m.getCurrentPosition().removeMosquito(m);
+              allMosquitoes.remove(m);
+              // used to the statistics
+              amountDeadMosquitoes++;
+            } else if (m.isCarryingEggs()) { // used to the statistics
               amountOfTransportedEggs++;
             }
           }
-        }
-
-        // garbage collector
-        for (Object human : allHumans.getAllObjects()) {
-          Human h = (Human) human;
-          if (h.isDead()) {
-            h.getFamily().removeMembers(h);
-            if (h.getFamily().getMembers().numObjs == 0) {
-              getAllFamilies().remove(h.getFamily());
-            }
-            allHumans.allObjects.remove(h);
-            totalDeadHumans++;
-          }
-        }
-
-        // garbage collector
-        for (Object mosquito : allMosquitoes) {
-          Mosquito m = (Mosquito) mosquito;
-          if (m.isDead()) {
-            m.getCurrentPosition().removeMosquito(m);
-            allMosquitoes.remove(m);
-            totalDeadMosquitoes++;
-          }
+          **/
         }
 
         // getting all humans
@@ -306,10 +320,10 @@ public class YellowFever extends SimState {
         setTotalOfHumansWithSevereInfected(totalOfHumansWithSevereInfected);
         setTotalOfHumansWithToxicInfected(totalOfHumansWithToxicInfected);
         setTotalOfHumansRecovered(totalOfHumansRecovered);
-        setTotalDeadHumans(getNumberDeadHumans());
+        setAmountDeadHumans(amountDeadHumans);
 
         totalTotalPopSeries.add((double) (state.schedule.getTime()), allHumans.getAllObjects().numObjs);
-        totalDeathSeries.add((double) (state.schedule.getTime()), getNumberDeadHumans());
+        totalDeathSeries.add((double) (state.schedule.getTime()), amountDeadHumans);
         totalSusceptibleSeries.add((double) (state.schedule.getTime()), (totalOfHumansSusceptible));
         totalExposedSeries.add((double) (state.schedule.getTime()), (totalOfHumansExposed));
         totalMildInfectedSeries.add((double) (state.schedule.getTime()), (totalOfHumansWithMildInfection));
@@ -334,9 +348,7 @@ public class YellowFever extends SimState {
         setTotalOfMosquitoSusceptible(totalOfMosquitoSusceptible);
         setTotalOfMosquitoExposed(totalOfMosquitoExposed);
         setTotalOfMosquitoesWithInfection(totalOfMosquitoesWithInfection);
-        setTotalDeadMosquitoes(getNumberDeadMosquitoes());
-
-        setAmountOfEggsInHouses(amountOfEggsInHouses);
+        setAmountDeadMosquitoes(amountDeadMosquitoes);
 
         int m = ((int) state.schedule.getTime()) % 60;
 
@@ -538,20 +550,12 @@ public class YellowFever extends SimState {
     this.market = market;
   }
 
-  public int getNumberDeadMosquitoes() {
-    return totalDeadMosquitoes;
+  public int getAmountDeadMosquitoes() {
+    return amountDeadMosquitoes;
   }
 
-  public void setTotalDeadMosquitoes(int totalDeadMosquitoes) {
-    this.totalDeadMosquitoes = totalDeadMosquitoes;
-  }
-
-  public int getNumberDeadHumans() {
-    return totalDeadHumans;
-  }
-
-  public void setTotalDeadHumans(int totalDeadHumans) {
-    this.totalDeadHumans = totalDeadHumans;
+  public void setAmountDeadMosquitoes(int amountDeadMosquitoes) {
+    this.amountDeadMosquitoes = amountDeadMosquitoes;
   }
 
   public int getTotalOfHumansSusceptible() {
@@ -680,6 +684,22 @@ public class YellowFever extends SimState {
 
   public void setAmountOfDeadEggs(int amountOfDeadEggs) {
     this.amountOfDeadEggs = amountOfDeadEggs;
+  }
+
+  public int getAmountOfEggsHatched() {
+    return amountOfEggsHatched;
+  }
+
+  public void setAmountOfEggsHatched(int amountOfEggsHatched) {
+    this.amountOfEggsHatched = amountOfEggsHatched;
+  }
+
+  public int getAmountDeadHumans() {
+    return amountDeadHumans;
+  }
+
+  public void setAmountDeadHumans(int amountDeadHumans) {
+    this.amountDeadHumans = amountDeadHumans;
   }
 
 }

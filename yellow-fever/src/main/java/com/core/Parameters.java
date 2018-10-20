@@ -113,6 +113,14 @@ public class Parameters {
 
     getGlobal().setHeaalthFacilityCapacity(
         returnIntParameter(parameterDB, "healthFacilityCapacity", getGlobal().getHeaalthFacilityCapacity()));
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfHouseContainsNaturalFood",
+        global.probabilityOfHouseContainsNaturalFood);
+    global.probabilityOfHouseContainsNaturalFood = doubleParameter;
+
+    intParameter = returnIntParameter(parameterDB, "InitialMosquitoesNumberInfected",
+        global.initialMosquitoesNumberInfected);
+    global.initialMosquitoesNumberInfected = intParameter;
   }
 
   public int returnIntParameter(ParameterDatabase paramDB, String parameterName, int defaultValue) {
@@ -138,8 +146,9 @@ public class Parameters {
   public class GlobalParamters {
 
     // TODO: Rever os parametros padrão junto ao documento!
+    private int initialMosquitoesNumberInfected = 0;
     private int initialHumansNumberInfected = 10;
-    private int initialMosquitoesNumber = 1000;
+    private int initialMosquitoesNumber = 2000;
     private int initialHumansNumber = 500;
     private double probabilityOfEggsAppearInHouses = 0.01;
     private double waterAbsorption = 0.1;
@@ -154,6 +163,7 @@ public class Parameters {
     private double transmissionProbabilitySevereInfectionToVector = 0.75;
     private int healthFacilityCapacity = 1000;
     private double probabilityOfCarryEggsAtSimulationStart = 0.01;
+    private double probabilityOfHouseContainsNaturalFood = 0.5;
 
     // TODO: Rever
     public int MaximumNumberRelative = 15;
@@ -299,6 +309,22 @@ public class Parameters {
 
     public void setProbabilityOfCarryEggsAtSimulationStart(double probabilityOfCarryEggsAtSimulationStart) {
       this.probabilityOfCarryEggsAtSimulationStart = probabilityOfCarryEggsAtSimulationStart;
+    }
+
+    public double getProbabilityOfHouseContainsNaturalFood() {
+      return probabilityOfHouseContainsNaturalFood;
+    }
+
+    public void setProbabilityOfHouseContainsNaturalFood(double probabilityOfHouseContainsNaturalFood) {
+      this.probabilityOfHouseContainsNaturalFood = probabilityOfHouseContainsNaturalFood;
+    }
+
+    public int getInitialMosquitoesNumberInfected() {
+      return initialMosquitoesNumberInfected;
+    }
+
+    public void setInitialMosquitoesNumberInfected(int initialMosquitoesNumberInfected) {
+      this.initialMosquitoesNumberInfected = initialMosquitoesNumberInfected;
     }
   }
 }
