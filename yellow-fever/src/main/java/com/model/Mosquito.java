@@ -91,15 +91,10 @@ public class Mosquito implements Steppable, Valuable, Serializable {
         }
       }
       if (this.isCarryingEggs()) {
-        System.out.println("--");
-        System.out.println("Estou carregando ovos:" + this.isCarryingEggs());
-        System.out.println("Meu tempo de maturação está como: " + timeOfMaturation);
         if (this.isMatureEggs()) {
-          System.out.println("Ovos estão maduros!");
           this.timeOfMaturation = 0; // reset time
           if (this.currentPosition.containsWater()) {
             this.ovipositionProcess();
-            System.out.println("Ainda estou carregando ovos:" + this.isCarryingEggs());
           }
         }
       } else {
@@ -132,8 +127,6 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.yellowFever.addEgg(egg);
     this.carryingEggs = false;
     this.defineEggLaying();
-    // used to the statistics
-    this.yellowFever.addToTheTotalEggsInTheEnvironment(amount);
   }
 
   private void normalFood() {

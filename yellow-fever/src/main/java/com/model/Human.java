@@ -107,7 +107,7 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   public void move(int steps) {
-    Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
+    Activity activity = new Activity(this, time, currentStep, minuteInDay);
     // if you do not have goal then return
     if (this.getGoal() == null) {
       return;
@@ -167,10 +167,11 @@ public class Human implements Steppable, Valuable, Serializable {
     }
 
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
-      Activity activity = new Activity(yellowFever, this, time, currentStep, minuteInDay);
+      Activity activity = new Activity(this, time, currentStep, minuteInDay);
       ActivityMapping bestActivity = activity.defineActivity();
       this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
       // TODO: Funcionando parcialmente
+      // used to the statistics
       if (ActivityMapping.HEALTH_CENTER.equals(bestActivity)) {
         if (this.goal.getFacility().isReachedCapacity(this.goal, this.yellowFever)) {
           bestActivity = ActivityMapping.STAY_HOME;

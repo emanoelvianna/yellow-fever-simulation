@@ -41,6 +41,7 @@ public class Facility implements Steppable, Valuable {
     }
   }
 
+  // used to the statistics
   public boolean isReachedCapacity(Building building, YellowFever yellowFever) {
     if (building.getPatientCounter() >= yellowFever.getParams().getGlobal().getHeaalthFacilityCapacity()) {
       this.yellowFever.setMaximumCapacity(true);

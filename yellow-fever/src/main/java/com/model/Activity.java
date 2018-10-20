@@ -9,15 +9,13 @@ import sim.util.Bag;
 
 public class Activity {
 
-  private YellowFever yellowFever;
   private MersenneTwisterFast random;
   private Human human;
   private TimeManager time;
   private int currentStep;
   private int minuteInDay;
 
-  public Activity(YellowFever yellowFever, Human human, TimeManager time, int currentStep, int minuteInDay) {
-    this.yellowFever = yellowFever;
+  public Activity(Human human, TimeManager time, int currentStep, int minuteInDay) {
     this.random = new MersenneTwisterFast();
     this.human = human;
     this.time = time;

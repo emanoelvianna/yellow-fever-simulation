@@ -534,8 +534,6 @@ public class SimulationBuilder {
   }
 
   private void populateMosquito(YellowFever yellowFever) {
-    int qCarregando = 0;
-    int qCasa = 0;
     int initialMosquitoesNumber = yellowFever.getParams().getGlobal().getInitialMosquitoesNumber();
     while (initialMosquitoesNumber > 0) {
       int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
@@ -546,11 +544,9 @@ public class SimulationBuilder {
         double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
         if (probability >= yellowFever.random.nextDouble()) {
           this.carryEggs(mosquito);
-          qCarregando++;
         } else if (0.01 >= yellowFever.random.nextDouble()) { // TODO: Deve acabar sendo um parametro!
           // probability of home containing eggs
           this.populateEggsInHouse(yellowFever, housing, mosquito);
-          qCasa++;
         }
         housing.addMosquito(mosquito);
         yellowFever.addMosquitoes(mosquito);
@@ -567,8 +563,6 @@ public class SimulationBuilder {
         initialMosquitoesNumber--;
       }
     }
-    System.out.println("Quantidade de mosquitos carregando ovos: " + qCarregando);
-    System.out.println("Quantidade de mosquitos nas casas: " + qCasa);
   }
 
   private void populateNormalFood(YellowFever yellowFever) {
