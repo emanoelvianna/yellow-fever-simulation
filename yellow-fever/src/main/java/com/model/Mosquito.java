@@ -33,7 +33,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private int incubationPeriod;
   private int daysWithoutFood;
   private double timeOfMaturation;
-  private int eggLaying;
+  private int spaceBetweenEggLaying;
   private boolean dead;
 
   public Mosquito(Building position, MersenneTwisterFast random) {
@@ -47,7 +47,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.currentDay = 0;
     this.temperature = 0;
     this.timeOfMaturation = 0;
-    this.defineEggLaying();
+    this.defineSpaceBetweenEggLaying();
     this.defineVectorLifespan();
     this.dead = false;
   }
@@ -67,8 +67,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
       this.dead = this.probabilityOfDying();
       if (this.dead)
         return;
-      if (this.eggLaying > 0)
-        this.eggLaying--;
+      if (this.spaceBetweenEggLaying > 0)
+        this.spaceBetweenEggLaying--;
       this.setTemperature();
       this.checkCurrentStateOfMaturation();
       this.checkCurrentStateOfInfection();
@@ -104,7 +104,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void probabilityOfCarryingEggs() {
-    if (this.eggLaying > 0)
+    if (this.spaceBetweenEggLaying > 0)
       return;
     // TODO: Deve ser um parametro!
     if (0.2 >= this.random.nextDouble()) { // 20% chance
@@ -126,7 +126,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     egg.setImported(false);
     this.yellowFever.addEgg(egg);
     this.carryingEggs = false;
-    this.defineEggLaying();
+    this.defineSpaceBetweenEggLaying();
   }
 
   private void normalFood() {
@@ -239,8 +239,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
   }
 
-  public void defineEggLaying() {
-    this.eggLaying = 3 + this.random.nextInt(5); // 3-7 days
+  public void defineSpaceBetweenEggLaying() {
+    this.spaceBetweenEggLaying = 3 + this.random.nextInt(5); // 3-7 days
   }
 
   public void setStoppable(Stoppable stopp) {
@@ -316,11 +316,11 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   public int getEggLaying() {
-    return eggLaying;
+    return spaceBetweenEggLaying;
   }
 
   public void setEggLaying(int eggLaying) {
-    this.eggLaying = eggLaying;
+    this.spaceBetweenEggLaying = eggLaying;
   }
 
 }

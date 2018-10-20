@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.core.YellowFever;
-import com.core.algorithms.TimeManager;
 
 import net.sf.csv4j.CSVWriter;
 import sim.engine.SimState;
@@ -17,7 +16,6 @@ public class YellowFeverReport implements Steppable {
 
   public static final int ORDERING = 3;
   private static final long serialVersionUID = 1L;
-  private static final int MIDNIGHT = 24;
   // file names
   private static final String MOSQUITO_STATE_FILE_NAME = "mosquito_state.csv";
   private static final String EGGS_STATE_FILE_NAME = "eggs_state.csv";
@@ -39,7 +37,6 @@ public class YellowFeverReport implements Steppable {
   // intervention statistics
   private BufferedWriter bufferedHealthCenterStateWriter;
   private CSVWriter csvHealthCenterStateWriter;
-  private TimeManager time;
 
   public YellowFeverReport(YellowFever yellowFever) {
     this.yellowFever = yellowFever;
@@ -48,12 +45,9 @@ public class YellowFeverReport implements Steppable {
 
   public void step(SimState state) {
     this.yellowFever = (YellowFever) state;
-    this.time = this.yellowFever.getTime();
-    int currentStep = (int) yellowFever.schedule.getSteps();
 
-    System.out.println(this.time.currentHour(currentStep));
-    
-    if (this.time.currentHour(currentStep) < 24) {
+    // near midnight generate results
+    if (this.yellowFever.schedule.getSteps() % 1440 == 1439) {
       this.writeMosquitoStateStatistics();
       this.WriteEggsStatusStatistics();
       this.writeMosquitoHealthStatistics();

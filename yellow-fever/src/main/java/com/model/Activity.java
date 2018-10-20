@@ -35,16 +35,14 @@ public class Activity {
   private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
     if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
       if (time.currentDayInWeek(currentStep) < 6) {
-        synchronized (this.random) {
-          if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
-            return ActivityMapping.STAY_HOME;
-          } else if (this.human.isWorker()) {
-            return ActivityMapping.WORK;
-          } else if (this.human.isStudent()) {
-            return this.everydayActivitiesForStudents();
-          } else {
-            return this.differentActivities();
-          }
+        if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
+          return ActivityMapping.STAY_HOME;
+        } else if (this.human.isWorker()) {
+          return ActivityMapping.WORK;
+        } else if (this.human.isStudent()) {
+          return this.everydayActivitiesForStudents();
+        } else {
+          return this.differentActivities();
         }
       } else {
         return differentActivities();
@@ -54,34 +52,30 @@ public class Activity {
   }
 
   public ActivityMapping everydayActivitiesForStudents() {
-    synchronized (this.random) {
-      if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
-        return ActivityMapping.SCHOOL;
-      } else if (0.5 >= this.random.nextDouble()) { // 50% chance
-        if (0.4 >= this.random.nextDouble()) // 40% chance
-          return ActivityMapping.SOCIAL_VISIT;
-        else if (0.3 >= this.random.nextDouble()) // 30% chance
-          return ActivityMapping.RELIGION_ACTIVITY;
-        else
-          return ActivityMapping.MARKET;
-      }
-      return ActivityMapping.STAY_HOME;
+    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+      return ActivityMapping.SCHOOL;
+    } else if (0.5 >= this.random.nextDouble()) { // 50% chance
+      if (0.4 >= this.random.nextDouble()) // 40% chance
+        return ActivityMapping.SOCIAL_VISIT;
+      else if (0.3 >= this.random.nextDouble()) // 30% chance
+        return ActivityMapping.RELIGION_ACTIVITY;
+      else
+        return ActivityMapping.MARKET;
     }
+    return ActivityMapping.STAY_HOME;
   }
 
   public ActivityMapping differentActivities() {
-    synchronized (this.random) {
-      if (0.8 >= this.random.nextDouble()) { // 80% chance
-        if (0.4 >= this.random.nextDouble()) { // 40% chance
-          return ActivityMapping.SOCIAL_VISIT;
-        } else if (0.3 >= this.random.nextDouble()) { // 30% chance
-          return ActivityMapping.RELIGION_ACTIVITY;
-        } else {
-          return ActivityMapping.MARKET;
-        }
-      } else { // 20% chance of home activity
-        return ActivityMapping.STAY_HOME;
+    if (0.8 >= this.random.nextDouble()) { // 80% chance
+      if (0.4 >= this.random.nextDouble()) { // 40% chance
+        return ActivityMapping.SOCIAL_VISIT;
+      } else if (0.3 >= this.random.nextDouble()) { // 30% chance
+        return ActivityMapping.RELIGION_ACTIVITY;
+      } else {
+        return ActivityMapping.MARKET;
       }
+    } else { // 20% chance of home activity
+      return ActivityMapping.STAY_HOME;
     }
   }
 
@@ -125,27 +119,21 @@ public class Activity {
       period = 10 * MINUTE;
       break;
     case SOCIAL_VISIT:
-      synchronized (this.random) {
-        // the average visit time is 8 hours
-        period = minimumStay + this.random.nextInt(8 * MINUTE);
-      }
+      // the average visit time is 8 hours
+      period = minimumStay + this.random.nextInt(8 * MINUTE);
       break;
     case RELIGION_ACTIVITY:
-      synchronized (this.random) {
-        // time at maximum 4 hours
-        period = minimumStay + this.random.nextInt(4 * MINUTE);
-      }
+      // time at maximum 4 hours
+      period = minimumStay + this.random.nextInt(4 * MINUTE);
       break;
     case MARKET:
-      synchronized (this.random) {
-        // time at maximum 2 hours
-        period = minimumStay + this.random.nextInt(2 * MINUTE);
-      }
+      // time at maximum 2 hours
+      period = minimumStay + this.random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
-      Building goal = this.human.getGoal();
       // time at maximum 16 hours
-      period = 4 + this.random.nextInt(13 * MINUTE);
+      // period = 4 + this.random.nextInt(13 * MINUTE);
+      period = minimumStay + this.random.nextInt(4 * MINUTE);
       break;
     }
     return (period + this.minuteInDay);

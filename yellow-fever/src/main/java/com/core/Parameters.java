@@ -154,16 +154,16 @@ public class Parameters {
     private double waterAbsorption = 0.1;
     private int quantityOfVaccinesApplied = 0;
     private int resourcesInMedicalCenters = 20;
-    private double probabilityOfGettingBloodFood = 0.5;
+    private double probabilityOfGettingBloodFood = 0.9;
     public int maximumFamilyOccumpancyPerBuilding = 1000; // arbitrary
     private int probabilityOfMildInfection = 85;
     private int probabilityFromSevereInfectionTotoxicInfection = 10;
-    private double transmissionProbabilityFromVectorToHost = 0.75;
-    private double transmissionProbabilityMildInfectionToVector = 0.30;
-    private double transmissionProbabilitySevereInfectionToVector = 0.75;
+    private double transmissionProbabilityFromVectorToHost = 0.9; // TODO: Rever os valor
+    private double transmissionProbabilityMildInfectionToVector = 0.7; // TODO: Rever os valor
+    private double transmissionProbabilitySevereInfectionToVector = 0.9; // TODO: Rever os valor
     private int healthFacilityCapacity = 1000;
     private double probabilityOfCarryEggsAtSimulationStart = 0.01;
-    private double probabilityOfHouseContainsNaturalFood = 0.5;
+    private double probabilityOfHouseContainsNaturalFood = 0.9;
 
     // TODO: Rever
     public int MaximumNumberRelative = 15;

@@ -78,7 +78,6 @@ public class YellowFever extends SimState {
   private Bag foodCenter;
   private Bag other;
   private Bag eggs;
-  // WaterContamination fm = new WaterContamination();
   private Facility facility;// schduling borehole refill
   private YellowFeverReport report;
   private Climate climate;
@@ -224,34 +223,34 @@ public class YellowFever extends SimState {
               }
             }
           }
-        }
 
-        // probability of eggs hatching
-        for (Object object : eggs) {
-          Egg e = (Egg) object;
-          if (e.getTimeOfMaturation() > 0) {
-            e.setTimeOfMaturation(e.getTimeOfMaturation() - 1);
-          } else if (e.getAmount() > 0) {
-            for (int i = 0; i < e.getAmount(); i++) {
-              if (0.5 >= random.nextDouble()) { // 50% chance of female
-                Mosquito mosquito = new Mosquito(e.getCurrentPosition(), random);
-                mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-                e.getCurrentPosition().addMosquito(mosquito);
-                int newAmount = e.getAmount() - 1;
-                e.setAmount(newAmount);
-                allMosquitoes.add(mosquito);
-                // used to the statistics
-                amountOfEggsHatched++;
-              } else {
-                int newAmount = e.getAmount() - 1;
-                e.setAmount(newAmount);
+          // probability of eggs hatching
+          for (Object object : eggs) {
+            Egg e = (Egg) object;
+            if (e.getTimeOfMaturation() > 0) {
+              e.setTimeOfMaturation(e.getTimeOfMaturation() - 1);
+            } else if (e.getAmount() > 0) {
+              for (int i = 0; i < e.getAmount(); i++) {
+                if (0.5 >= random.nextDouble()) { // 50% chance of female
+                  Mosquito mosquito = new Mosquito(e.getCurrentPosition(), random);
+                  mosquito.setStoppable(schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+                  e.getCurrentPosition().addMosquito(mosquito);
+                  int newAmount = e.getAmount() - 1;
+                  e.setAmount(newAmount);
+                  allMosquitoes.add(mosquito);
+                  // used to the statistics
+                  amountOfEggsHatched++;
+                } else {
+                  int newAmount = e.getAmount() - 1;
+                  e.setAmount(newAmount);
+                }
               }
+            } else {
+              eggs.remove(e); // garbage collector
             }
-          } else {
-            eggs.remove(e); // garbage collector
+            // used to the statistics
+            amountOfEggsInHouses += e.getAmount();
           }
-          // used to the statistics
-          amountOfEggsInHouses += e.getAmount();
         }
 
         // garbage collector

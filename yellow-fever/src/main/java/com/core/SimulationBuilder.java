@@ -360,8 +360,10 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) yellowFever.allHumans.getAllObjects().get(index);
-      human.infected();
-      amount--;
+      if (!HealthStatus.EXPOSED.equals(human.getCurrentHealthStatus())) {
+        human.infected();
+        amount--;
+      }
     }
   }
 
@@ -371,8 +373,10 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
       Mosquito mosquito = (Mosquito) yellowFever.getAllMosquitoes().get(index);
-      mosquito.infected();
-      amount--;
+      if (!HealthStatus.EXPOSED.equals(mosquito.getCurrentHealthStatus())) {
+        mosquito.infected();
+        amount--;
+      }
     }
   }
 
@@ -389,7 +393,7 @@ public class SimulationBuilder {
     yellowFever.allCampGeoGrid = new GeomGridField();
   }
 
-  //// add households
+  // add households
   private void addAllHumans(int age, Sex sex, Family hh, YellowFever yellowFever) {
     Human human = new Human(age, sex, hh, hh.getLocation(), hh.getLocation(), yellowFever.random,
         yellowFever.allHumans);
@@ -544,7 +548,8 @@ public class SimulationBuilder {
         double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
         if (probability >= yellowFever.random.nextDouble()) {
           this.carryEggs(mosquito);
-        } else if (0.01 >= yellowFever.random.nextDouble()) { // TODO: Deve acabar sendo um parametro!
+          // TODO: Deve acabar sendo um parametro!
+        } else if (0.01 >= yellowFever.random.nextDouble()) {
           // probability of home containing eggs
           this.populateEggsInHouse(yellowFever, housing, mosquito);
         }
@@ -583,7 +588,7 @@ public class SimulationBuilder {
     egg.setImported(false);
     yellowFever.addEgg(egg);
     mosquito.setCarryingEggs(false);
-    mosquito.defineEggLaying();
+    mosquito.defineSpaceBetweenEggLaying();
   }
 
   private void carryEggs(Mosquito mosquito) {
