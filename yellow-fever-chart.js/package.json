@@ -1,7 +1,7 @@
 {
-  "name": "standalone-chart.js",
+  "name": "yellow-fever-chart.js",
   "version": "0.0.0",
-  "description": "standalone-chart.js",
+  "description": "yellow-fever-chart.js",
   "main": "index.js",
   "scripts": {
     "gulp": "gulp",
