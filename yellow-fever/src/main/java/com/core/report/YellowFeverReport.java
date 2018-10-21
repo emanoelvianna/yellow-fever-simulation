@@ -17,11 +17,11 @@ public class YellowFeverReport implements Steppable {
   public static final int ORDERING = 3;
   private static final long serialVersionUID = 1L;
   // file names
-  private static final String MOSQUITO_STATE_FILE_NAME = "mosquito_state.csv";
-  private static final String EGGS_STATE_FILE_NAME = "eggs_state.csv";
-  private static final String HUMAN_HEALTH_FILE_NAME = "human_health.csv";
-  private static final String MOSQUITO_HEALTH_FILE_NAME = "mosquito_health.csv";
-  private static final String HEALTH_CENTER_STATE_FILE_NAME = "health_center_state.csv";
+  private static final String MOSQUITO_STATE_FILE_NAME = "mosquito-state.csv";
+  private static final String EGGS_STATE_FILE_NAME = "eggs-state.csv";
+  private static final String HUMAN_HEALTH_FILE_NAME = "human-health.csv";
+  private static final String MOSQUITO_HEALTH_FILE_NAME = "mosquito-health.csv";
+  private static final String HEALTH_CENTER_STATE_FILE_NAME = "health-center-state.csv";
 
   private YellowFever yellowFever;
   // state statistics
@@ -184,10 +184,10 @@ public class YellowFeverReport implements Steppable {
       csvEggsStatesWriter.writeLine(eggsStateHeader);
 
       // statistics related to the evolution of the infection
-      String[] mosquitosHealthHeader = new String[] { "DAY", "SUSCIPTABLE", "EXPOSED", "INFECTED", "AMOUNT_OF_DEAD" };
+      String[] mosquitosHealthHeader = new String[] { "DAY", "SUSCEPTIBLE", "EXPOSED", "INFECTED", "AMOUNT_OF_DEAD" };
       csvMosquitoHealthWriter.writeLine(mosquitosHealthHeader);
 
-      String[] humanHealthHeader = new String[] { "DAY", "SUSCIPTABLE", "EXPOSED", "MILD_INFECTION", "SEVERE_INFECTION",
+      String[] humanHealthHeader = new String[] { "DAY", "SUSCEPTIBLE", "EXPOSED", "MILD_INFECTION", "SEVERE_INFECTION",
           "TOXIC_INFECTION", "RECOVERED", "AMOUNT_OF_DEAD" };
       csvHumanHealthWriter.writeLine(humanHealthHeader);
 

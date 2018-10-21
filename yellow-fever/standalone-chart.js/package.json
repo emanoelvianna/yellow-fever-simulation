@@ -1,33 +1,29 @@
 {
-    "name": "standalone-chart.js",
-    "version": "0.0.0",
-    "description": "standalone-chart.js",
-    "main": "index.js",
-    "scripts": {
-        "gulp": "gulp",
-        "build": "gulp build",
-        "test": "mocha"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/emanoelvianna/yellow-fever.git"
-    },
-    "author": "emanoelvianna",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/emanoelvianna/yellow-fever/issues"
-    },
-    "homepage": "https://github.com/emanoelvianna/yellow-fever#readme",
-    "dependencies": {
-        "chart.js-scatter": "1.1.4",
-        "jquery-csv": "^0.8.9"
-
-    },
-    "devDependencies": {
-        "gulp-concat": "2.6.0",
-        "gulp": "^3.9.1",
-        "gulp-uglify": "^1.5.1",
-        "chart.js": "2.7.0",
-        "chart.js-scatter": "1.1.4"
-    }
+  "name": "standalone-chart.js",
+  "version": "0.0.0",
+  "description": "standalone-chart.js",
+  "main": "index.js",
+  "scripts": {
+    "gulp": "gulp",
+    "build": "gulp build",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emanoelvianna/yellow-fever.git"
+  },
+  "author": "emanoelvianna",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emanoelvianna/yellow-fever/issues"
+  },
+  "homepage": "https://github.com/emanoelvianna/yellow-fever#readme",
+  "dependencies": {
+    "chart.js": "^2.7.3",
+    "chart.js-scatter": "1.1.4",
+    "d3": "^5.7.0"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.26.3"
+  }
 }
