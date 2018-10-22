@@ -222,17 +222,17 @@ public class Human implements Steppable, Valuable, Serializable {
   }
 
   private void defineInfection() {
-    int probability;
+    double probability;
     if (this.incubationPeriod == 0 && HealthStatus.EXPOSED.equals(this.currentHealthStatus)) {
       probability = yellowFever.getParams().getGlobal().getProbabilityOfMildInfection();
-      if ((1 + this.random.nextInt(100)) <= probability) {
+      if (probability >= this.random.nextDouble()) {
         this.setCurrentHealthStatus(HealthStatus.MILD_INFECTION);
         this.definePeriodOfInfection();
       } else {
         this.setCurrentHealthStatus(HealthStatus.SEVERE_INFECTION);
         this.definePeriodOfInfection();
         probability = yellowFever.getParams().getGlobal().getProbabilityFromSevereInfectionTotoxicInfection();
-        if ((1 + this.random.nextInt(100)) <= probability) {
+        if (probability >= this.random.nextDouble()) {
           this.serious = true;
         } else {
           this.serious = false;

@@ -88,6 +88,7 @@ public class YellowFever extends SimState {
 
   private int currentDay;
   private double temperature;
+  private double precipitation;
   // used to the human statistics
   public int totalOfHumansSusceptible;
   public int totalOfHumansExposed;
@@ -132,6 +133,7 @@ public class YellowFever extends SimState {
     this.climate = new Climate();
     this.currentDay = 0;
     this.temperature = 0;
+    this.precipitation = 0;
     this.totalOfHumansSusceptible = 0;
     this.totalOfHumansExposed = 0;
     this.totalOfHumansWithMildInfection = 0;
@@ -175,8 +177,6 @@ public class YellowFever extends SimState {
           amountOfEggsInHouses = 0;
           amountOfDeadEggs = 0;
 
-          // TODO: Adicionar resultados para temperatura e precipitação
-
           // define temperature
           List<Double> temperatures = climate.getTemperature();
           if (currentDay < temperatures.size()) {
@@ -192,6 +192,8 @@ public class YellowFever extends SimState {
               housing.waterAbsorption(mm);
               if (currentDay < rainfall.size()) {
                 housing.addWater(rainfall.get(currentDay));
+                // used to the statistics
+                precipitation = rainfall.get(currentDay);
               }
             }
           }
@@ -200,8 +202,8 @@ public class YellowFever extends SimState {
           for (Object object : eggs) {
             Egg e = (Egg) object;
             if (e.getAmount() > 0) {
-              // TODO: Deve ser um parametro!
-              if (0.05 >= random.nextDouble()) { // 5% chance
+              double probability = params.getGlobal().getProbabilityOfEggsDying();
+              if (probability >= random.nextDouble()) {
                 e.setAmount(e.getAmount() - 1);
                 // used to the statistics
                 amountOfDeadEggs++;
@@ -693,6 +695,14 @@ public class YellowFever extends SimState {
 
   public void setAmountDeadHumans(int amountDeadHumans) {
     this.amountDeadHumans = amountDeadHumans;
+  }
+
+  public double getPrecipitation() {
+    return precipitation;
+  }
+
+  public void setPrecipitation(double precipitation) {
+    this.precipitation = precipitation;
   }
 
 }

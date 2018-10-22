@@ -308,7 +308,8 @@ public class SimulationBuilder {
         yellowFever.getClimate().addPrecipitation(Double.parseDouble(info[1]));
         Double maximumTemperature = Double.parseDouble(info[2]);
         Double minimumTemperature = Double.parseDouble(info[3]);
-        yellowFever.getClimate().addTemperature((maximumTemperature + minimumTemperature) / 2);
+        Double average = (maximumTemperature + minimumTemperature) / 2;
+        yellowFever.getClimate().addTemperature(Math.round(average * 100) / 100d);
       }
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -545,18 +546,19 @@ public class SimulationBuilder {
       if (housing.containsMosquitoes()) {
         Mosquito mosquito = new Mosquito(housing, yellowFever.random);
         mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-        double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
-        if (probability >= yellowFever.random.nextDouble()) {
+        double probabilityCarryEggs = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+        double probabilityHomeContainingEggs = yellowFever.getParams().getGlobal()
+            .getProbabilityHomeContainingEggsAtSimulationStart();
+        if (probabilityCarryEggs >= yellowFever.random.nextDouble()) {
           this.carryEggs(mosquito);
-          // TODO: Deve acabar sendo um parametro!
-        } else if (0.01 >= yellowFever.random.nextDouble()) {
+        } else if (probabilityHomeContainingEggs >= yellowFever.random.nextDouble()) {
           // probability of home containing eggs
           this.populateEggsInHouse(yellowFever, housing, mosquito);
         }
         housing.addMosquito(mosquito);
         yellowFever.addMosquitoes(mosquito);
         initialMosquitoesNumber--;
-      } else if (yellowFever.random.nextDouble() > 0.5) {
+      } else if (yellowFever.random.nextDouble() > 0.8) {
         Mosquito mosquito = new Mosquito(housing, yellowFever.random);
         mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
         double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();

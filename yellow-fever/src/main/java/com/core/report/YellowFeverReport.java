@@ -17,6 +17,7 @@ public class YellowFeverReport implements Steppable {
   public static final int ORDERING = 3;
   private static final long serialVersionUID = 1L;
   // file names
+  private static final String CLIMATE_FILE_NAME = "climate.csv";
   private static final String MOSQUITO_STATE_FILE_NAME = "mosquito-state.csv";
   private static final String EGGS_STATE_FILE_NAME = "eggs-state.csv";
   private static final String HUMAN_HEALTH_FILE_NAME = "human-health.csv";
@@ -24,6 +25,9 @@ public class YellowFeverReport implements Steppable {
   private static final String HEALTH_CENTER_STATE_FILE_NAME = "health-center-state.csv";
 
   private YellowFever yellowFever;
+  // temperature and precipitation statistics
+  private BufferedWriter bufferedClimateWriter;
+  private CSVWriter csvClimateWriter;
   // state statistics
   private BufferedWriter bufferedMosquitoStateWriter;
   private CSVWriter csvMosquitoStatehWriter;
@@ -48,11 +52,27 @@ public class YellowFeverReport implements Steppable {
 
     // near midnight generate results
     if (this.yellowFever.schedule.getSteps() % 1440 == 1439) {
+      this.writeClimateStatistics();
       this.writeMosquitoStateStatistics();
       this.WriteEggsStatusStatistics();
       this.writeMosquitoHealthStatistics();
       this.writeHumanHealthStatistics();
       this.writeHealthCenterStateStatistics();
+    }
+  }
+
+  // statistics related to the temperature and precipitation
+  private void writeClimateStatistics() {
+    try {
+      String[] data;
+      String day = Long.toString(yellowFever.getCurrentDay());
+      String temperature = Double.toString(yellowFever.getTemperature());
+      String precipitation = Double.toString(yellowFever.getPrecipitation());
+
+      data = new String[] { day, temperature, precipitation };
+      this.csvClimateWriter.writeLine(data);
+    } catch (IOException ex) {
+      Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
     }
   }
 
@@ -124,6 +144,7 @@ public class YellowFeverReport implements Steppable {
     }
   }
 
+  // statistics related to the intervention
   // TODO:
   private void writeHealthCenterStateStatistics() {
     try {
@@ -144,7 +165,7 @@ public class YellowFeverReport implements Steppable {
 
   public void finish() {
     try {
-
+      this.bufferedClimateWriter.close();
       this.bufferedMosquitoStateWriter.close();
       this.bufferedEggsStatesWriter.close();
       this.bufferedMosquitoHealthWriter.close();
@@ -156,6 +177,9 @@ public class YellowFeverReport implements Steppable {
   }
 
   private void createFiles() throws IOException {
+    this.bufferedClimateWriter = new BufferedWriter(new FileWriter(CLIMATE_FILE_NAME));
+    this.csvClimateWriter = new CSVWriter(bufferedClimateWriter);
+
     this.bufferedMosquitoStateWriter = new BufferedWriter(new FileWriter(MOSQUITO_STATE_FILE_NAME));
     this.csvMosquitoStatehWriter = new CSVWriter(bufferedMosquitoStateWriter);
 
@@ -175,6 +199,10 @@ public class YellowFeverReport implements Steppable {
   private void buildHeaders() {
     try {
       this.createFiles();
+      // statistics related to the temperature and precipitation
+      String[] climateHeader = new String[] { "DAY", "TEMPERATURE(C)", "PRECIPITATION(mm)" };
+      csvClimateWriter.writeLine(climateHeader);
+
       // statistics related to the parameterization of mosquito evolution
       String[] mosquitoStateHeader = new String[] { "DAY", "AMOUNT", "CARRYING_EGGS", "AMOUNT_OF_DEAD" };
       csvMosquitoStatehWriter.writeLine(mosquitoStateHeader);

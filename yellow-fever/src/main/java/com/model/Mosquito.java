@@ -106,8 +106,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private void probabilityOfCarryingEggs() {
     if (this.spaceBetweenEggLaying > 0)
       return;
-    // TODO: Deve ser um parametro!
-    if (0.2 >= this.random.nextDouble()) { // 20% chance
+    double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfCarryingEggs();
+    if (probability >= this.random.nextDouble()) {
       this.setCarryingEggs(true);
       this.defineTimeOfMaturation();
     } else {
@@ -212,8 +212,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private boolean probabilityOfDying() {
-    // TODO: Deve ser um parametro!
-    double probability = 0.05; // 5% chance
+    double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfMosquitoesDying();
     if (probability >= this.random.nextDouble()) {
       return true;
     } else if (this.daysOfLife <= 0) {
