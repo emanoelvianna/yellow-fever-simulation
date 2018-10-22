@@ -264,7 +264,7 @@ public class SimulationBuilder {
   }
 
   private void defineFamilies(YellowFever yellowFever) {
-    int max = yellowFever.getParams().getGlobal().getMaximumNumberRelative();
+    int max = yellowFever.getParams().getGlobal().getMaximumNumberRelativeFamily();
     int[] numberOfFamilies = new int[yellowFever.getAllFamilies().numObjs];
 
     for (int i = 0; i < yellowFever.getAllFamilies().numObjs; i++) {

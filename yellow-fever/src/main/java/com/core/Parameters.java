@@ -105,11 +105,11 @@ public class Parameters {
     doubleParameter = returnDoubleParameter(parameterDB, "", global.probabilityOfCarryEggsAtSimulationStart);
     global.probabilityOfCarryEggsAtSimulationStart = doubleParameter;
 
-    getGlobal().setMaximumNumberRelative(
-        returnIntParameter(parameterDB, "MaximumNumberRelative", getGlobal().getMaximumNumberRelative()));
+    intParameter = returnIntParameter(parameterDB, "maximumNumberRelativeFamily", global.maximumNumberRelativeFamily);
+    global.maximumNumberRelativeFamily = intParameter;
 
-    getGlobal().setHeaalthFacilityCapacity(
-        returnIntParameter(parameterDB, "healthFacilityCapacity", getGlobal().getHeaalthFacilityCapacity()));
+    intParameter = returnIntParameter(parameterDB, "healthFacilityCapacity", global.healthFacilityCapacity);
+    global.healthFacilityCapacity = intParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfHouseContainsNaturalFood",
         global.probabilityOfHouseContainsNaturalFood);
@@ -190,7 +190,7 @@ public class Parameters {
     private double probabilityOfCarryingEggs = 0.2;
     private double probabilityOfMosquitoesDying = 0.05;
     private double probabilityToGoGettingMedicalHelp = 0.3;
-    private int maximumNumberRelative = 15;
+    private int maximumNumberRelativeFamily = 15;
     private int maximumFamilyOccumpancyPerBuilding = 1000; // arbitrary
 
     public void setInitialHumansNumber(int num) {
@@ -202,12 +202,12 @@ public class Parameters {
 
     }
 
-    public void setMaximumNumberRelative(int num) {
-      this.maximumNumberRelative = num;
+    public void setMaximumNumberRelativeFamily(int num) {
+      this.maximumNumberRelativeFamily = num;
     }
 
-    public int getMaximumNumberRelative() {
-      return maximumNumberRelative;
+    public int getMaximumNumberRelativeFamily() {
+      return maximumNumberRelativeFamily;
 
     }
 
@@ -220,11 +220,11 @@ public class Parameters {
 
     }
 
-    public void setHeaalthFacilityCapacity(int capacity) {
+    public void setHealthFacilityCapacity(int capacity) {
       this.healthFacilityCapacity = capacity;
     }
 
-    public int getHeaalthFacilityCapacity() {
+    public int getHealthFacilityCapacity() {
       return healthFacilityCapacity;
     }
 
