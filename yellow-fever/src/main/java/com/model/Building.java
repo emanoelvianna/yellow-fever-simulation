@@ -255,8 +255,13 @@ public class Building implements Valuable, Serializable {
     this.quantityOfVaccines = quantityOfVaccines;
   }
 
-  public void setPatientCounter(int counter) {
-    this.patientCounter = counter;
+  // used to the define resources
+  public void addPatient() {
+    this.patientCounter++;
+  }
+
+  public void removePatient() {
+    this.patientCounter--;
   }
 
   public int getPatientCounter() {

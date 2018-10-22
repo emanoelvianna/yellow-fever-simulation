@@ -118,7 +118,7 @@ public class Human implements Steppable, Valuable, Serializable {
     // at your goal- do activity and recalulate goal
     else if (this.getCurrentPosition().equals(this.getGoal()) == true) {
       activity.doActivity(this.getCurrentActivity());
-      calculateGoal();
+      this.calculateGoal();
     }
     // else move to your goal
     else {
@@ -161,24 +161,24 @@ public class Human implements Steppable, Valuable, Serializable {
 
   // assign the best goal
   public void calculateGoal() {
+    // used to the define resources
     if (ActivityMapping.HEALTH_CENTER.equals(this.getCurrentActivity())) {
-      int amount = this.currentPosition.getPatientCounter();
-      this.currentPosition.setPatientCounter(amount - 1);
+      this.currentPosition.removePatient();
     }
 
     if (this.getCurrentPosition().equals(this.getHome()) == true) {
       Activity activity = new Activity(this, time, currentStep, minuteInDay);
-      ActivityMapping bestActivity = activity.defineActivity();
-      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
-      // TODO: Funcionando parcialmente
-      // used to the statistics
+      ActivityMapping bestActivity = activity.defineActivity(this.yellowFever);
+      this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, this.yellowFever));
+      // used to the define resources
       if (ActivityMapping.HEALTH_CENTER.equals(bestActivity)) {
-        if (this.goal.getFacility().isReachedCapacity(this.goal, this.yellowFever)) {
+        if (this.getGoal().getFacility().isReachedCapacity(this.goal, this.yellowFever)) {
           bestActivity = ActivityMapping.STAY_HOME;
-          this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, yellowFever));
+          this.setGoal(activity.bestActivityLocation(this, this.getHome(), bestActivity, this.yellowFever));
+        } else {
+          this.getGoal().addPatient();
         }
       }
-
       // your selected activity
       this.setCurrentActivity(bestActivity);
       // track current activity - for the visualization
@@ -377,7 +377,6 @@ public class Human implements Steppable, Valuable, Serializable {
   // goal position - where to go
   public void setGoal(Building position) {
     this.goal = position;
-
   }
 
   public Building getGoal() {

@@ -68,8 +68,9 @@ public class YellowFeverReport implements Steppable {
       String day = Long.toString(yellowFever.getCurrentDay());
       String temperature = Double.toString(yellowFever.getTemperature());
       String precipitation = Double.toString(yellowFever.getPrecipitation());
+      String waterAccumulationInHouses = Double.toString(yellowFever.getWaterAccumulationInHouses());
 
-      data = new String[] { day, temperature, precipitation };
+      data = new String[] { day, temperature, precipitation, waterAccumulationInHouses };
       this.csvClimateWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -151,12 +152,9 @@ public class YellowFeverReport implements Steppable {
       String[] data;
       String day = Long.toString(yellowFever.getCurrentDay());
       String numberOfVisits = Integer.toString(yellowFever.getTotalVisitsMedicalCenter());
-      String numberOfRefused = Integer.toString(yellowFever.getTotalRefusalsInMedicalCenter());
-      String maximumCapacity = Boolean.toString(yellowFever.isMaximumCapacity());
-      String vaccinesApplied = null;
-      String vaccinesAvailable = null;
+      String numberOfRefused = Boolean.toString(yellowFever.isMaximumCapacityInDay());
 
-      data = new String[] { day, numberOfVisits, maximumCapacity };
+      data = new String[] { day, numberOfVisits, numberOfRefused };
       this.csvHealthCenterStateWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -200,7 +198,7 @@ public class YellowFeverReport implements Steppable {
     try {
       this.createFiles();
       // statistics related to the temperature and precipitation
-      String[] climateHeader = new String[] { "DAY", "TEMPERATURE(C)", "PRECIPITATION(mm)" };
+      String[] climateHeader = new String[] { "DAY", "TEMPERATURE", "PRECIPITATION", "WATER_ACCUMULATION_IN_HOUSES" };
       csvClimateWriter.writeLine(climateHeader);
 
       // statistics related to the parameterization of mosquito evolution

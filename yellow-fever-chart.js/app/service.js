@@ -1,5 +1,61 @@
+var promise;
+// generate chart to climate
+promise = d3.csv('data/climate.csv');
+promise.then(function(data) {
+
+  var day = [];
+  data.filter(function(row) {
+    day.push(row.DAY);
+  });
+
+  var temperature = [];
+  data.filter(function(row) {
+    temperature.push(row.TEMPERATURE);
+  });
+
+  var precipitation = [];
+  data.filter(function(row) {
+    precipitation.push(row.PRECIPITATION);
+  });
+
+  var accumulation = [];
+  data.filter(function(row) {
+    accumulation.push(row.WATER_ACCUMULATION_IN_HOUSES);
+  });
+
+  var ctx = document.getElementById('climate-chart');
+  var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: day,
+      datasets: [{
+        label: 'Temperatura',
+        type: "line",
+        data: temperature
+      }, {
+        label: 'Precipitação',
+        type: "bar",
+        borderColor: window.chartColors.blue,
+        backgroundColor: window.chartColors.blue,
+        data: precipitation
+      }, {
+        label: 'Acúmulo de água parada',
+        type: "line",
+        data: accumulation
+      }]
+    },
+    options: {
+      responsive: true,
+      title: {
+        display: true,
+        text: 'Chart.js Combo Bar Line Chart'
+      },
+    }
+  });
+}, function(error) {});
+
 // generate chart to human health
-var promise = d3.csv('data/human-health.csv');
+promise = d3.csv('data/human-health.csv');
 promise.then(function(data) {
 
   var day = [];
@@ -90,7 +146,7 @@ promise.then(function(data) {
 }, function(error) {});
 
 // generate chart to human health
-var promise = d3.csv('data/mosquito-state.csv');
+promise = d3.csv('data/mosquito-state.csv');
 promise.then(function(data) {
 
   var day = [];

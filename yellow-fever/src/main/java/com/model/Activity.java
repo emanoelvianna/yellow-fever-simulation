@@ -23,8 +23,8 @@ public class Activity {
     this.minuteInDay = minuteInDay;
   }
 
-  public ActivityMapping defineActivity() {
-    if (this.gettingMedicalHelp()) {
+  public ActivityMapping defineActivity(YellowFever yellowFever) {
+    if (this.gettingMedicalHelp(yellowFever)) {
       return ActivityMapping.HEALTH_CENTER;
     } else if (this.human.hasSymptomsOfInfection()) {
       return ActivityMapping.STAY_HOME;
@@ -79,24 +79,24 @@ public class Activity {
     }
   }
 
-  public Building bestActivityLocation(Human ref, Building position, ActivityMapping activityMapping, YellowFever d) {
+  public Building bestActivityLocation(Human human, Building position, ActivityMapping activityMapping, YellowFever d) {
     switch (activityMapping) {
     case STAY_HOME:
-      return ref.getHome();
+      return human.getHome();
     case WORK:
-      return betstLocation(ref.getHome(), d.getWorks(), d);
+      return betstLocation(human.getHome(), d.getWorks(), d);
     case SCHOOL:
-      return betstLocation(ref.getHome(), d.getSchooles(), d);
+      return betstLocation(human.getHome(), d.getSchooles(), d);
     case RELIGION_ACTIVITY:
-      return betstLocation(ref.getHome(), d.getMosques(), d);
+      return betstLocation(human.getHome(), d.getMosques(), d);
     case MARKET:
-      return betstLocation(ref.getHome(), d.getMarket(), d);
+      return betstLocation(human.getHome(), d.getMarket(), d);
     case HEALTH_CENTER:
-      return betstLocation(ref.getHome(), d.getHealthCenters(), d);
+      return betstLocation(human.getHome(), d.getHealthCenters(), d);
     case SOCIAL_VISIT:
-      return socialize(ref, d);
+      return socialize(human, d);
     default:
-      return ref.getHome();
+      return human.getHome();
     }
   }
 
@@ -119,21 +119,20 @@ public class Activity {
       period = 10 * MINUTE;
       break;
     case SOCIAL_VISIT:
-      // the average visit time is 8 hours
+      // maximum time up to 8 hours
       period = minimumStay + this.random.nextInt(8 * MINUTE);
       break;
     case RELIGION_ACTIVITY:
-      // time at maximum 4 hours
+      // maximum time up to 4 hours
       period = minimumStay + this.random.nextInt(4 * MINUTE);
       break;
     case MARKET:
-      // time at maximum 2 hours
+      // maximum time up to 2 hours
       period = minimumStay + this.random.nextInt(2 * MINUTE);
       break;
     case HEALTH_CENTER:
-      // time at maximum 16 hours
-      // period = 4 + this.random.nextInt(13 * MINUTE);
-      period = minimumStay + this.random.nextInt(4 * MINUTE);
+      // maximum time up to 24 hours
+      period = 4 + this.random.nextInt(20 * MINUTE);
       break;
     }
     return (period + this.minuteInDay);
@@ -150,7 +149,7 @@ public class Activity {
     }
   }
 
-  private Building betstLocation(Building fLoc, Bag fieldBag, YellowFever d) {
+  private Building betstLocation(Building fLoc, Bag fieldBag, YellowFever yellowFever) {
     Bag newLoc = new Bag();
     double bestScoreSoFar = Double.POSITIVE_INFINITY;
     for (int i = 0; i < fieldBag.numObjs; i++) {
@@ -169,7 +168,7 @@ public class Activity {
     if (newLoc != null) {
       int winningIndex = 0;
       if (newLoc.numObjs >= 1) {
-        winningIndex = d.random.nextInt(newLoc.numObjs);
+        winningIndex = yellowFever.random.nextInt(newLoc.numObjs);
       }
       // System.out.println("other" + newLoc.numObjs);
       f = (Building) newLoc.objs[winningIndex];
@@ -229,13 +228,13 @@ public class Activity {
     }
   }
 
-  private Building socialize(Human ref, YellowFever d) {
+  private Building socialize(Human ref, YellowFever yellowFever) {
     Bag potential = new Bag();
     Building newLocation = null;
     potential.clear();
     int camp = ref.getHome().getCampID(); // get camp id
     // select any camp site but not the camp that belong to the agent
-    for (Object campsite : d.getFamilyHousing()) {
+    for (Object campsite : yellowFever.getFamilyHousing()) {
       Building cmp = ((Building) campsite);
       if (cmp.getCampID() == camp && cmp.equals(ref.getHome()) != true && cmp.getRefugeeHH().numObjs > 0) {
         potential.add(cmp); // potential locations to visit
@@ -245,27 +244,26 @@ public class Activity {
     if (potential.numObjs == 1) {
       newLocation = (Building) potential.objs[0];
     } else {
-      newLocation = (Building) potential.objs[d.random.nextInt(potential.numObjs)];
+      newLocation = (Building) potential.objs[yellowFever.random.nextInt(potential.numObjs)];
     }
 
     return newLocation;
   }
 
-  private boolean gettingMedicalHelp() {
-    synchronized (this.random) {
-      if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
-        if (0.5 >= this.random.nextDouble()) // 50% chance
-          return true;
-      return false;
-    }
+  private boolean gettingMedicalHelp(YellowFever yellowFever) {
+    double probability = yellowFever.getParams().getGlobal().getProbabilityToGoGettingMedicalHelp();
+    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
+      if (probability >= this.random.nextDouble())
+        return true;
+    return false;
   }
 
   public Human getRefugee() {
     return human;
   }
 
-  public void setRefugee(Human refugee) {
-    this.human = refugee;
+  public void setRefugee(Human human) {
+    this.human = human;
   }
 
 }

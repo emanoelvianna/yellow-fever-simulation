@@ -89,28 +89,28 @@ public class YellowFever extends SimState {
   private int currentDay;
   private double temperature;
   private double precipitation;
+  private double waterAccumulationInHouses;
   // used to the human statistics
-  public int totalOfHumansSusceptible;
-  public int totalOfHumansExposed;
-  public int totalOfHumansWithMildInfection;
-  public int totalOfHumansWithSevereInfected;
-  public int totalOfHumansWithToxicInfected;
-  public int totalOfHumansRecovered;
-  public int amountDeadHumans;
+  private int totalOfHumansSusceptible;
+  private int totalOfHumansExposed;
+  private int totalOfHumansWithMildInfection;
+  private int totalOfHumansWithSevereInfected;
+  private int totalOfHumansWithToxicInfected;
+  private int totalOfHumansRecovered;
+  private int amountDeadHumans;
   // used to the mosquitoes statistics
-  public int totalOfMosquitoSusceptible;
-  public int totalOfMosquitoExposed;
-  public int totalOfMosquitoesWithInfection;
-  public int amountOfTransportedEggs;
-  public int amountDeadMosquitoes;
+  private int totalOfMosquitoSusceptible;
+  private int totalOfMosquitoExposed;
+  private int totalOfMosquitoesWithInfection;
+  private int amountOfTransportedEggs;
+  private int amountDeadMosquitoes;
   // used to the eggs statistics
-  public int amountOfEggsInHouses;
-  public int amountOfDeadEggs;
-  public int amountOfEggsHatched;
+  private int amountOfEggsInHouses;
+  private int amountOfDeadEggs;
+  private int amountOfEggsHatched;
   // used to the medical center statistics
-  public int totalVisitsMedicalCenter;
-  public int totalRefusalsInMedicalCenter;
-  private boolean maximumCapacity;
+  private int totalVisitsMedicalCenter;
+  private boolean maximumCapacityInDay;
 
   public YellowFever(long seed, String[] args) {
     super(seed);
@@ -134,6 +134,7 @@ public class YellowFever extends SimState {
     this.currentDay = 0;
     this.temperature = 0;
     this.precipitation = 0;
+    this.waterAccumulationInHouses = 0;
     this.totalOfHumansSusceptible = 0;
     this.totalOfHumansExposed = 0;
     this.totalOfHumansWithMildInfection = 0;
@@ -150,8 +151,7 @@ public class YellowFever extends SimState {
     this.amountOfDeadEggs = 0;
     this.amountOfEggsHatched = 0;
     this.totalVisitsMedicalCenter = 0;
-    this.totalRefusalsInMedicalCenter = 0;
-    this.maximumCapacity = false;
+    this.maximumCapacityInDay = false;
   }
 
   public void start() {
@@ -176,6 +176,8 @@ public class YellowFever extends SimState {
           amountOfEggsHatched = 0;
           amountOfEggsInHouses = 0;
           amountOfDeadEggs = 0;
+          waterAccumulationInHouses = 0;
+          maximumCapacityInDay = false;
 
           // define temperature
           List<Double> temperatures = climate.getTemperature();
@@ -195,6 +197,8 @@ public class YellowFever extends SimState {
                 // used to the statistics
                 precipitation = rainfall.get(currentDay);
               }
+              // used to the statistics
+              waterAccumulationInHouses += housing.getWater();
             }
           }
 
@@ -401,20 +405,9 @@ public class YellowFever extends SimState {
     }
   }
 
-  // TODO: Rever:
   // used to the statistics
   public void addVisitToMedicalCenter() {
     this.totalVisitsMedicalCenter++;
-  }
-
-  // used to the statistics
-  public void oneMoreRefused() {
-    this.totalRefusalsInMedicalCenter++;
-  }
-
-  // used to the statistics
-  public void addToTheTotalEggsInTheEnvironment(int amount) {
-    this.amountOfEggsInHouses += amount;
   }
 
   public void addMosquitoes(Mosquito mosquito) {
@@ -641,28 +634,12 @@ public class YellowFever extends SimState {
     this.totalVisitsMedicalCenter = totalVisitsMedicalCenter;
   }
 
-  public int getTotalRefusalsInMedicalCenter() {
-    return totalRefusalsInMedicalCenter;
-  }
-
-  public void setTotalRefusalsInMedicalCenter(int totalRefusalsInMedicalCenter) {
-    this.totalRefusalsInMedicalCenter = totalRefusalsInMedicalCenter;
-  }
-
   public void addEgg(Egg eggs) {
     this.eggs.add(eggs);
   }
 
   public Bag getEggs() {
     return this.eggs;
-  }
-
-  public boolean isMaximumCapacity() {
-    return maximumCapacity;
-  }
-
-  public void setMaximumCapacity(boolean maximumCapacity) {
-    this.maximumCapacity = maximumCapacity;
   }
 
   public int getAmountOfTransportedEggs() {
@@ -703,6 +680,22 @@ public class YellowFever extends SimState {
 
   public void setPrecipitation(double precipitation) {
     this.precipitation = precipitation;
+  }
+
+  public boolean isMaximumCapacityInDay() {
+    return maximumCapacityInDay;
+  }
+
+  public void setMaximumCapacityInDay(boolean maximumCapacity) {
+    this.maximumCapacityInDay = maximumCapacity;
+  }
+
+  public double getWaterAccumulationInHouses() {
+    return waterAccumulationInHouses;
+  }
+
+  public void setWaterAccumulationInHouses(double waterAccumulationInHouse) {
+    this.waterAccumulationInHouses = waterAccumulationInHouse;
   }
 
 }

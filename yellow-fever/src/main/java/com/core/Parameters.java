@@ -83,15 +83,15 @@ public class Parameters {
     global.probabilityOfGettingBloodFood = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilityFromVectorToHost",
-        global.transmissionProbabilityFromVectorToHost);
+        global.getTransmissionProbabilityFromVectorToHost());
     global.transmissionProbabilityFromVectorToHost = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilityMildInfectionToVector",
-        global.transmissionProbabilityMildInfectionToVector);
+        global.getTransmissionProbabilityMildInfectionToVector());
     global.transmissionProbabilityMildInfectionToVector = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilitySevereInfectionToVector",
-        global.transmissionProbabilitySevereInfectionToVector);
+        global.getTransmissionProbabilitySevereInfectionToVector());
     global.transmissionProbabilitySevereInfectionToVector = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfMildInfection",
@@ -132,6 +132,13 @@ public class Parameters {
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfMosquitoesDying",
         global.probabilityOfMosquitoesDying);
     global.probabilityOfMosquitoesDying = doubleParameter;
+
+    intParameter = returnIntParameter(parameterDB, "quantityOfMedicineAvailable", global.quantityOfMedicineAvailable);
+    global.quantityOfMedicineAvailable = intParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityToGoGettingMedicalHelp",
+        global.probabilityToGoGettingMedicalHelp);
+    global.probabilityToGoGettingMedicalHelp = doubleParameter;
   }
 
   public int returnIntParameter(ParameterDatabase paramDB, String parameterName, int defaultValue) {
@@ -165,12 +172,13 @@ public class Parameters {
     private double waterAbsorption = 0.1;
     // parameters to infection
     private double probabilityOfMildInfection = 0.8;
-    private double probabilityFromSevereInfectionTotoxicInfection = 0.1;
-    private double transmissionProbabilityFromVectorToHost = 0.9;
     private double transmissionProbabilityMildInfectionToVector = 0.7;
     private double transmissionProbabilitySevereInfectionToVector = 0.9;
+    private double probabilityFromSevereInfectionTotoxicInfection = 0.1;
+    private double transmissionProbabilityFromVectorToHost = 0.9;
     // parameters to intervention
-    private int healthFacilityCapacity = 1000; // TODO: Duplicado?
+    private int healthFacilityCapacity = 50;
+    private int quantityOfMedicineAvailable = 200;
     private int quantityOfVaccinesApplied = 0;
     // parameter to behavior
     private double probabilityOfCarryEggsAtSimulationStart = 0.01;
@@ -181,6 +189,7 @@ public class Parameters {
     private double probabilityOfEggsDying = 0.05;
     private double probabilityOfCarryingEggs = 0.2;
     private double probabilityOfMosquitoesDying = 0.05;
+    private double probabilityToGoGettingMedicalHelp = 0.3;
     private int maximumNumberRelative = 15;
     private int maximumFamilyOccumpancyPerBuilding = 1000; // arbitrary
 
@@ -283,14 +292,6 @@ public class Parameters {
       this.probabilityFromSevereInfectionTotoxicInfection = probability;
     }
 
-    public double getTransmissionProbabilityFromVectorToHost() {
-      return transmissionProbabilityFromVectorToHost;
-    }
-
-    public void setTransmissionProbabilityFromVectorToHost(int transmissionProbabilityFromVectorToHost) {
-      this.transmissionProbabilityFromVectorToHost = transmissionProbabilityFromVectorToHost;
-    }
-
     public double getTransmissionProbabilityMildInfectionToVector() {
       return transmissionProbabilityMildInfectionToVector;
     }
@@ -298,15 +299,6 @@ public class Parameters {
     public void setTransmissionProbabilityMildInfectionToVector(
         int transmissionProbabilityFromHostWithMildInfectionToVector) {
       this.transmissionProbabilityMildInfectionToVector = transmissionProbabilityFromHostWithMildInfectionToVector;
-    }
-
-    public double getTransmissionProbabilitySevereInfectionToVector() {
-      return transmissionProbabilitySevereInfectionToVector;
-    }
-
-    public void setTransmissionProbabilitySevereInfectionToVector(
-        int transmissionProbabilityFromHostWithSevereInfectionToVector) {
-      this.transmissionProbabilitySevereInfectionToVector = transmissionProbabilityFromHostWithSevereInfectionToVector;
     }
 
     public double getProbabilityOfCarryEggsAtSimulationStart() {
@@ -364,6 +356,43 @@ public class Parameters {
 
     public void setProbabilityOfMosquitoesDying(double probabilityOfMosquitoesDying) {
       this.probabilityOfMosquitoesDying = probabilityOfMosquitoesDying;
+    }
+
+    public void setTransmissionProbabilityMildInfectionToVector(double transmissionProbabilityMildInfectionToVector) {
+      this.transmissionProbabilityMildInfectionToVector = transmissionProbabilityMildInfectionToVector;
+    }
+
+    public double getTransmissionProbabilitySevereInfectionToVector() {
+      return transmissionProbabilitySevereInfectionToVector;
+    }
+
+    public void setTransmissionProbabilitySevereInfectionToVector(
+        double transmissionProbabilitySevereInfectionToVector) {
+      this.transmissionProbabilitySevereInfectionToVector = transmissionProbabilitySevereInfectionToVector;
+    }
+
+    public double getTransmissionProbabilityFromVectorToHost() {
+      return transmissionProbabilityFromVectorToHost;
+    }
+
+    public void setTransmissionProbabilityFromVectorToHost(double transmissionProbabilityFromVectorToHost) {
+      this.transmissionProbabilityFromVectorToHost = transmissionProbabilityFromVectorToHost;
+    }
+
+    public int getQuantityOfMedicineAvailable() {
+      return quantityOfMedicineAvailable;
+    }
+
+    public void setQuantityOfMedicineAvailable(int quantityOfMedicineAvailable) {
+      this.quantityOfMedicineAvailable = quantityOfMedicineAvailable;
+    }
+
+    public double getProbabilityToGoGettingMedicalHelp() {
+      return probabilityToGoGettingMedicalHelp;
+    }
+
+    public void setProbabilityToGoGettingMedicalHelp(double probabilityToGoGettingMedicalHelp) {
+      this.probabilityToGoGettingMedicalHelp = probabilityToGoGettingMedicalHelp;
     }
   }
 }
