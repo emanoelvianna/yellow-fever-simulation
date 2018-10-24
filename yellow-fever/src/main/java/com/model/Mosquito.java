@@ -35,6 +35,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   private double timeOfMaturation;
   private int spaceBetweenEggLaying;
   private boolean dead;
+  private String causeOfDeath;
 
   public Mosquito(Building position, MersenneTwisterFast random) {
     this.random = random;
@@ -81,8 +82,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void isActive(int currentStep) {
-    // TODO: Conversar com a epidemiologista em relação ao horario
-    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 19) {
       if (this.hungry) {
         if (this.isCarryingEggs()) {
           this.bloodFood();
@@ -104,73 +104,82 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void probabilityOfCarryingEggs() {
-    if (this.spaceBetweenEggLaying > 0)
-      return;
-    double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfCarryingEggs();
-    if (probability >= this.random.nextDouble()) {
-      this.setCarryingEggs(true);
-      this.defineTimeOfMaturation();
-    } else {
-      this.setCarryingEggs(false);
+    synchronized (this.random) {
+      if (this.spaceBetweenEggLaying > 0)
+        return;
+      double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfCarryingEggs();
+      if (probability >= this.random.nextDouble()) {
+        this.carryingEggs = true;
+        this.defineTimeOfMaturation();
+      }
     }
   }
 
   public void defineTimeOfMaturation() {
-    this.timeOfMaturation = 3 + Math.abs((this.temperature - 21) / 5);
+    this.timeOfMaturation = Math.round(3 + Math.abs((this.temperature - 21) / 5));
   }
 
   private void ovipositionProcess() {
-    double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
-    int amount = 1 + this.random.nextInt(100);
-    Egg egg = new Egg(this.currentPosition, maturationTimeOfTheEggs, amount);
-    egg.setImported(false);
-    this.yellowFever.addEgg(egg);
-    this.carryingEggs = false;
-    this.defineSpaceBetweenEggLaying();
+    synchronized (this.random) {
+      double maturationTimeOfTheEggs = Math.round(8 + Math.abs(temperature - 25));
+      int amount = 1 + this.random.nextInt(100);
+      Egg egg = new Egg(this.currentPosition, maturationTimeOfTheEggs, amount);
+      egg.setImported(false);
+      this.yellowFever.addEgg(egg);
+      this.carryingEggs = false;
+      this.defineSpaceBetweenEggLaying();
+    }
   }
 
   private void normalFood() {
     if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
       this.hungry = false;
+      this.daysWithoutFood = 0;
     } else {
       this.hungry = true;
     }
   }
 
   private void bloodFood() {
-    if (this.currentPosition.getHumans().size() > 0) {
-      double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood();
-      if (probability >= this.random.nextDouble()) {
-        int size = this.currentPosition.getHumans().size();
-        Human human = (Human) currentPosition.getHumans().get(this.random.nextInt(size));
-        this.toBite(human);
-        this.hungry = false;
-        this.dead = this.probabilityOfDying();
+    synchronized (this.random) {
+      if (this.currentPosition.getHumans().size() > 0) {
+        double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood();
+        if (probability >= this.random.nextDouble()) {
+          int size = this.currentPosition.getHumans().size();
+          Human human = (Human) currentPosition.getHumans().get(this.random.nextInt(size));
+          this.toBite(human);
+          this.hungry = false;
+          this.daysWithoutFood = 0;
+          this.dead = this.probabilityOfDying();
+        } else {
+          this.hungry = true;
+        }
       } else {
         this.hungry = true;
       }
-    } else {
-      this.hungry = true;
     }
   }
 
   public void toBite(Human human) {
-    if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
-      double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
-      if (probability >= this.random.nextDouble()) {
-        human.infected();
-      }
-    } else if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
-      if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
-        double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityMildInfectionToVector();
+    synchronized (this.random) {
+      if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
+        double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
         if (probability >= this.random.nextDouble()) {
-          this.infected();
+          human.infected();
         }
-      } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
-        double probability = this.yellowFever.getParams().getGlobal()
-            .getTransmissionProbabilitySevereInfectionToVector();
-        if (probability >= this.random.nextDouble()) {
-          this.infected();
+      } else if (HealthStatus.SUSCEPTIBLE.equals(this.currentHealthStatus)) {
+        if (HealthStatus.MILD_INFECTION.equals(human.getCurrentHealthStatus())) {
+          double probability = this.yellowFever.getParams().getGlobal()
+              .getTransmissionProbabilityMildInfectionToVector();
+          if (probability >= this.random.nextDouble()) {
+            this.infected();
+          }
+        } else if (HealthStatus.SEVERE_INFECTION.equals(human.getCurrentHealthStatus())) {
+          double probability = this.yellowFever.getParams().getGlobal()
+              .getTransmissionProbabilitySevereInfectionToVector();
+          if (probability >= this.random.nextDouble()) {
+            this.infected();
+          }
         }
       }
     }
@@ -192,7 +201,9 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void defineIncubationPeriod() {
-    this.incubationPeriod = 8 + this.random.nextInt(5); // 8-12 days
+    synchronized (this.random) {
+      this.incubationPeriod = 8 + this.random.nextInt(5); // 8-12 days
+    }
   }
 
   private void checkCurrentStateOfMaturation() {
@@ -212,15 +223,20 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private boolean probabilityOfDying() {
-    double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfMosquitoesDying();
-    if (probability >= this.random.nextDouble()) {
-      return true;
-    } else if (this.daysOfLife <= 0) {
-      return true;
-    } else if (this.daysWithoutFood > 1) {
-      return true;
+    synchronized (this.random) {
+      double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfMosquitoesDying();
+      if (probability >= this.random.nextDouble()) {
+        this.causeOfDeath = "probability";
+        return true;
+      } else if (this.daysOfLife <= 0) {
+        this.causeOfDeath = "daysOfLife";
+        return true;
+      } else if (this.daysWithoutFood > 1) {
+        this.causeOfDeath = "daysWithoutFood";
+        return true;
+      }
+      return false;
     }
-    return false;
   }
 
   private void setTemperature() {
@@ -235,11 +251,15 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void defineVectorLifespan() {
-    this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
+    synchronized (this.random) {
+      this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
+    }
   }
 
   public void defineSpaceBetweenEggLaying() {
-    this.spaceBetweenEggLaying = 3 + this.random.nextInt(5); // 3-7 days
+    synchronized (this.random) {
+      this.spaceBetweenEggLaying = 3 + this.random.nextInt(5); // 3-7 days
+    }
   }
 
   public void setStoppable(Stoppable stopp) {
@@ -320,6 +340,14 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   public void setEggLaying(int eggLaying) {
     this.spaceBetweenEggLaying = eggLaying;
+  }
+
+  public String getCauseOfDeath() {
+    return causeOfDeath;
+  }
+
+  public void setCauseOfDeath(String causeOfDeath) {
+    this.causeOfDeath = causeOfDeath;
   }
 
 }

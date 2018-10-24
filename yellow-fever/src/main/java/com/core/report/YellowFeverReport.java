@@ -99,9 +99,10 @@ public class YellowFeverReport implements Steppable {
       String day = Long.toString(yellowFever.getCurrentDay());
       String amount = Integer.toString(yellowFever.getAmountOfEggsInHouses());
       String hatched = Integer.toString(yellowFever.getAmountOfEggsHatched());
-      String dead = Integer.toString(yellowFever.getAmountOfDeadEggs());
+      String individualOfDeadEggs = Integer.toString(yellowFever.getAmountEggsUnitDead());
+      String groupsOfDeadEgg = Integer.toString(yellowFever.getAmountOfGroupsOfDeadEggs());
 
-      data = new String[] { day, amount, hatched, dead };
+      data = new String[] { day, amount, hatched, individualOfDeadEggs, groupsOfDeadEgg };
       this.csvEggsStatesWriter.writeLine(data);
     } catch (IOException ex) {
       Logger.getLogger(YellowFeverReport.class.getName()).log(Level.SEVERE, null, ex);
@@ -206,7 +207,7 @@ public class YellowFeverReport implements Steppable {
       csvMosquitoStatehWriter.writeLine(mosquitoStateHeader);
 
       String[] eggsStateHeader = new String[] { "DAY", "AMOUNT_OF_EGGS_IN_HOUSES", "AMOUNT_OF_EGGS_HATCHED",
-          "AMOUNT_OF_DEAD_EGGS" };
+          "AMOUNT_EGGS_UNIT_DEAD", "AMOUNT_GROUPS_OF_DEAD_EGGS" };
       csvEggsStatesWriter.writeLine(eggsStateHeader);
 
       // statistics related to the evolution of the infection

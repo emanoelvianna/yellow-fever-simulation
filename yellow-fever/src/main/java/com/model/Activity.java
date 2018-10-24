@@ -15,8 +15,8 @@ public class Activity {
   private int currentStep;
   private int minuteInDay;
 
-  public Activity(Human human, TimeManager time, int currentStep, int minuteInDay) {
-    this.random = new MersenneTwisterFast();
+  public Activity(Human human, TimeManager time, MersenneTwisterFast random, int currentStep, int minuteInDay) {
+    this.random = random;
     this.human = human;
     this.time = time;
     this.currentStep = currentStep;
@@ -33,49 +33,55 @@ public class Activity {
   }
 
   private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
-    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
-      if (time.currentDayInWeek(currentStep) < 6) {
-        if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
-          return ActivityMapping.STAY_HOME;
-        } else if (this.human.isWorker()) {
-          return ActivityMapping.WORK;
-        } else if (this.human.isStudent()) {
-          return this.everydayActivitiesForStudents();
+    synchronized (this.random) {
+      if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
+        if (time.currentDayInWeek(currentStep) < 6) {
+          if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
+            return ActivityMapping.STAY_HOME;
+          } else if (this.human.isWorker()) {
+            return ActivityMapping.WORK;
+          } else if (this.human.isStudent()) {
+            return this.everydayActivitiesForStudents();
+          } else {
+            return this.differentActivities();
+          }
         } else {
-          return this.differentActivities();
+          return differentActivities();
         }
-      } else {
-        return differentActivities();
       }
+      return ActivityMapping.STAY_HOME;
     }
-    return ActivityMapping.STAY_HOME;
   }
 
   public ActivityMapping everydayActivitiesForStudents() {
-    if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
-      return ActivityMapping.SCHOOL;
-    } else if (0.5 >= this.random.nextDouble()) { // 50% chance
-      if (0.4 >= this.random.nextDouble()) // 40% chance
-        return ActivityMapping.SOCIAL_VISIT;
-      else if (0.3 >= this.random.nextDouble()) // 30% chance
-        return ActivityMapping.RELIGION_ACTIVITY;
-      else
-        return ActivityMapping.MARKET;
+    synchronized (this.random) {
+      if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (12 * 60)) {
+        return ActivityMapping.SCHOOL;
+      } else if (0.5 >= this.random.nextDouble()) { // 50% chance
+        if (0.4 >= this.random.nextDouble()) // 40% chance
+          return ActivityMapping.SOCIAL_VISIT;
+        else if (0.3 >= this.random.nextDouble()) // 30% chance
+          return ActivityMapping.RELIGION_ACTIVITY;
+        else
+          return ActivityMapping.MARKET;
+      }
+      return ActivityMapping.STAY_HOME;
     }
-    return ActivityMapping.STAY_HOME;
   }
 
   public ActivityMapping differentActivities() {
-    if (0.8 >= this.random.nextDouble()) { // 80% chance
-      if (0.4 >= this.random.nextDouble()) { // 40% chance
-        return ActivityMapping.SOCIAL_VISIT;
-      } else if (0.3 >= this.random.nextDouble()) { // 30% chance
-        return ActivityMapping.RELIGION_ACTIVITY;
-      } else {
-        return ActivityMapping.MARKET;
+    synchronized (this.random) {
+      if (0.8 >= this.random.nextDouble()) { // 80% chance
+        if (0.4 >= this.random.nextDouble()) { // 40% chance
+          return ActivityMapping.SOCIAL_VISIT;
+        } else if (0.3 >= this.random.nextDouble()) { // 30% chance
+          return ActivityMapping.RELIGION_ACTIVITY;
+        } else {
+          return ActivityMapping.MARKET;
+        }
+      } else { // 20% chance of home activity
+        return ActivityMapping.STAY_HOME;
       }
-    } else { // 20% chance of home activity
-      return ActivityMapping.STAY_HOME;
     }
   }
 
@@ -120,19 +126,27 @@ public class Activity {
       break;
     case SOCIAL_VISIT:
       // maximum time up to 8 hours
-      period = minimumStay + this.random.nextInt(8 * MINUTE);
+      synchronized (this.random) {
+        period = minimumStay + this.random.nextInt(8 * MINUTE);
+      }
       break;
     case RELIGION_ACTIVITY:
       // maximum time up to 4 hours
-      period = minimumStay + this.random.nextInt(4 * MINUTE);
+      synchronized (this.random) {
+        period = minimumStay + this.random.nextInt(4 * MINUTE);
+      }
       break;
     case MARKET:
       // maximum time up to 2 hours
-      period = minimumStay + this.random.nextInt(2 * MINUTE);
+      synchronized (this.random) {
+        period = minimumStay + this.random.nextInt(2 * MINUTE);
+      }
       break;
     case HEALTH_CENTER:
       // maximum time up to 24 hours
-      period = 4 + this.random.nextInt(20 * MINUTE);
+      synchronized (this.random) {
+        period = 4 + this.random.nextInt(20 * MINUTE);
+      }
       break;
     }
     return (period + this.minuteInDay);
@@ -251,11 +265,13 @@ public class Activity {
   }
 
   private boolean gettingMedicalHelp(YellowFever yellowFever) {
-    double probability = yellowFever.getParams().getGlobal().getProbabilityToGoGettingMedicalHelp();
-    if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
-      if (probability >= this.random.nextDouble())
-        return true;
-    return false;
+    synchronized (this.random) {
+      double probability = yellowFever.getParams().getGlobal().getProbabilityToGoGettingMedicalHelp();
+      if (this.human.hasSymptomsOfInfection() && !this.human.getReceivedTreatment())
+        if (probability >= this.random.nextDouble())
+          return true;
+      return false;
+    }
   }
 
   public Human getRefugee() {

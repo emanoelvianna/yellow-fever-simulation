@@ -331,10 +331,6 @@ public class SimulationBuilder {
   private void defineInitialTemperature(YellowFever yellowFever) {
     Double initial = yellowFever.getClimate().getTemperature().get(0);
     yellowFever.setInitialTemperature(initial);
-    for (Object object : yellowFever.getAllMosquitoes()) {
-      Mosquito mosquito = (Mosquito) object;
-      mosquito.setInitialTemperature(initial);
-    }
   }
 
   private void defineInitialPrecipitation(YellowFever yellowFever) {
@@ -543,44 +539,49 @@ public class SimulationBuilder {
     while (initialMosquitoesNumber > 0) {
       int index = yellowFever.random.nextInt(yellowFever.getFamilyHousing().numObjs);
       Building housing = (Building) yellowFever.getFamilyHousing().objs[index];
-      if (housing.containsMosquitoes()) {
-        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
-        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-        double probabilityCarryEggs = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
-        double probabilityHomeContainingEggs = yellowFever.getParams().getGlobal()
-            .getProbabilityHomeContainingEggsAtSimulationStart();
-        if (probabilityCarryEggs >= yellowFever.random.nextDouble()) {
-          this.carryEggs(mosquito);
-        } else if (probabilityHomeContainingEggs >= yellowFever.random.nextDouble()) {
-          // probability of home containing eggs
-          this.populateEggsInHouse(yellowFever, housing, mosquito);
+      if ((housing.containsNectar() || housing.containsSap()) || housing.containsWater()) {
+        if (housing.containsMosquitoes()) {
+          if (addMosquitoAtHomeThatContainsMosquito(housing, yellowFever))
+            initialMosquitoesNumber--;
+        } else { // house does not contain mosquito
+          Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+          mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+          double carryEggs = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+          double containingEggs = yellowFever.getParams().getGlobal()
+              .getProbabilityHomeContainingEggsAtSimulationStart();
+          if (carryEggs >= yellowFever.random.nextDouble()) {
+            // probability of mosquito carry eggs
+            this.carryEggs(mosquito);
+          } else if (containingEggs >= yellowFever.random.nextDouble()) {
+            // probability of home containing eggs
+            this.populateEggsInHouse(yellowFever, housing, mosquito);
+          }
+          housing.addMosquito(mosquito);
+          yellowFever.addMosquitoes(mosquito);
+          initialMosquitoesNumber--;
         }
-        housing.addMosquito(mosquito);
-        yellowFever.addMosquitoes(mosquito);
-        initialMosquitoesNumber--;
-      } else if (yellowFever.random.nextDouble() > 0.8) {
-        Mosquito mosquito = new Mosquito(housing, yellowFever.random);
-        mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
-        double probability = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
-        if (probability >= yellowFever.random.nextDouble()) {
-          this.carryEggs(mosquito);
-        }
-        housing.addMosquito(mosquito);
-        yellowFever.addMosquitoes(mosquito);
-        initialMosquitoesNumber--;
       }
     }
   }
 
-  private void populateNormalFood(YellowFever yellowFever) {
-    for (Object object : yellowFever.getFamilyHousing()) {
-      Building housing = (Building) object;
-      double probability = yellowFever.getParams().getGlobal().getProbabilityOfHouseContainsNaturalFood();
-      if (probability >= yellowFever.random.nextDouble())
-        housing.setNectar(true);
-      if (probability >= yellowFever.random.nextDouble())
-        housing.setSap(true);
+  private boolean addMosquitoAtHomeThatContainsMosquito(Building housing, YellowFever yellowFever) {
+    if (0.01 >= yellowFever.random.nextDouble()) {
+      Mosquito mosquito = new Mosquito(housing, yellowFever.random);
+      mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
+      double carryEggs = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();
+      double containingEggs = yellowFever.getParams().getGlobal().getProbabilityHomeContainingEggsAtSimulationStart();
+      if (carryEggs >= yellowFever.random.nextDouble()) {
+        // probability of mosquito carry eggs
+        this.carryEggs(mosquito);
+      } else if (containingEggs >= yellowFever.random.nextDouble()) {
+        // probability of home containing eggs
+        this.populateEggsInHouse(yellowFever, housing, mosquito);
+      }
+      housing.addMosquito(mosquito);
+      yellowFever.addMosquitoes(mosquito);
+      return true;
     }
+    return false;
   }
 
   private void populateEggsInHouse(YellowFever yellowFever, Building housing, Mosquito mosquito) {
@@ -594,8 +595,20 @@ public class SimulationBuilder {
   }
 
   private void carryEggs(Mosquito mosquito) {
-    mosquito.setEggLaying(0); // carry eggs in next step
+    mosquito.setEggLaying(0);
+    mosquito.setCarryingEggs(true);
     mosquito.defineTimeOfMaturation();
+  }
+
+  private void populateNormalFood(YellowFever yellowFever) {
+    for (Object object : yellowFever.getFamilyHousing()) {
+      Building housing = (Building) object;
+      double probability = yellowFever.getParams().getGlobal().getProbabilityOfHouseContainsNaturalFood();
+      if (probability >= yellowFever.random.nextDouble())
+        housing.setNectar(true);
+      if (probability >= yellowFever.random.nextDouble())
+        housing.setSap(true);
+    }
   }
 
   private Sex defineSex(YellowFever yellowFever) {

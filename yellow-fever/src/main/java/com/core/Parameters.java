@@ -123,8 +123,13 @@ public class Parameters {
         global.probabilityHomeContainingEggsAtSimulationStart);
     global.probabilityHomeContainingEggsAtSimulationStart = doubleParameter;
 
-    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfEggsDying", global.probabilityOfEggsDying);
-    global.probabilityOfEggsDying = doubleParameter;
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfEggsGroupDeath",
+        global.probabilityOfEggsGroupDeath);
+    global.probabilityOfEggsGroupDeath = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfAnEggUnitDying",
+        global.probabilityOfAnEggUnitDying);
+    global.probabilityOfAnEggUnitDying = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfCarryingEggs", global.probabilityOfCarryingEggs);
     global.probabilityOfCarryingEggs = doubleParameter;
@@ -139,6 +144,10 @@ public class Parameters {
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityToGoGettingMedicalHelp",
         global.probabilityToGoGettingMedicalHelp);
     global.probabilityToGoGettingMedicalHelp = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfEggBeingFemale",
+        global.probabilityOfEggBeingFemale);
+    global.probabilityOfEggBeingFemale = doubleParameter;
   }
 
   public int returnIntParameter(ParameterDatabase paramDB, String parameterName, int defaultValue) {
@@ -163,8 +172,8 @@ public class Parameters {
 
   public class GlobalParamters {
     // parameter to initial number of agents
-    private int initialMosquitoesNumber = 2000;
-    private int initialHumansNumber = 500;
+    private int initialMosquitoesNumber = 300;
+    private int initialHumansNumber = 1000;
     // parameters to inicial number infected
     private int initialMosquitoesNumberInfected = 0;
     private int initialHumansNumberInfected = 10;
@@ -181,12 +190,14 @@ public class Parameters {
     private int quantityOfMedicineAvailable = 200;
     private int quantityOfVaccinesApplied = 0;
     // parameter to behavior
-    private double probabilityOfCarryEggsAtSimulationStart = 0.01;
-    private double probabilityHomeContainingEggsAtSimulationStart = 0.01;
+    private double probabilityOfEggBeingFemale = 0.5;
+    private double probabilityOfCarryEggsAtSimulationStart = 0.2;
+    private double probabilityHomeContainingEggsAtSimulationStart = 0.5;
     private double probabilityOfHouseContainsNaturalFood = 0.9;
-    private double probabilityOfEggsAppearInHouses = 0.01;
+    private double probabilityOfEggsAppearInHouses = 0.05;
     private double probabilityOfGettingBloodFood = 0.9;
-    private double probabilityOfEggsDying = 0.05;
+    private double probabilityOfEggsGroupDeath = 0.1;
+    private double probabilityOfAnEggUnitDying = 0.5;
     private double probabilityOfCarryingEggs = 0.2;
     private double probabilityOfMosquitoesDying = 0.05;
     private double probabilityToGoGettingMedicalHelp = 0.3;
@@ -334,12 +345,12 @@ public class Parameters {
       this.probabilityHomeContainingEggsAtSimulationStart = probabilityHomeContainingEggsAtSimulationStart;
     }
 
-    public double getProbabilityOfEggsDying() {
-      return probabilityOfEggsDying;
+    public double getProbabilityOfEggsGroupDeath() {
+      return probabilityOfEggsGroupDeath;
     }
 
-    public void setProbabilityOfEggsDying(double probabilityOfEggsDying) {
-      this.probabilityOfEggsDying = probabilityOfEggsDying;
+    public void setProbabilityOfEggsGroupDeath(double probabilityOfEggsDying) {
+      this.probabilityOfEggsGroupDeath = probabilityOfEggsDying;
     }
 
     public double getProbabilityOfCarryingEggs() {
@@ -393,6 +404,22 @@ public class Parameters {
 
     public void setProbabilityToGoGettingMedicalHelp(double probabilityToGoGettingMedicalHelp) {
       this.probabilityToGoGettingMedicalHelp = probabilityToGoGettingMedicalHelp;
+    }
+
+    public double getProbabilityOfEggBeingFemale() {
+      return probabilityOfEggBeingFemale;
+    }
+
+    public void setProbabilityOfEggBeingFemale(double probabilityOfEggBeingFemale) {
+      this.probabilityOfEggBeingFemale = probabilityOfEggBeingFemale;
+    }
+
+    public double getProbabilityOfAnEggUnitDying() {
+      return probabilityOfAnEggUnitDying;
+    }
+
+    public void setProbabilityOfAnEggUnitDying(double probabilityOfAnEggUnitDying) {
+      this.probabilityOfAnEggUnitDying = probabilityOfAnEggUnitDying;
     }
   }
 }
