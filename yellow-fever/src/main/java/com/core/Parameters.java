@@ -180,7 +180,7 @@ public class Parameters {
     // parameters to climate and related
     private double waterAbsorption = 0.1;
     // parameters to infection
-    private double probabilityOfMildInfection = 0.8;
+    private double probabilityOfMildInfection = 0.85;
     private double transmissionProbabilityMildInfectionToVector = 0.7;
     private double transmissionProbabilitySevereInfectionToVector = 0.9;
     private double probabilityFromSevereInfectionTotoxicInfection = 0.1;

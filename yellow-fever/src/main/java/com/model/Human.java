@@ -328,7 +328,7 @@ public class Human implements Steppable, Valuable, Serializable {
 
   private void definePeriodOfToxicInfection() {
     synchronized (this.random) {
-      this.toxicPeriod = 7 + this.random.nextInt(4); // 7-10 days
+      this.toxicPeriod = 8; // 8 days
     }
   }
 

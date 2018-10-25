@@ -82,7 +82,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void isActive(int currentStep) {
-    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 19) {
+    if (this.time.currentHour(currentStep) >= 7 && this.time.currentHour(currentStep) <= 18) {
       if (this.hungry) {
         if (this.isCarryingEggs()) {
           this.bloodFood();
@@ -252,7 +252,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
 
   private void defineVectorLifespan() {
     synchronized (this.random) {
-      this.daysOfLife = 4 + this.random.nextInt(32); // 4-35 days
+      this.daysOfLife = 30 + this.random.nextInt(16); // 30-45 days
     }
   }
 
