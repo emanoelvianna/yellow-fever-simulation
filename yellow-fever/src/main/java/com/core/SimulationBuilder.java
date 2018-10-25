@@ -357,8 +357,9 @@ public class SimulationBuilder {
     while (amount > 0) {
       index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
       Human human = (Human) yellowFever.allHumans.getAllObjects().get(index);
-      if (!HealthStatus.EXPOSED.equals(human.getCurrentHealthStatus())) {
+      if (HealthStatus.SUSCEPTIBLE.equals(human.getCurrentHealthStatus())) {
         human.infected();
+        human.setIncubationPeriod(0); // next step is infected
         amount--;
       }
     }
@@ -368,10 +369,11 @@ public class SimulationBuilder {
     int amount = yellowFever.getParams().getGlobal().getInitialMosquitoesNumberInfected();
     int index = 0;
     while (amount > 0) {
-      index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialHumansNumber());
+      index = yellowFever.random.nextInt(yellowFever.getParams().getGlobal().getInitialMosquitoesNumber());
       Mosquito mosquito = (Mosquito) yellowFever.getAllMosquitoes().get(index);
-      if (!HealthStatus.EXPOSED.equals(mosquito.getCurrentHealthStatus())) {
+      if (HealthStatus.SUSCEPTIBLE.equals(mosquito.getCurrentHealthStatus())) {
         mosquito.infected();
+        mosquito.setIncubationPeriod(0); // next step is infected
         amount--;
       }
     }
