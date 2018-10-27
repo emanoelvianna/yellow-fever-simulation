@@ -269,6 +269,7 @@ public class Human implements Steppable, Valuable, Serializable {
   private void defineToxicInfectionEvolution() {
     synchronized (this.random) {
       if (this.toxicPeriod == 0 && HealthStatus.TOXIC_INFECTION.equals(this.currentHealthStatus)) {
+        // TODO: Deve ser um parametro!
         // 50% of case is recovery
         if (this.random.nextDouble() < 0.5) {
           this.currentHealthStatus = HealthStatus.RECOVERED;

@@ -589,8 +589,7 @@ public class SimulationBuilder {
   private void populateEggsInHouse(YellowFever yellowFever, Building housing, Mosquito mosquito) {
     double maturationTimeOfTheEggs = 8 + Math.abs(yellowFever.getTemperature() - 25);
     int amount = 1 + yellowFever.random.nextInt(100);
-    Egg egg = new Egg(housing, maturationTimeOfTheEggs, amount);
-    egg.setImported(false);
+    Egg egg = new Egg(housing, maturationTimeOfTheEggs, amount, false);
     yellowFever.addEgg(egg);
     mosquito.setCarryingEggs(false);
     mosquito.defineSpaceBetweenEggLaying();

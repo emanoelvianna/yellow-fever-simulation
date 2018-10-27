@@ -191,14 +191,14 @@ public class Parameters {
     private int quantityOfVaccinesApplied = 0;
     // parameter to behavior
     private double probabilityOfEggBeingFemale = 0.5;
-    private double probabilityOfCarryEggsAtSimulationStart = 0.2;
+    private double probabilityOfCarryEggsAtSimulationStart = 0.5;
     private double probabilityHomeContainingEggsAtSimulationStart = 0.5;
     private double probabilityOfHouseContainsNaturalFood = 0.9;
     private double probabilityOfEggsAppearInHouses = 0.05;
     private double probabilityOfGettingBloodFood = 0.9;
-    private double probabilityOfEggsGroupDeath = 0.1;
-    private double probabilityOfAnEggUnitDying = 0.5;
-    private double probabilityOfCarryingEggs = 0.2;
+    private double probabilityOfEggsGroupDeath = 0.5;
+    private double probabilityOfAnEggUnitDying = 0.8;
+    private double probabilityOfCarryingEggs = 0.8;
     private double probabilityOfMosquitoesDying = 0.05;
     private double probabilityToGoGettingMedicalHelp = 0.3;
     private int maximumNumberRelativeFamily = 15;

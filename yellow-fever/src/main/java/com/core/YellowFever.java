@@ -193,6 +193,7 @@ public class YellowFever extends SimState {
           double mm = params.getGlobal().getWaterAbsorption();
           for (Object object : getFamilyHousing()) {
             Building housing = (Building) object;
+            // TODO: Deve ser um parametro!
             if (random.nextDouble() <= 0.5) { // 50% chance
               housing.waterAbsorption(mm);
               if (currentDay < rainfall.size()) {
@@ -224,12 +225,15 @@ public class YellowFever extends SimState {
             if (e.getAmount() > 0) {
               double probability = params.getGlobal().getProbabilityOfAnEggUnitDying();
               if (probability >= random.nextDouble()) {
-                eggs.remove(e);
+                int amount = e.getAmount();
+                e.setAmount(amount - 1);
                 // used to the statistics
                 amountEggsUnitDead++;
               }
             } else {
               eggs.remove(e); // garbage Collector
+              // used to the statistics
+              amountOfGroupsOfDeadEggs++;
             }
           }
 
@@ -241,7 +245,7 @@ public class YellowFever extends SimState {
               if (probability >= random.nextDouble()) {
                 double maturationTimeOfTheEggs = 8 + Math.abs(temperature - 25);
                 int amount = 1 + random.nextInt(100);
-                eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount));
+                eggs.add(new Egg(housing, maturationTimeOfTheEggs, amount, true));
               }
             }
           }

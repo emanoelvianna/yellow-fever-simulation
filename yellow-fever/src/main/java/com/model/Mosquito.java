@@ -123,7 +123,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
     synchronized (this.random) {
       double maturationTimeOfTheEggs = Math.round(8 + Math.abs(temperature - 25));
       int amount = 1 + this.random.nextInt(100);
-      Egg egg = new Egg(this.currentPosition, maturationTimeOfTheEggs, amount);
+      Egg egg = new Egg(this.currentPosition, maturationTimeOfTheEggs, amount, false);
       egg.setImported(false);
       this.yellowFever.addEgg(egg);
       this.carryingEggs = false;
@@ -207,6 +207,8 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void checkCurrentStateOfMaturation() {
+    if (!this.carryingEggs)
+      return;
     this.timeOfMaturation--;
     if (this.timeOfMaturation <= 0) {
       this.setMatureEggs(true);
