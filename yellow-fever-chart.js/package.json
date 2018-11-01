@@ -21,7 +21,8 @@
   "dependencies": {
     "chart.js": "^2.7.3",
     "chart.js-scatter": "1.1.4",
-    "d3": "^5.7.0"
+    "d3": "^5.7.0",
+    "d3-queue": "^3.0.7"
   },
   "devDependencies": {
     "browser-sync": "^2.26.3"
