@@ -230,7 +230,7 @@ public class YellowFeverGUI extends GUIState {
     displayRainfall.attach(rainfallPortrayal, "Rainfall");
 
     displayFrameRainfall = displayRainfall.createFrame();
-    controller.registerFrame(displayFrameRainfall);
+    //controller.registerFrame(displayFrameRainfall);
     displayFrameRainfall.setVisible(false);
     displayFrameRainfall.setTitle("Rainfall");
 
@@ -255,7 +255,7 @@ public class YellowFeverGUI extends GUIState {
     frame.setSize(400, 350);
 
     frame.pack();
-    controller.registerFrame(frame);
+    //controller.registerFrame(frame);
 
     // Portray activity chart
     JFreeChart agechart = ChartFactory.createBarChart("Age Distribution", "Age  Group",
@@ -277,7 +277,7 @@ public class YellowFeverGUI extends GUIState {
     ageframe.setSize(400, 350);
 
     ageframe.pack();
-    controller.registerFrame(ageframe);
+    //controller.registerFrame(ageframe);
 
     // Portray activity chart
     JFreeChart famchart = ChartFactory.createBarChart("Household Size", "Size", "Total",
@@ -298,7 +298,7 @@ public class YellowFeverGUI extends GUIState {
     famframe.setSize(400, 350);
 
     famframe.pack();
-    controller.registerFrame(famframe);
+    //controller.registerFrame(famframe);
     //
 
     Dimension dm = new Dimension(30, 30);
@@ -307,7 +307,7 @@ public class YellowFeverGUI extends GUIState {
     chartSeriesCholera = new sim.util.media.chart.TimeSeriesChartGenerator();
     chartSeriesCholera.createFrame();
     chartSeriesCholera.setSize(dm);
-    chartSeriesCholera.setTitle("Health Status");
+    chartSeriesCholera.setTitle("Humans Health Status");
     chartSeriesCholera.setRangeAxisLabel("Number of People");
     chartSeriesCholera.setDomainAxisLabel("Minutes");
     chartSeriesCholera.setMaximumSize(dm);
@@ -337,7 +337,7 @@ public class YellowFeverGUI extends GUIState {
 
     // frameSeriesPop.setSize(dmn)
     frameSeries.pack();
-    controller.registerFrame(frameSeriesPop);
+    //controller.registerFrame(frameSeriesPop);
     // time
 
     StandardDialFrame dialFrame = new StandardDialFrame();

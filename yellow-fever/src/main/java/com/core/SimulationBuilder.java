@@ -567,7 +567,9 @@ public class SimulationBuilder {
   }
 
   private boolean addMosquitoAtHomeThatContainsMosquito(Building housing, YellowFever yellowFever) {
-    if (0.01 >= yellowFever.random.nextDouble()) {
+    double probability = yellowFever.getParams().getGlobal()
+        .getProbabilityOfAddingMosquitoesToBuildingsWithMosquitoes();
+    if (probability >= yellowFever.random.nextDouble()) {
       Mosquito mosquito = new Mosquito(housing, yellowFever.random);
       mosquito.setStoppable(yellowFever.schedule.scheduleRepeating(mosquito, Mosquito.ORDERING, 1.0));
       double carryEggs = yellowFever.getParams().getGlobal().getProbabilityOfCarryEggsAtSimulationStart();

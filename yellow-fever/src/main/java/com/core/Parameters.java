@@ -55,16 +55,20 @@ public class Parameters {
     int intParameter = 0;
     double doubleParameter = 0;
 
-    intParameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
-    global.initialHumansNumberInfected = intParameter;
-
     intParameter = returnIntParameter(parameterDB, "InitialMosquitoesNumber", global.initialMosquitoesNumber);
     global.initialMosquitoesNumber = intParameter;
 
     intParameter = returnIntParameter(parameterDB, "InitialHumansNumber", global.initialHumansNumber);
     global.initialHumansNumber = intParameter;
 
-    intParameter = returnIntParameter(parameterDB, "maximumFamilyOccumpancyPerBuilding",
+    intParameter = returnIntParameter(parameterDB, "InitialHumansNumberInfected", global.initialHumansNumberInfected);
+    global.initialHumansNumberInfected = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "InitialMosquitoesNumberInfected",
+        global.initialMosquitoesNumberInfected);
+    global.initialMosquitoesNumberInfected = intParameter;
+
+    intParameter = returnIntParameter(parameterDB, "maximumFamilyOccupancyPerBuilding",
         global.maximumFamilyOccumpancyPerBuilding);
     global.maximumFamilyOccumpancyPerBuilding = intParameter;
 
@@ -78,13 +82,13 @@ public class Parameters {
         global.probabilityOfEggsAppearInHouses);
     global.probabilityOfEggsAppearInHouses = doubleParameter;
 
-    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfGettingBloodFood",
-        global.probabilityOfGettingBloodFood);
-    global.probabilityOfGettingBloodFood = doubleParameter;
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfMosquitoReachingGoal",
+        global.probabilityOfMosquitoReachingGoal);
+    global.probabilityOfMosquitoReachingGoal = doubleParameter;
 
-    doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilityFromVectorToHost",
-        global.getTransmissionProbabilityFromVectorToHost());
-    global.transmissionProbabilityFromVectorToHost = doubleParameter;
+    doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilityFromVectorToHuman",
+        global.getTransmissionProbabilityFromVectorToHuman());
+    global.transmissionProbabilityFromVectorToHuman = doubleParameter;
 
     doubleParameter = returnDoubleParameter(parameterDB, "transmissionProbabilityMildInfectionToVector",
         global.getTransmissionProbabilityMildInfectionToVector());
@@ -115,10 +119,6 @@ public class Parameters {
         global.probabilityOfHouseContainsNaturalFood);
     global.probabilityOfHouseContainsNaturalFood = doubleParameter;
 
-    intParameter = returnIntParameter(parameterDB, "InitialMosquitoesNumberInfected",
-        global.initialMosquitoesNumberInfected);
-    global.initialMosquitoesNumberInfected = intParameter;
-
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityHomeContainingEggsAtSimulationStart",
         global.probabilityHomeContainingEggsAtSimulationStart);
     global.probabilityHomeContainingEggsAtSimulationStart = doubleParameter;
@@ -148,6 +148,22 @@ public class Parameters {
     doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfEggBeingFemale",
         global.probabilityOfEggBeingFemale);
     global.probabilityOfEggBeingFemale = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfAddingMosquitoesToBuildingsWithMosquitoes",
+        global.probabilityOfAddingMosquitoesToBuildingsWithMosquitoes);
+    global.probabilityOfAddingMosquitoesToBuildingsWithMosquitoes = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfHumanLeavingLateFromHome",
+        global.probabilityOfHumanLeavingLateFromHome);
+    global.probabilityOfHumanLeavingLateFromHome = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfDeath", global.probabilityOfDeath);
+    global.probabilityOfDeath = doubleParameter;
+
+    doubleParameter = returnDoubleParameter(parameterDB, "probabilityOfChangeOverDepositedWater",
+        global.probabilityOfChangeOverDepositedWater);
+    global.probabilityOfChangeOverDepositedWater = doubleParameter;
+
   }
 
   public int returnIntParameter(ParameterDatabase paramDB, String parameterName, int defaultValue) {
@@ -175,7 +191,7 @@ public class Parameters {
     private int initialMosquitoesNumber = 300;
     private int initialHumansNumber = 1000;
     // parameters to inicial number infected
-    private int initialMosquitoesNumberInfected = 0;
+    private int initialMosquitoesNumberInfected = 10;
     private int initialHumansNumberInfected = 10;
     // parameters to climate and related
     private double waterAbsorption = 0.1;
@@ -184,25 +200,29 @@ public class Parameters {
     private double transmissionProbabilityMildInfectionToVector = 0.7;
     private double transmissionProbabilitySevereInfectionToVector = 0.9;
     private double probabilityFromSevereInfectionTotoxicInfection = 0.1;
-    private double transmissionProbabilityFromVectorToHost = 0.9;
+    private double transmissionProbabilityFromVectorToHuman = 0.9;
+    private double probabilityOfDeath = 0.5;
     // parameters to intervention
     private int healthFacilityCapacity = 50;
     private int quantityOfMedicineAvailable = 200;
-    private int quantityOfVaccinesApplied = 0;
+    private int quantityOfVaccinesApplied = 100;
     // parameter to behavior
     private double probabilityOfEggBeingFemale = 0.5;
     private double probabilityOfCarryEggsAtSimulationStart = 0.5;
     private double probabilityHomeContainingEggsAtSimulationStart = 0.5;
     private double probabilityOfHouseContainsNaturalFood = 0.9;
     private double probabilityOfEggsAppearInHouses = 0.05;
-    private double probabilityOfGettingBloodFood = 0.9;
-    private double probabilityOfEggsGroupDeath = 0.5;
-    private double probabilityOfAnEggUnitDying = 0.8;
+    private double probabilityOfMosquitoReachingGoal = 0.9;
+    private double probabilityOfEggsGroupDeath = 0.1;
+    private double probabilityOfAnEggUnitDying = 0.5;
     private double probabilityOfCarryingEggs = 0.8;
     private double probabilityOfMosquitoesDying = 0.05;
     private double probabilityToGoGettingMedicalHelp = 0.3;
     private int maximumNumberRelativeFamily = 15;
-    private int maximumFamilyOccumpancyPerBuilding = 1000; // arbitrary
+    private int maximumFamilyOccumpancyPerBuilding = 10;
+    private double probabilityOfAddingMosquitoesToBuildingsWithMosquitoes = 0.01;
+    private double probabilityOfHumanLeavingLateFromHome = 0.1;
+    private double probabilityOfChangeOverDepositedWater = 0.5;
 
     public void setInitialHumansNumber(int num) {
       this.initialHumansNumber = num;
@@ -277,14 +297,6 @@ public class Parameters {
 
     public void setQuantityOfVaccinesApplied(int quantityOfVaccinesApplied) {
       this.quantityOfVaccinesApplied = quantityOfVaccinesApplied;
-    }
-
-    public double getProbabilityOfGettingBloodFood() {
-      return probabilityOfGettingBloodFood;
-    }
-
-    public void setProbabilityOfGettingBloodFood(double probability) {
-      this.probabilityOfGettingBloodFood = probability;
     }
 
     public double getProbabilityOfMildInfection() {
@@ -382,12 +394,12 @@ public class Parameters {
       this.transmissionProbabilitySevereInfectionToVector = transmissionProbabilitySevereInfectionToVector;
     }
 
-    public double getTransmissionProbabilityFromVectorToHost() {
-      return transmissionProbabilityFromVectorToHost;
+    public double getTransmissionProbabilityFromVectorToHuman() {
+      return transmissionProbabilityFromVectorToHuman;
     }
 
-    public void setTransmissionProbabilityFromVectorToHost(double transmissionProbabilityFromVectorToHost) {
-      this.transmissionProbabilityFromVectorToHost = transmissionProbabilityFromVectorToHost;
+    public void setTransmissionProbabilityFromVectorToHuman(double transmissionProbabilityFromVectorToHost) {
+      this.transmissionProbabilityFromVectorToHuman = transmissionProbabilityFromVectorToHost;
     }
 
     public int getQuantityOfMedicineAvailable() {
@@ -420,6 +432,47 @@ public class Parameters {
 
     public void setProbabilityOfAnEggUnitDying(double probabilityOfAnEggUnitDying) {
       this.probabilityOfAnEggUnitDying = probabilityOfAnEggUnitDying;
+    }
+
+    public double getProbabilityOfMosquitoReachingGoal() {
+      return probabilityOfMosquitoReachingGoal;
+    }
+
+    public void setProbabilityOfMosquitoReachingGoal(double probabilityOfMosquitoReachingGoal) {
+      this.probabilityOfMosquitoReachingGoal = probabilityOfMosquitoReachingGoal;
+    }
+
+    public double getProbabilityOfAddingMosquitoesToBuildingsWithMosquitoes() {
+      return probabilityOfAddingMosquitoesToBuildingsWithMosquitoes;
+    }
+
+    public void setProbabilityOfAddingMosquitoesToBuildingsWithMosquitoes(
+        double probabilityOfAddingMosquitoesToBuildingsWithMosquitoes) {
+      this.probabilityOfAddingMosquitoesToBuildingsWithMosquitoes = probabilityOfAddingMosquitoesToBuildingsWithMosquitoes;
+    }
+
+    public double getProbabilityOfHumanLeavingLateFromHome() {
+      return probabilityOfHumanLeavingLateFromHome;
+    }
+
+    public void setProbabilityOfHumanLeavingLateFromHome(double probabilityOfHumanLeavingLateFromHome) {
+      this.probabilityOfHumanLeavingLateFromHome = probabilityOfHumanLeavingLateFromHome;
+    }
+
+    public double getProbabilityOfDeath() {
+      return probabilityOfDeath;
+    }
+
+    public void setProbabilityOfDeath(double probabilityOfDeath) {
+      this.probabilityOfDeath = probabilityOfDeath;
+    }
+
+    public double getProbabilityOfChangeOverDepositedWater() {
+      return probabilityOfChangeOverDepositedWater;
+    }
+
+    public void setProbabilityOfChangeOverDepositedWater(double probabilityOfChangeOverDepositedWater) {
+      this.probabilityOfChangeOverDepositedWater = probabilityOfChangeOverDepositedWater;
     }
   }
 }

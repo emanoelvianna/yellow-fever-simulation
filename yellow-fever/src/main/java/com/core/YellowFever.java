@@ -35,7 +35,7 @@ public class YellowFever extends SimState {
   private static final long serialVersionUID = -5966446373681187141L;
   public ObjectGrid2D allCamps;
   public GeomGridField allCampGeoGrid;
-  public DoubleGrid2D rainfallGrid; // TODO: Isto aqui ainda faz sentido?
+  public DoubleGrid2D rainfallGrid;
   public Continuous2D allHumans;
   public SparseGrid2D facilityGrid;
   public IntGrid2D roadGrid;
@@ -193,8 +193,8 @@ public class YellowFever extends SimState {
           double mm = params.getGlobal().getWaterAbsorption();
           for (Object object : getFamilyHousing()) {
             Building housing = (Building) object;
-            // TODO: Deve ser um parametro!
-            if (random.nextDouble() <= 0.5) { // 50% chance
+            double probability = params.getGlobal().getProbabilityOfChangeOverDepositedWater();
+            if (probability >= random.nextDouble()) { // 50% chance
               housing.waterAbsorption(mm);
               if (currentDay < rainfall.size()) {
                 housing.addWater(rainfall.get(currentDay));

@@ -89,6 +89,12 @@ Promise.all([
         data: _standardDeviationToExposed(),
         fill: false,
       }, {
+        label: 'Média',
+        borderColor: window.chartColors.green,
+        backgroundColor: window.chartColors.green,
+        data: _averageExposed(),
+        fill: false,
+      }, {
         label: 'Infecção leve',
         borderColor: window.chartColors.pink,
         backgroundColor: window.chartColors.pink,
@@ -137,6 +143,23 @@ Promise.all([
 });
 
 
+function _averageExposed() {
+  var n = exposed.length;
+  var average = [];
+  var results = [];
+  exposed.filter(function(line, index) {
+    var sum = 0;
+    line.filter(function(value) {
+      sum = sum + value;
+    });
+    average.push(sum / n);
+  });
+
+  console.log("Média:");
+  console.log(average);
+  return average;
+}
+
 // calculate standard deviation
 
 function _standardDeviationToSusceptible() {
@@ -177,19 +200,18 @@ function _standardDeviationToExposed() {
     line.filter(function(value) {
       sum = sum + value;
     });
-    var truncated = Math.floor((sum / n) * 100) / 100;
-    average.push(truncated);
+    average.push(sum / n);
 
     sum = 0;
     line.filter(function(value) {
       var result = value - average[index];
       sum = sum + Math.pow(value - average[index], 2);
     });
-
-    truncated = Math.floor((sum / (n - 1)) * 100) / 100;
-    results.push(truncated);
+    results.push(sum / (n - 1));
   });
 
+  console.log("desvio padrão:");
+  console.log(results);
   return results;
 }
 

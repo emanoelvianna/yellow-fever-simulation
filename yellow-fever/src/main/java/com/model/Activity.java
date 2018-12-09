@@ -29,14 +29,15 @@ public class Activity {
     } else if (this.human.hasSymptomsOfInfection()) {
       return ActivityMapping.STAY_HOME;
     }
-    return defineActivitiesAccordingToSomeCriterion();
+    return defineActivitiesAccordingToSomeCriterion(yellowFever);
   }
 
-  private ActivityMapping defineActivitiesAccordingToSomeCriterion() {
+  private ActivityMapping defineActivitiesAccordingToSomeCriterion(YellowFever yellowFever) {
     synchronized (this.random) {
       if (this.minuteInDay >= (8 * 60) && this.minuteInDay <= (18 * 60)) {
         if (time.currentDayInWeek(currentStep) < 6) {
-          if (0.1 >= this.random.nextDouble()) { // 1% chance stay home
+          double probability = yellowFever.getParams().getGlobal().getProbabilityOfHumanLeavingLateFromHome();
+          if (probability >= this.random.nextDouble()) { // 1% chance stay home
             return ActivityMapping.STAY_HOME;
           } else if (this.human.isWorker()) {
             return ActivityMapping.WORK;

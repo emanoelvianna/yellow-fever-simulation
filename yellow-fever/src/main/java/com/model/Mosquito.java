@@ -132,18 +132,21 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   }
 
   private void normalFood() {
-    if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
-      this.hungry = false;
-      this.daysWithoutFood = 0;
-    } else {
-      this.hungry = true;
+    double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfMosquitoReachingGoal();
+    if (probability >= this.random.nextDouble()) {
+      if (this.currentPosition.containsNectar() || this.currentPosition.containsSap()) {
+        this.hungry = false;
+        this.daysWithoutFood = 0;
+      } else {
+        this.hungry = true;
+      }
     }
   }
 
   private void bloodFood() {
     synchronized (this.random) {
       if (this.currentPosition.getHumans().size() > 0) {
-        double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfGettingBloodFood();
+        double probability = this.yellowFever.getParams().getGlobal().getProbabilityOfMosquitoReachingGoal();
         if (probability >= this.random.nextDouble()) {
           int size = this.currentPosition.getHumans().size();
           Human human = (Human) currentPosition.getHumans().get(this.random.nextInt(size));
@@ -163,7 +166,7 @@ public class Mosquito implements Steppable, Valuable, Serializable {
   public void toBite(Human human) {
     synchronized (this.random) {
       if (HealthStatus.INFECTED.equals(this.currentHealthStatus)) {
-        double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHost();
+        double probability = this.yellowFever.getParams().getGlobal().getTransmissionProbabilityFromVectorToHuman();
         if (probability >= this.random.nextDouble()) {
           human.infected();
         }
