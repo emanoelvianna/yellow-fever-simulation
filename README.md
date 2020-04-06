@@ -1,3 +1,4 @@
-# yellow-fever
+# Simulação epidemiológica da disseminação da febre amarela usando Sistemas Multiagentes e técnicas de Geoprocessamento
 
+Este trabalho tem como objetivo apresentar o desenvolvimento de uma simulação do comportamento epidemiológico baseado em Sistemas Multiagentes, método que já demonstrou em trabalhos estudados ser capaz de gerar resultados satisfatórios em comparação com os modelos matemáticos. Mas no entanto, a representação do ambiente em muitos trabalhos relacionados é simples, o que acaba deixando uma carência em relação à análise também sobre o ambiente onde está ocorrendo o surto epidemiológico. Nestes termos, este trabalho procura utilizar técnicas de Geoprocessamento para desenvolver um ambiente mais rico, explorando a dinâmica espaço-tempo da disseminação da epidemia a ser estudada. Ao final o trabalho apresenta vários experimentos computacionais realizados com o objetivo de validar e apresentar o modelo desenvolvido. Os resultados obtidos a partir dos experimentos são promissores, mostrando-se contribuir para a tomada de decisão sobre a epidemia estudada.
 
