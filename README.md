@@ -10,3 +10,5 @@ Este trabalho tem como objetivo apresentar o desenvolvimento de uma simulação 
 
 
 ### Imagens do experimento
+
+<img src="https://github.com/emanoelvianna/yellow-fever-simulation/blob/master/imagem-experimento.png" height="200px" width="500px" >
